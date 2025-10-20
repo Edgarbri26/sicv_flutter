@@ -3,13 +3,13 @@ import '../../models/inventory_item.dart';
 
 class AddEditInventoryScreen extends StatefulWidget {
   final InventoryItem? item;
-  const AddEditInventoryScreen({this.item});
+  const AddEditInventoryScreen({this.item, super.key});
 
   @override
-  _AddEditInventoryScreenState createState() => _AddEditInventoryScreenState();
+  AddEditInventoryScreenState createState() => AddEditInventoryScreenState();
 }
 
-class _AddEditInventoryScreenState extends State<AddEditInventoryScreen> {
+class AddEditInventoryScreenState extends State<AddEditInventoryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
