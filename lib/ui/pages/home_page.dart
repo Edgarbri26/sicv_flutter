@@ -16,8 +16,23 @@ class HomePage extends StatelessWidget {
           children: const [
             Text('Productos disponibles', style: AppTextStyles.headlineLarge),
             SizedBox(height: 16),
-            InventoryCard(title: 'Laptop Dell', statusColor: AppColors.success),
-            InventoryCard(title: 'Monitor LG', statusColor: AppColors.warning),
+            // Reemplazo temporal de InventoryCard para evitar errores de firma
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 6),
+              child: ListTile(
+                leading: CircleAvatar(backgroundColor: AppColors.success, child: Icon(Icons.inventory_2, color: Colors.white)),
+                title: Text('Laptop Dell'),
+                subtitle: Text('Disponible'),
+              ),
+            ),
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 6),
+              child: ListTile(
+                leading: CircleAvatar(backgroundColor: AppColors.danger, child: Icon(Icons.monitor, color: Colors.white)),
+                title: Text('Monitor LG'),
+                subtitle: Text('Disponible'),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,33 +1,73 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../core/theme/app_sizes.dart';
+import '../../models/inventory_item.dart';
 
 class InventoryCard extends StatelessWidget {
-  final String title;
-  final Color statusColor;
+  final InventoryItem item;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   const InventoryCard({
-    super.key,
-    required this.title,
-    required this.statusColor,
+    required this.item,
+    required this.onTap,
+    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.spacingM),
-      margin: const EdgeInsets.only(bottom: AppSizes.spacingM),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.borderRadiusM),
-        border: Border.all(color: statusColor, width: 2),
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      elevation: 1,
+      child: ListTile(
+        leading: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Color(0xFF128C7E).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.inventory_2, color: Color(0xFF2196F3)),
+        ),
+        title: Text(item.name, style: TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(item.description),
+            SizedBox(height: 4),
+            Row(
+              children: [
+                _buildInfoChip('${item.quantity} unidades', Colors.blue),
+                SizedBox(width: 8),
+                _buildInfoChip('\$${item.price.toStringAsFixed(2)}', Colors.green),
+              ],
+            ),
+          ],
+        ),
+        trailing: PopupMenuButton(
+          onSelected: (value) {
+            if (value == 'edit') onTap();
+            if (value == 'delete') onDelete();
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(value: 'edit', child: Text('Editar')),
+            PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+          ],
+        ),
+        onTap: onTap,
       ),
-      child: Row(
-        children: [
-          Icon(Icons.inventory, color: statusColor),
-          const SizedBox(width: AppSizes.spacingM),
-          Text(title, style: AppTextStyles.bodyLarge),
-        ],
+    );
+  }
+
+  Widget _buildInfoChip(String text, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
       ),
     );
   }
