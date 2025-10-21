@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_themes.dart';
 import 'ui/pages/home_page.dart';
 
-
 class InventoryApp extends StatelessWidget {
   const InventoryApp({super.key});
 
