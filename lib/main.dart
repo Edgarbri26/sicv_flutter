@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/app.dart';
-import 'ui/pages/screen/inventory_screen.dart';
 
 void main() {
   runApp(InventoryApp());

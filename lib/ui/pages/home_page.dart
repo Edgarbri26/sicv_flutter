@@ -3,12 +3,13 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
+import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
+import 'package:sicv_flutter/ui/pages/add_product_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
-import 'package:sicv_flutter/ui/widgets/product_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,6 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late PageController _pageController;
+
   List<InventoryItem> itemsSelled = [
     InventoryItem(
       id: '1',
@@ -49,10 +51,10 @@ class _HomePageState extends State<HomePage> {
     ),
   ];
   int _currentIndex = 0;
-
+  final List<Product> _itemsParaLaVenta = [];
   // las pantallas que vamos a mostrar
   List<Widget> get _screens => [
-    SaleScreen(saleItemsSelled: itemsSelled),
+    SaleScreen(saleItemsSelled: _itemsParaLaVenta),
     PurchaseScreen(),
     InventoryScreen(),
   ];
@@ -93,7 +95,7 @@ class _HomePageState extends State<HomePage> {
   void _addNewItem() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddEditInventoryScreen()),
+      MaterialPageRoute(builder: (context) => AddProductScreen()),
     );
   }
 

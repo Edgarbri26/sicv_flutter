@@ -1,11 +1,10 @@
+// lib/ui/pages/inventory_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/ui/widgets/App_search_bar.dart';
-import '../../widgets/product_card.dart';
-import '../add_edit_inventory_page.dart';
-import '../../../models/inventory_item.dart';
+import 'package:sicv_flutter/models/product.dart'; // <-- Usa tu nuevo modelo Product
+import 'package:sicv_flutter/services/product_api_service.dart'; // <-- Importa el servicio
+import '../../widgets/product_card.dart'; // Tu widget para mostrar cada producto
+// ...otras importaciones
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -15,236 +14,123 @@ class InventoryScreen extends StatefulWidget {
 }
 
 class _InventoryScreenState extends State<InventoryScreen> {
-  List<InventoryItem> inventoryItems = [];
-  List<InventoryItem> filteredItems = [];
+  final ProductApiService _apiService = ProductApiService();
   TextEditingController searchController = TextEditingController();
+
+  // Variables para manejar el estado de la carga de datos
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Product> _products = [];
+  List<Product> _filteredProducts = [];
 
   @override
   void initState() {
     super.initState();
-    _loadSampleData();
+    _fetchProducts(); // Llama al método para cargar datos desde la API
     searchController.addListener(_filterItems);
   }
 
-  void _loadSampleData() {
+  // Método para obtener los productos desde la API
+  Future<void> _fetchProducts() async {
     setState(() {
-      inventoryItems = [
-        InventoryItem(
-          id: '1',
-          name: 'Harina PAN',
-          description: 'Harina de maíz precocida',
-          quantity: 50,
-          price: 1.40,
-          category: 'Alimentos',
-          lastUpdated: DateTime.now(),
-        ),
-        InventoryItem(
-          id: '2',
-          name: 'Cigarros Marlboro',
-          description: 'Cigarros de tabaco rubio',
-          quantity: 5,
-          price: 5.99,
-          category: 'Tabaco',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-      ];
-      filteredItems = inventoryItems;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final products = await _apiService.getProducts();
+      setState(() {
+        _products = products;
+        _filteredProducts = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   void _filterItems() {
     final query = searchController.text.toLowerCase();
     setState(() {
-      filteredItems = inventoryItems.where((item) {
-        return item.name.toLowerCase().contains(query) ||
-            item.description.toLowerCase().contains(query) ||
-            item.category.toLowerCase().contains(query);
+      _filteredProducts = _products.where((product) {
+        return product.name.toLowerCase().contains(query) ||
+               product.description.toLowerCase().contains(query);
       }).toList();
     });
   }
-
-  // void _addNewItem() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(builder: (context) => AddEditInventoryScreen()),
-  //   ).then((newItem) {
-  //     if (newItem != null) {
-  //       setState(() {
-  //         inventoryItems.add(newItem);
-  //         _filterItems();
-  //       });
-  //     }
-  //   });
-  // }
-
-  void _editItem(InventoryItem item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddEditInventoryScreen(item: item),
-      ),
-    ).then((editedItem) {
-      if (editedItem != null) {
-        setState(() {
-          final index = inventoryItems.indexWhere((i) => i.id == editedItem.id);
-          if (index != -1) {
-            inventoryItems[index] = editedItem;
-            _filterItems();
-          }
-        });
-      }
-    });
-  }
-
-  void _deleteItem(InventoryItem item) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Eliminar Item'),
-        content: Text('¿Estás seguro de eliminar ${item.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                inventoryItems.removeWhere((i) => i.id == item.id);
-                _filterItems();
-              });
-              Navigator.pop(context);
-            },
-            child: Text('Eliminar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
+  
+  // ... (tus métodos _editItem y _deleteItem necesitarán ser adaptados para usar el servicio de API también)
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AppSearchBar(
-          searchController: searchController,
-          hintText: 'Buscar en inventario...',
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: filteredItems.length,
-            itemBuilder: (context, index) {
-              final item = filteredItems[index];
-              return ProductCard(
-                item: item,
-                onTap: () => _editItem(item),
-
-                onDelete: () => _deleteItem(item),
-                trailing: PopupMenuButton(
-                  onSelected: (value) {
-                    if (value == 'edit') _editItem(item);
-                    if (value == 'delete') _deleteItem(item);
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(value: 'edit', child: Text('Editar')),
-                    PopupMenuItem(value: 'delete', child: Text('Eliminar')),
-                  ],
-                ),
-              );
-            },
+        // Tu barra de búsqueda
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: 'Buscar en inventario...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
         ),
+        // Contenido principal que cambia según el estado
+        Expanded(
+          child: _buildContent(),
+        ),
       ],
+    );
+  }
+
+  Widget _buildContent() {
+    // 1. Si está cargando, muestra un indicador de progreso
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // 2. Si hay un error, muestra un mensaje y un botón para reintentar
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Error: $_errorMessage', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchProducts,
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // 3. Si no hay productos, muestra un mensaje
+    if (_filteredProducts.isEmpty) {
+        return const Center(child: Text('No se encontraron productos.'));
+    }
+
+    // 4. Si todo está bien, muestra la lista de productos
+    return ListView.builder(
+      itemCount: _filteredProducts.length,
+      itemBuilder: (context, index) {
+        final product = _filteredProducts[index];
+        // Aquí debes usar un widget 'ProductCard' adaptado para recibir un objeto 'Product'
+        return ProductCard(
+          product: product, // Pasa el objeto Product
+          onTap: () { /* Lógica para editar */ },
+          onDelete: () { /* Lógica para eliminar */ },
+          
+        );
+      },
     );
   }
 }
