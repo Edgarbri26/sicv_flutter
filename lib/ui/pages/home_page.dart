@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
@@ -8,6 +9,7 @@ import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
+import 'package:sicv_flutter/ui/widgets/manu.dart';
 import 'package:sicv_flutter/ui/widgets/product_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -91,10 +93,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _addNewItem() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddEditInventoryScreen()),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => AddEditInventoryScreen()),
+    // );
+    Navigator.pushNamed(context, AppRoutes.addEditInventory);
   }
 
   @override
@@ -116,35 +119,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.primary),
-              child: Text(
-                'Drawer Header',
-                style: TextStyle(color: AppColors.secondary, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.message),
-              title: const Text('Messages'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_circle),
-              title: const Text('Profile'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
+      drawer: const Menu(),
 
       // El 'body' ahora es un PageView
       body: PageView(
@@ -246,7 +221,10 @@ class _HomePageState extends State<HomePage> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 10),
-                  Text("Total: ${itemsSelled.length}", style: AppTextStyles.bodyMediumBold),
+                  Text(
+                    "Total: ${itemsSelled.length}",
+                    style: AppTextStyles.bodyMediumBold,
+                  ),
 
                   Expanded(
                     child: ListView.builder(
