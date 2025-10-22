@@ -4,13 +4,11 @@ import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
-import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
-import 'package:sicv_flutter/ui/widgets/manu.dart';
-import 'package:sicv_flutter/ui/widgets/product_card.dart';
+import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
