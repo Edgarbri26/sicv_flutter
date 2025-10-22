@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // (Asegúrate de tener las pantallas de ejemplo: ChatsScreen, StatusScreen, CallsScreen)
 
 class WhatsappHome extends StatefulWidget {
-  const WhatsappHome({Key? key}) : super(key: key);
+  const WhatsappHome({super.key});
 
   @override
   _WhatsappHomeState createState() => _WhatsappHomeState();
@@ -11,17 +11,12 @@ class WhatsappHome extends StatefulWidget {
 
 // Ya NO necesitamos 'SingleTickerProviderStateMixin'
 class _WhatsappHomeState extends State<WhatsappHome> {
-  
   // Reemplazamos TabController por PageController
   late PageController _pageController;
   int _currentIndex = 0;
 
   // Las pantallas que vamos a mostrar
-  final List<Widget> _screens = [
-    ChatsScreen(),
-    StatusScreen(),
-    CallsScreen(),
-  ];
+  final List<Widget> _screens = [ChatsScreen(), StatusScreen(), CallsScreen()];
 
   @override
   void initState() {
@@ -61,10 +56,7 @@ class _WhatsappHomeState extends State<WhatsappHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'WhatsApp',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
+        title: Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: Color(0xFF075E54),
         actions: [
           IconButton(icon: Icon(Icons.search), onPressed: () {}),
@@ -72,7 +64,7 @@ class _WhatsappHomeState extends State<WhatsappHome> {
         ],
         // Ya no tenemos el 'bottom' (TabBar)
       ),
-      
+
       // El 'body' ahora es un PageView
       body: PageView(
         controller: _pageController,
@@ -80,7 +72,7 @@ class _WhatsappHomeState extends State<WhatsappHome> {
         onPageChanged: _onPageChanged,
         children: _screens,
       ),
-      
+
       // Añadimos la barra de navegación inferior
       bottomNavigationBar: BottomNavigationBar(
         // Le decimos qué ítem está activo
@@ -92,20 +84,14 @@ class _WhatsappHomeState extends State<WhatsappHome> {
         selectedItemColor: Color(0xFF075E54),
         unselectedItemColor: Colors.grey[600],
         type: BottomNavigationBarType.fixed, // Muestra todos los labels
-        
+
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Chats',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
           BottomNavigationBarItem(
             icon: Icon(Icons.camera_alt_outlined),
             label: 'Status',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.call),
-            label: 'Calls',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.call), label: 'Calls'),
         ],
       ),
 
@@ -119,19 +105,25 @@ class _WhatsappHomeState extends State<WhatsappHome> {
     switch (_currentIndex) {
       case 0: // Pestaña CHATS
         return FloatingActionButton(
-          onPressed: () { /* Lógica para nuevo chat */ },
+          onPressed: () {
+            /* Lógica para nuevo chat */
+          },
           backgroundColor: Color(0xFF25D366),
           child: Icon(Icons.chat, color: Colors.white),
         );
       case 1: // Pestaña STATUS
         return FloatingActionButton(
-          onPressed: () { /* Lógica para nuevo estado */ },
+          onPressed: () {
+            /* Lógica para nuevo estado */
+          },
           backgroundColor: Color(0xFF25D366),
           child: Icon(Icons.camera_alt, color: Colors.white),
         );
       case 2: // Pestaña CALLS
         return FloatingActionButton(
-          onPressed: () { /* Lógica para nueva llamada */ },
+          onPressed: () {
+            /* Lógica para nueva llamada */
+          },
           backgroundColor: Color(0xFF25D366),
           child: Icon(Icons.add_ic_call, color: Colors.white),
         );
@@ -144,7 +136,7 @@ class _WhatsappHomeState extends State<WhatsappHome> {
 // --- Pantallas Modulares (Widgets de ejemplo) ---
 
 class ChatsScreen extends StatelessWidget {
-  const ChatsScreen({Key? key}) : super(key: key);
+  const ChatsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +150,7 @@ class ChatsScreen extends StatelessWidget {
 }
 
 class StatusScreen extends StatelessWidget {
-  const StatusScreen({Key? key}) : super(key: key);
+  const StatusScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +164,7 @@ class StatusScreen extends StatelessWidget {
 }
 
 class CallsScreen extends StatelessWidget {
-  const CallsScreen({Key? key}) : super(key: key);
+  const CallsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

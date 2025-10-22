@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
-import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/widgets/App_search_bar.dart';
 import 'package:sicv_flutter/ui/widgets/product_card.dart';
 

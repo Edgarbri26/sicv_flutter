@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/ui/widgets/App_search_bar.dart';
 import '../../widgets/product_card.dart';
 import '../add_edit_inventory_page.dart';
