@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/config/app_routes.dart';
+import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'core/theme/app_themes.dart';
 import 'ui/pages/home_page.dart';
 
@@ -11,6 +13,17 @@ class InventoryApp extends StatelessWidget {
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
       home: const HomePage(),
+
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case AppRoutes.home:
+            return MaterialPageRoute(builder: (context) => const HomePage());
+          case AppRoutes.sale:
+            return MaterialPageRoute(builder: (context) => const SalePage());
+          default:
+            return MaterialPageRoute(builder: (context) => const SalePage());
+        }
+      },
     );
   }
 }

@@ -44,6 +44,12 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
+    static const bodyMediumBold = TextStyle(
+    fontSize: AppSizes.bodyM,
+    fontWeight: FontWeight.bold,
+    color: AppColors.textPrimary,
+  );
+
   static const bodySmall = TextStyle(
     fontSize: AppSizes.bodyS,
     fontWeight: FontWeight.normal,
