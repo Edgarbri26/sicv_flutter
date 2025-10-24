@@ -15,7 +15,7 @@ class InventoryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
-      home: const LoginPage(),
+      home: const HomePage(),
 
       onGenerateRoute: (settings) {
         switch (settings.name) {

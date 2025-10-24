@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> get _screens => [
     SaleScreen(saleItemsSelled: _itemsParaLaVenta),
     PurchaseScreen(),
-    InventoryScreen(),
+    InventoryDatatableScreen(),
   ];
   final List<String> _screenTitles = ['Venta', 'Compra', 'Inventario'];
 
