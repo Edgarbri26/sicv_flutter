@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb; // IMPORTACIÓN CORREGIDA
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sicv_flutter/services/product_api_service.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 class AddProductScreen extends StatefulWidget {
   @override
@@ -81,8 +82,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
+  String? _nameValidator(String? v) {
+    if (v == null || v.trim().isEmpty) return 'El usuario no puede estar vacío';
+    if (v.trim().length < 3) {
+      return 'El usuario debe tener al menos 3 caracteres';
+    }
+    return null;
+  }
+
+  String? _passwordValidator(String? v) {
+    if (v == null || v.isEmpty) return 'La contraseña no puede estar vacía';
+    if (v.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final primary = Colors.blue.shade700;
     return Scaffold(
       appBar: AppBar(title: const Text('Añadir Producto')),
       body: SingleChildScrollView(
@@ -91,6 +107,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Nombre del Producto')),
+            TextFormField(
+                        controller: _nameController,
+                        validator: _nameValidator,
+                        decoration: InputDecoration(
+                          labelText: 'Usuario',
+                          prefixIcon: Icon(Icons.person, color: primary),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
             const SizedBox(height: 10),
             TextField(controller: _descriptionController, decoration: const InputDecoration(labelText: 'Descripción')),
             const SizedBox(height: 10),

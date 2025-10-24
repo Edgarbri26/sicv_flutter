@@ -30,89 +30,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const CircleAvatar(
-              radius: 50,
-              backgroundColor: AppColors.hover,
-              child: Icon(Icons.person, size: 60, color: AppColors.background),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            // Puedes ajustar este valor. 600 es un buen
+            // tamaño para formularios o listas de configuración.
+            maxWidth: 600,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const CircleAvatar(
+                  radius: 50,
+                  backgroundColor: AppColors.hover,
+                  child: Icon(Icons.person, size: 60, color: AppColors.background),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Nombre de Usuario',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Todos los botones ahora tienen la misma separación
+                _buildSettingsTile(
+                  icon: Icons.edit,
+                  title: 'Editar Perfil',
+                  onTap: () {},
+                ),
+                _buildSettingsTile(
+                  icon: Icons.dark_mode,
+                  title: 'Modo Oscuro',
+                  trailing: Switch(
+                    value: _darkModeEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _darkModeEnabled = value;
+                      });
+                    },
+                    activeThumbColor: AppColors.hover,
+                  ),
+                ),
+                _buildSettingsTile(
+                  icon: Icons.notifications,
+                  title: 'Notificaciones',
+                  trailing: Switch(
+                    value: _notificationsEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _notificationsEnabled = value;
+                      });
+                    },
+                    activeThumbColor: AppColors.hover,
+                  ),
+                ),
+                _buildSettingsTile(
+                  icon: Icons.language,
+                  title: 'Idioma',
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: AppColors.secondary,
+                    size: 18,
+                  ),
+                  onTap: () {},
+                ),
+                _buildSettingsTile(
+                  icon: Icons.security,
+                  title: 'Seguridad y Privacidad',
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: AppColors.secondary,
+                    size: 18,
+                  ),
+                  onTap: () {},
+                ),
+                _buildSettingsTile(
+                  icon: Icons.help_outline,
+                  title: 'Ayuda y Soporte',
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: AppColors.secondary,
+                    size: 18,
+                  ),
+                  onTap: () {},
+                ),
+                const SizedBox(height: 30),
+              ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Nombre de Usuario',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Todos los botones ahora tienen la misma separación
-            _buildSettingsTile(
-              icon: Icons.edit,
-              title: 'Editar Perfil',
-              onTap: () {},
-            ),
-            _buildSettingsTile(
-              icon: Icons.dark_mode,
-              title: 'Modo Oscuro',
-              trailing: Switch(
-                value: _darkModeEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    _darkModeEnabled = value;
-                  });
-                },
-                activeThumbColor: AppColors.hover,
-              ),
-            ),
-            _buildSettingsTile(
-              icon: Icons.notifications,
-              title: 'Notificaciones',
-              trailing: Switch(
-                value: _notificationsEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    _notificationsEnabled = value;
-                  });
-                },
-                activeThumbColor: AppColors.hover,
-              ),
-            ),
-            _buildSettingsTile(
-              icon: Icons.language,
-              title: 'Idioma',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.secondary,
-                size: 18,
-              ),
-              onTap: () {},
-            ),
-            _buildSettingsTile(
-              icon: Icons.security,
-              title: 'Seguridad y Privacidad',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.secondary,
-                size: 18,
-              ),
-              onTap: () {},
-            ),
-            _buildSettingsTile(
-              icon: Icons.help_outline,
-              title: 'Ayuda y Soporte',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.secondary,
-                size: 18,
-              ),
-              onTap: () {},
-            ),
-            const SizedBox(height: 30),
-          ],
+          ),
         ),
       ),
     );
