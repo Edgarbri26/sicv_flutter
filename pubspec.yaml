@@ -37,7 +37,6 @@ dependencies:
   http: ^1.5.0
   shared_preferences: ^2.5.3
   material_symbols_icons: ^4.2874.0
-  http: ^1.2.1
   image_picker: ^1.1.2
 
 dev_dependencies:
