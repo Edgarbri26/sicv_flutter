@@ -1,10 +1,14 @@
+// lib/ui/pages/sale_screen.dart
+
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/models/inventory_item.dart';
+import 'package:sicv_flutter/models/product.dart'; // <-- Usa tu modelo Product
+import 'package:sicv_flutter/services/product_api_service.dart';
 import 'package:sicv_flutter/ui/widgets/App_search_bar.dart';
 import 'package:sicv_flutter/ui/widgets/product_card.dart';
 
 class SaleScreen extends StatefulWidget {
-  final List<InventoryItem> saleItemsSelled;
+  // Ahora esta lista debe ser de tipo Product
+  final List<Product> saleItemsSelled; 
   const SaleScreen({super.key, required this.saleItemsSelled});
 
   @override
@@ -12,148 +16,66 @@ class SaleScreen extends StatefulWidget {
 }
 
 class _SaleScreenState extends State<SaleScreen> {
+  final ProductApiService _apiService = ProductApiService();
   TextEditingController searchController = TextEditingController();
-  List<InventoryItem> inventoryItems = [];
-  List<InventoryItem> filteredItems = [];
+
+  // Variables de estado
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Product> _availableProducts = [];
+  List<Product> _filteredProducts = [];
 
   @override
   void initState() {
     super.initState();
-    _loadSampleData();
+    _fetchProducts();
     searchController.addListener(_filterItems);
   }
 
-  void _loadSampleData() {
+  Future<void> _fetchProducts() async {
     setState(() {
-      inventoryItems = [
-        InventoryItem(
-          id: '1',
-          name: 'Harina PAN',
-          description: 'Harina de maíz precocida',
-          quantity: 50,
-          price: 1.40,
-          category: 'Alimentos',
-          lastUpdated: DateTime.now(),
-        ),
-        InventoryItem(
-          id: '2',
-          name: 'Cigarros Marlboro',
-          description: 'Cigarros de tabaco rubio',
-          quantity: 5,
-          price: 5.99,
-          category: 'Tabaco',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-        InventoryItem(
-          id: '3',
-          name: 'Café',
-          description: 'Café de granos',
-          quantity: 0,
-          price: 10.99,
-          category: 'Bebidas',
-          lastUpdated: DateTime.now().subtract(Duration(days: 1)),
-        ),
-      ];
-      filteredItems = inventoryItems;
+      _isLoading = true;
+      _errorMessage = null;
     });
-  }
 
-  void _addNewItem(InventoryItem newItem) {
-    setState(() {
-      widget.saleItemsSelled.add(newItem);
-    });
+    try {
+      final products = await _apiService.getProducts();
+      setState(() {
+        _availableProducts = products;
+        _filteredProducts = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   void _filterItems() {
     final query = searchController.text.toLowerCase();
     setState(() {
-      filteredItems = inventoryItems.where((item) {
-        return item.name.toLowerCase().contains(query) ||
-            item.description.toLowerCase().contains(query) ||
-            item.category.toLowerCase().contains(query);
+      _filteredProducts = _availableProducts.where((product) {
+        return product.name.toLowerCase().contains(query);
       }).toList();
     });
+  }
+
+  // Método adaptado para añadir un objeto Product a la lista de venta
+  void _addNewItemToSale(Product newProduct) {
+    setState(() {
+      // Aquí puedes añadir lógica para evitar duplicados si lo necesitas
+      widget.saleItemsSelled.add(newProduct);
+    });
+    
+    // Muestra una notificación de que el producto fue añadido
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${newProduct.name} añadido a la venta.'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -162,27 +84,54 @@ class _SaleScreenState extends State<SaleScreen> {
       children: [
         AppSearchBar(
           searchController: searchController,
-          hintText: 'Buscar producto.....',
+          hintText: 'Buscar producto para vender...',
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: filteredItems.length,
-            itemBuilder: (context, index) {
-              final item = filteredItems[index];
-              return ProductCard(
-                item: item,
-                onTap: () {},
-
-                onDelete: () {},
-                trailing: IconButton(
-                  onPressed: () => _addNewItem(item),
-                  icon: Icon(Icons.add),
-                ),
-              );
-            },
-          ),
+          child: _buildContent(),
         ),
       ],
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Error: $_errorMessage'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchProducts,
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (_filteredProducts.isEmpty) {
+        return const Center(child: Text('No se encontraron productos.'));
+    }
+
+    return ListView.builder(
+      itemCount: _filteredProducts.length,
+      itemBuilder: (context, index) {
+        final product = _filteredProducts[index];
+        return ProductCard(
+          product: product,
+          onTap: () => _addNewItemToSale(product), // Un tap simple también puede añadir
+          onDelete: () {}, // La eliminación no aplica aquí
+          /*trailing: IconButton(
+            onPressed: () => _addNewItemToSale(product),
+            icon: const Icon(Icons.add_shopping_cart_outlined),
+          ),*/
+        );
+      },
     );
   }
 }

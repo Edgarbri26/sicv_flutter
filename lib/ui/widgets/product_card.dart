@@ -1,89 +1,44 @@
+// lib/widgets/product_card.dart
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
-import '../../models/inventory_item.dart';
+import 'package:sicv_flutter/models/product.dart';
 
 class ProductCard extends StatelessWidget {
-  final InventoryItem item;
+  final Product product; // Ahora recibe un Product
   final VoidCallback onTap;
   final VoidCallback onDelete;
-  late Color colorStock;
-  late Color colorPrice;
-  final Widget? trailing;
 
-  ProductCard({
-    required this.item,
+  const ProductCard({
+    required this.product,
     required this.onTap,
     required this.onDelete,
-    this.trailing,
-    super.key,
-  }) {
-    if (item.quantity > 10) {
-      colorStock = AppColors.success;
-    } else if (item.quantity > 0) {
-      colorStock = AppColors.edit;
-    } else {
-      colorStock = AppColors.error;
-    }
-  }
+    super.key, 
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        style: ListTileStyle.list,
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(Icons.inventory_2, color: AppColors.primary),
+        leading: SizedBox(
+          width: 60,
+          height: 60,
+          // Muestra la imagen desde la URL, o un ícono si no hay imagen
+          child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+              ? Image.network(
+                  product.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                )
+              : const Icon(Icons.inventory_2_outlined, size: 40),
         ),
-        title: Text(item.name, style: AppTextStyles.bodyMediumBold),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item.description, style: AppTextStyles.bodySmall),
-            SizedBox(height: 4),
-            Row(
-              children: [
-                InfoChip(text: '${item.quantity} unidades', color: colorStock),
-                SizedBox(width: 8),
-                InfoChip(
-                  text: '\$${item.price.toStringAsFixed(2)}',
-                  color: AppColors.info,
-                ),
-              ],
-            ),
-          ],
-        ),
-        trailing: trailing,
+        title: Text(product.name),
+        subtitle: Text('Stock: ${product.stock} | Precio: \$${product.price.toStringAsFixed(2)}'),
         onTap: onTap,
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline, color: Colors.red),
+          onPressed: onDelete,
+        ),
       ),
     );
   }
-
-  //   Widget _buildInfoChip(String text, Color color) {
-  //     return Container(
-  //       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-  //       decoration: BoxDecoration(
-  //         color: color.withOpacity(0.1),
-  //         borderRadius: BorderRadius.circular(12),
-  //         border: Border.all(color: color.withOpacity(0.3)),
-  //       ),
-  //       child: Text(
-  //         text,
-  //         style: TextStyle(
-  //           fontSize: 12,
-  //           color: color,
-  //           fontWeight: FontWeight.w500,
-  //         ),
-  //       ),
-  //     );
-  //   }
 }
