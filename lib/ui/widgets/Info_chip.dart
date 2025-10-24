@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class InfoChip extends StatelessWidget {
-  const InfoChip({
-    Key? key,
-    required this.text,
-    required this.color,
-  }) : super(key: key);
+  const InfoChip({super.key, required this.text, required this.color});
 
   final String text;
   final Color color;

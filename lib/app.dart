@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
+import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
+import 'package:sicv_flutter/ui/pages/login_page.dart';
+import 'package:sicv_flutter/ui/pages/report_inventory.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'core/theme/app_themes.dart';
 import 'ui/pages/home_page.dart';
@@ -12,7 +15,7 @@ class InventoryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
-      home: const HomePage(),
+      home: const LoginPage(),
 
       onGenerateRoute: (settings) {
         switch (settings.name) {
@@ -20,6 +23,10 @@ class InventoryApp extends StatelessWidget {
             return MaterialPageRoute(builder: (context) => const HomePage());
           case AppRoutes.sale:
             return MaterialPageRoute(builder: (context) => const SalePage());
+          case AppRoutes.addEditInventory:
+            return MaterialPageRoute(builder: (context) => const AddEditInventoryScreen());
+          case AppRoutes.report:
+            return MaterialPageRoute(builder: (context) => ReportPage());
           default:
             return MaterialPageRoute(builder: (context) => const SalePage());
         }

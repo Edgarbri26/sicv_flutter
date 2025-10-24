@@ -11,7 +11,7 @@ class DetailProductCart extends StatelessWidget {
   final VoidCallback onDelete;
   final Widget? trailing;
 
-  DetailProductCart({
+  const DetailProductCart({
     required this.item,
     required this.onTap,
     required this.onDelete,
@@ -56,7 +56,7 @@ class DetailProductCart extends StatelessWidget {
                       color: AppColors.info,
                     ),
                     InfoChip(
-                      text: '${item.price.toStringAsFixed(2)}',
+                      text: item.price.toStringAsFixed(2),
                       color: AppColors.info,
                     ),
                   ],
@@ -64,7 +64,7 @@ class DetailProductCart extends StatelessWidget {
               ],
             ),
           ),
-          Text("${(item.price * item.quantity).toStringAsFixed(2)}"),
+          Text((item.price * item.quantity).toStringAsFixed(2)),
           Row(
             spacing: 0,
             children: [
