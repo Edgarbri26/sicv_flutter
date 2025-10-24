@@ -6,4 +6,5 @@ class AppRoutes {
   static const String login = 'LoginPage';
   static const String settings = 'SettingsPage';
   static const String purchase = 'PurchasePage';
+  static const String report = 'ReportPage';
 }

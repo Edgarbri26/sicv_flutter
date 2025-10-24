@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/pages/login_page.dart';
+import 'package:sicv_flutter/ui/pages/report_inventory.dart';
 import 'package:sicv_flutter/ui/pages/settings_page.dart';
+import 'package:sicv_flutter/ui/pages/user_management.dart';
 
 class Menu extends StatelessWidget {
   const Menu({super.key});
@@ -53,6 +56,11 @@ class Menu extends StatelessWidget {
                       iconSize: 28,
                       onPressed: () {
                         // No hace nada
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                        );
                       },
                     ),
                   ),
@@ -71,7 +79,27 @@ class Menu extends StatelessWidget {
               'Reportes',
               style: TextStyle(color: Colors.black),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => ReportPage()),
+                        );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.group, color: Colors.black),
+            title: const Text(
+              'Administrar usuarios',
+              style: TextStyle(color: Colors.black),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.settings, color: Colors.black),
