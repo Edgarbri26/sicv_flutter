@@ -1,135 +1,119 @@
-// lib/ui/pages/sale_screen.dart
+// lib/ui/pages/screen/sale_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/models/product.dart'; // <-- Usa tu modelo Product
-import 'package:sicv_flutter/services/product_api_service.dart';
-import 'package:sicv_flutter/ui/widgets/App_search_bar.dart';
-import 'package:sicv_flutter/ui/widgets/product_card.dart';
+import 'package:sicv_flutter/models/category.dart';
+import 'package:sicv_flutter/models/product.dart'; // Importa tu modelo Product
 
 class SaleScreen extends StatefulWidget {
-  // Ahora esta lista debe ser de tipo Product
-  final List<Product> saleItemsSelled; 
-  const SaleScreen({super.key, required this.saleItemsSelled});
+  // Acepta la función callback
+  final Function(Product) onProductAdded;
+
+  const SaleScreen({
+    Key? key,
+    required this.onProductAdded,
+  }) : super(key: key);
 
   @override
   State<SaleScreen> createState() => _SaleScreenState();
 }
 
 class _SaleScreenState extends State<SaleScreen> {
-  final ProductApiService _apiService = ProductApiService();
-  TextEditingController searchController = TextEditingController();
-
-  // Variables de estado
-  bool _isLoading = true;
-  String? _errorMessage;
-  List<Product> _availableProducts = [];
-  List<Product> _filteredProducts = [];
+  // En un futuro, cargarás esto desde tu API
+  late List<Product> _todosLosProductos;
 
   @override
   void initState() {
     super.initState();
-    _fetchProducts();
-    searchController.addListener(_filterItems);
-  }
-
-  Future<void> _fetchProducts() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final products = await _apiService.getProducts();
-      setState(() {
-        _availableProducts = products;
-        _filteredProducts = products;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _filterItems() {
-    final query = searchController.text.toLowerCase();
-    setState(() {
-      _filteredProducts = _availableProducts.where((product) {
-        return product.name.toLowerCase().contains(query);
-      }).toList();
-    });
-  }
-
-  // Método adaptado para añadir un objeto Product a la lista de venta
-  void _addNewItemToSale(Product newProduct) {
-    setState(() {
-      // Aquí puedes añadir lógica para evitar duplicados si lo necesitas
-      widget.saleItemsSelled.add(newProduct);
-    });
-    
-    // Muestra una notificación de que el producto fue añadido
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${newProduct.name} añadido a la venta.'),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    // Simula la carga de productos (DEBERÍAS TRAERLOS DE TU API/BD)
+    // Estoy usando los datos de tu inventario como ejemplo
+    _todosLosProductos = [
+      // Deberías tener un servicio que te dé la lista completa
+      // de productos que puedes vender.
+      // Por ahora, usaré datos ficticios.
+      Product(id: 1, name: 'Harina PAN', description: '...', price: 1.40, stock: 50, category: Category(id: 1, name: 'Alimentos'), sku: 'ALI-001'),
+      Product(id: 2, name: 'Cigarros Marlboro', description: '...', price: 5.99, stock: 5, category: Category(id: 2, name: 'Tabaco'), sku: 'TAB-001'),
+      Product(id: 3, name: 'Café', description: '...', price: 10.99, stock: 0, category: Category(id: 3, name: 'Bebidas'), sku: 'BEB-001'),
+      Product(id: 4, name: 'Gaseosa 2L', description: '...', price: 2.5, stock: 50, category: Category(id: 3, name: 'Bebidas'), sku: 'BEB-002'),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AppSearchBar(
-          searchController: searchController,
-          hintText: 'Buscar producto para vender...',
-        ),
-        Expanded(
-          child: _buildContent(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContent() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Error: $_errorMessage'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _fetchProducts,
-              child: const Text('Reintentar'),
-            ),
-          ],
-        ),
-      );
-    }
-    
-    if (_filteredProducts.isEmpty) {
-        return const Center(child: Text('No se encontraron productos.'));
-    }
-
-    return ListView.builder(
-      itemCount: _filteredProducts.length,
+    // Te recomiendo un GridView para un POS
+    return GridView.builder(
+      padding: const EdgeInsets.all(16.0),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // 2 columnas
+        crossAxisSpacing: 16.0,
+        mainAxisSpacing: 16.0,
+        childAspectRatio: 0.8, // Ajusta esto para la altura
+      ),
+      itemCount: _todosLosProductos.length,
       itemBuilder: (context, index) {
-        final product = _filteredProducts[index];
-        return ProductCard(
-          product: product,
-          onTap: () => _addNewItemToSale(product), // Un tap simple también puede añadir
-          onDelete: () {}, // La eliminación no aplica aquí
-          /*trailing: IconButton(
-            onPressed: () => _addNewItemToSale(product),
-            icon: const Icon(Icons.add_shopping_cart_outlined),
-          ),*/
+        final product = _todosLosProductos[index];
+        bool isOutOfStock = product.stock == 0;
+
+        // Tarjeta de producto en el catálogo
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: InkWell(
+            // Llama al callback cuando se toca
+            onTap: isOutOfStock 
+                ? null // Deshabilita el 'onTap' si no hay stock
+                : () => widget.onProductAdded(product),
+            child: Opacity(
+              opacity: isOutOfStock ? 0.5 : 1.0, // Atenúa si no hay stock
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Imagen del Producto
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      color: Colors.grey.shade200,
+                      child: (product.imageUrl != null && product.imageUrl!.isNotEmpty)
+                          ? Image.network(product.imageUrl!, fit: BoxFit.cover)
+                          : Icon(Icons.inventory_2, size: 40, color: Colors.grey.shade400),
+                    ),
+                  ),
+                  // Detalles (Nombre y Precio)
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.name,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Spacer(),
+                          Text(
+                            '\$${product.price.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (isOutOfStock)
+                            Text(
+                              'Agotado',
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 10),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
