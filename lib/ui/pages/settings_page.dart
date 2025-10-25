@@ -30,7 +30,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
       ),
-      body: Center(
+      body: Align(
+        alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
             // Puedes ajustar este valor. 600 es un buen
