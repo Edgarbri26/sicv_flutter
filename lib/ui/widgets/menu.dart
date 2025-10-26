@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart'; // Mantienes tus colores
 import 'package:sicv_flutter/ui/pages/home_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
+import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/settings_page.dart';
 import 'package:sicv_flutter/ui/pages/user_management.dart';
@@ -103,6 +104,21 @@ class Menu extends StatelessWidget {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
+              );
+              // O mejor con rutas nombradas:
+              // Navigator.pushReplacementNamed(context, '/users');
+            },
+          ),
+          _buildMenuItem(
+            context: context,
+            icon: Icons.compare_arrows, // Icono de usuarios
+            title: 'Administrar movimientos',
+            route: '/users',
+            currentPageRoute: currentPageRoute,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => MovementsScreen()),
               );
               // O mejor con rutas nombradas:
               // Navigator.pushReplacementNamed(context, '/users');
