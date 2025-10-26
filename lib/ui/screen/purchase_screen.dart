@@ -420,22 +420,26 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   /// La barra inferior que muestra el total y el botón de Guardar
   Widget _buildSummaryAndSave() {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.only(top: 16.0),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          border: Border(top: BorderSide(color: Colors.grey.shade300)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Resumen de Total
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.only(top: 16.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        // --- 1. CAMBIO: Centra TODO en la columna ---
+        crossAxisAlignment: CrossAxisAlignment.center, 
+        children: [
+          // Resumen de Total
+          // Como el Column centra, este Row necesita ocupar todo el ancho
+          // para que spaceBetween funcione. Padding lo fuerza.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0), // Añade padding horizontal al Row
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('TOTAL DE LA ORDEN: ', style: Theme.of(context).textTheme.titleMedium),
+                Text('TOTAL DE LA ORDEN:', style: Theme.of(context).textTheme.titleMedium),
                 Text(
                   '\$${_totalCost.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -445,24 +449,27 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Botón de Guardar
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.save),
-                label: const Text('Registrar Compra'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  backgroundColor: Colors.green[700],
-                  foregroundColor: Colors.white,
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                onPressed: _registerPurchase,
-              ),
+          ),
+          const SizedBox(height: 16),
+
+          // --- 2. CAMBIO: El botón ahora está DIRECTAMENTE en el Column ---
+          // Como el Column tiene crossAxisAlignment: center, el botón se centrará
+          // y tomará su tamaño natural.
+          ElevatedButton.icon(
+            icon: const Icon(Icons.save),
+            label: const Text('Registrar Compra'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
+              backgroundColor: Colors.green[700],
+              foregroundColor: Colors.white,
+              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
+            onPressed: _registerPurchase,
+          ),
+          // --- FIN DEL CAMBIO ---
+
+          const SizedBox(height: 16), // Espacio al final
+        ],
       ),
     );
   }

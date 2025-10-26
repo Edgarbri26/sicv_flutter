@@ -4,6 +4,7 @@ import 'package:sicv_flutter/ui/views/clients_view.dart';
 import 'package:sicv_flutter/ui/views/finance_view.dart';
 import 'package:sicv_flutter/ui/views/inventory_view.dart';
 import 'package:sicv_flutter/ui/views/summary_view.dart';
+import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 /// ReportDashboardPage
 ///
@@ -38,6 +39,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
         title: const Text('Dashboard de Reportes'),
         elevation: 1,
       ),
+      drawer: const Menu(),
       // LayoutBuilder es la clave de la responsividad.
       // Nos da "constraints" (restricciones) del widget padre.
       body: LayoutBuilder(

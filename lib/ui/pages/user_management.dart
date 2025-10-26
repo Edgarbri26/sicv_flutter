@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/ui/widgets/admin/add_user_form_seet.dart';
+import 'package:sicv_flutter/ui/widgets/menu.dart';
 // Importa el nuevo formulario que crearemos (mira el paso 2)
 // import 'package:tu_proyecto/widgets/admin/add_user_form_sheet.dart';
 
@@ -132,6 +133,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           ),
         ],
       ),
+      drawer: const Menu(),
       body: Column(
         children: [
           // --- SECCIÓN DE FILTROS ---
