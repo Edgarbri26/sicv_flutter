@@ -92,13 +92,28 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     Navigator.of(context).pop(); // Cierra el indicador de carga
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('¡Producto enviado!')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('¡Producto enviado!')),
+    );
+  }
+
+  String? _nameValidator(String? v) {
+    if (v == null || v.trim().isEmpty) return 'El usuario no puede estar vacío';
+    if (v.trim().length < 3) {
+      return 'El usuario debe tener al menos 3 caracteres';
+    }
+    return null;
+  }
+
+  String? _passwordValidator(String? v) {
+    if (v == null || v.isEmpty) return 'La contraseña no puede estar vacía';
+    if (v.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final primary = Colors.blue.shade700;
     return Scaffold(
       appBar: AppBar(title: const Text('Añadir Producto')),
       body: SingleChildScrollView(
@@ -142,6 +157,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
+              child: const Text('Guardar Producto'),
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
               child: const Text('Guardar Producto'),
             ),
           ],

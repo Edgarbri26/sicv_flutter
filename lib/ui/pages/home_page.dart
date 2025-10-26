@@ -5,10 +5,9 @@ import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/pages/add_product_screen.dart';
-import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
-import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';
-import 'package:sicv_flutter/ui/pages/screen/sale_screen.dart';
-import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
+import 'package:sicv_flutter/ui/screen/inventory_screen.dart';
+import 'package:sicv_flutter/ui/screen/purchase_screen.dart';
+import 'package:sicv_flutter/ui/screen/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 class HomePage extends StatefulWidget {
@@ -52,13 +51,10 @@ class _HomePageState extends State<HomePage> {
   ];
   int _currentIndex = 0;
   final List<Product> _itemsParaLaVenta = [];
-  // las pantallas que vamos a mostrar
-  List<Widget> get _screens => [
-    SaleScreen(saleItemsSelled: _itemsParaLaVenta),
-    PurchaseScreen(),
-    InventoryScreen(),
-  ];
+  
   final List<String> _screenTitles = ['Venta', 'Compra', 'Inventario'];
+
+  final GlobalKey<PurchaseScreenState> _purchaseScreenKey = GlobalKey<PurchaseScreenState>();
 
   @override
   void initState() {
@@ -98,6 +94,48 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(builder: (context) => AddProductScreen()),
     );
   }
+  // *** ¡PASO 1: CREA ESTA FUNCIÓN! ***
+  // Esta función se llamará desde SaleScreen
+  void _onProductAddedToSale(Product product) {
+    setState(() {
+      // Revisa si el producto ya está en el carrito
+      final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
+
+      if (index != -1) {
+        // Si ya está, aumenta la cantidad (asumiendo que tu modelo Product tiene 'quantity')
+        // (Nota: Tu modelo 'Product' no tiene 'quantity', 
+        // tu 'InventoryItem' sí. ¡Deberías unificarlos!)
+        
+        // Por ahora, solo lo añadiremos de nuevo, pero lo ideal es manejar cantidades.
+        // _itemsParaLaVenta[index].quantity++; 
+        
+        // (Como tu 'Product' no tiene cantidad, lo añadiremos de nuevo
+        // para que veas el efecto)
+        _itemsParaLaVenta.add(product);
+        
+      } else {
+        // Si es nuevo, lo añade a la lista
+        _itemsParaLaVenta.add(product);
+      }
+    });
+
+    // Muestra un 'feedback' rápido
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${product.name} añadido a la venta.'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
+  List<Widget> get _screens => [
+    // Pásale la función a SaleScreen
+    SaleScreen(
+      onProductAdded: _onProductAddedToSale,
+    ),
+    PurchaseScreen(key: _purchaseScreenKey),
+    InventoryDatatableScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -114,8 +152,8 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: AppColors.primary,
         actions: [
-          IconButton(icon: Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+          //IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          //IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       drawer: const Menu(),
@@ -168,7 +206,8 @@ class _HomePageState extends State<HomePage> {
         );
       case 1: // Pestaña compra
         return FloatingActionButton(
-          onPressed: () {},
+          // Llama a la función PÚBLICA de PurchaseScreen usando la llave
+          onPressed: () => _purchaseScreenKey.currentState?.showProductSearchModal(),
           backgroundColor: AppColors.primary,
           child: Icon(Icons.add, color: AppColors.secondary),
         );
@@ -183,69 +222,46 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // *** ¡PASO 3: ACTUALIZA TU DraggableScrollableSheet! ***
+  // Asegúrate de que usa la lista correcta (_itemsParaLaVenta)
+  // Tu código original usa 'itemsSelled', lo cual es confuso.
+  // Vamos a usar '_itemsParaLaVenta'
   void _mostrarDetallesDeMezcla(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-
+      // ... (el resto de tu código)
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.5, // Empieza a la mitad de la pantalla
-          minChildSize: 0.3, // Mínimo 30%
-          maxChildSize: 0.9, // Máximo 90%
+          // ... (el resto de tu código)
           builder: (context, scrollController) {
             return Container(
-              padding: const EdgeInsets.all(16.0),
+              // ... (el resto de tu código)
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.only(bottom: 15),
-                      decoration: BoxDecoration(
-                        color: AppColors.border,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-
+                  // ... (el agarrador y el título)
+                  
                   Text(
-                    "Detalles de la Venta",
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Total: ${itemsSelled.length}",
-                    style: AppTextStyles.bodyMediumBold,
+                    // Usa la lista correcta
+                    "Total: ${_itemsParaLaVenta.length} items", 
+                    style: AppTextStyles.bodyMedium,
                   ),
 
                   Expanded(
                     child: ListView.builder(
                       controller: scrollController,
-                      itemCount: itemsSelled.length,
+                      itemCount: _itemsParaLaVenta.length, // Lista correcta
                       itemBuilder: (context, index) {
-                        return DetailProductCart(
-                          item: itemsSelled[index],
-                          onTap: () {},
-                          onDelete: () {},
-                          trailing: Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.add),
-                              ),
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(Icons.remove),
-                              ),
-                            ],
-                          ),
+                        // ¡PROBLEMA!
+                        // Tu 'DetailProductCart' espera un 'InventoryItem'
+                        // pero tu lista es de 'Product'.
+                        // Debes crear un 'DetailProductCart' que acepte 'Product'
+                        // o (mejor) unificar tus modelos.
+                        
+                        // Por ahora, solo mostraré el nombre
+                        final product = _itemsParaLaVenta[index];
+                        return ListTile(
+                          title: Text(product.name),
+                          // (Aquí iría tu 'DetailProductCart' adaptado)
                         );
                       },
                     ),
@@ -259,3 +275,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
