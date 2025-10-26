@@ -4,11 +4,11 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
-import 'package:sicv_flutter/ui/pages/add_product_screen.dart';
 import 'package:sicv_flutter/ui/screen/inventory_screen.dart';
 import 'package:sicv_flutter/ui/screen/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
+import 'package:sicv_flutter/ui/widgets/add_product_form.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -51,7 +51,6 @@ class _HomePageState extends State<HomePage> {
   ];
   int _currentIndex = 0;
   final List<Product> _itemsParaLaVenta = [];
-  
   final List<String> _screenTitles = ['Venta', 'Compra', 'Inventario'];
 
   final GlobalKey<PurchaseScreenState> _purchaseScreenKey = GlobalKey<PurchaseScreenState>();
@@ -89,37 +88,90 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _addNewItem() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AddProductScreen()),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // Header with handle and title using app palette
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 5,
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              Text('Agregar Producto', style: TextStyle(color: AppColors.secondary, fontSize: 18, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(Icons.close, color: AppColors.secondary),
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                        child: AddProductForm(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
-  // *** ¡PASO 1: CREA ESTA FUNCIÓN! ***
-  // Esta función se llamará desde SaleScreen
+
   void _onProductAddedToSale(Product product) {
     setState(() {
-      // Revisa si el producto ya está en el carrito
       final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
 
       if (index != -1) {
-        // Si ya está, aumenta la cantidad (asumiendo que tu modelo Product tiene 'quantity')
-        // (Nota: Tu modelo 'Product' no tiene 'quantity', 
-        // tu 'InventoryItem' sí. ¡Deberías unificarlos!)
         
-        // Por ahora, solo lo añadiremos de nuevo, pero lo ideal es manejar cantidades.
-        // _itemsParaLaVenta[index].quantity++; 
-        
-        // (Como tu 'Product' no tiene cantidad, lo añadiremos de nuevo
-        // para que veas el efecto)
         _itemsParaLaVenta.add(product);
         
       } else {
-        // Si es nuevo, lo añade a la lista
         _itemsParaLaVenta.add(product);
       }
     });
 
-    // Muestra un 'feedback' rápido
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${product.name} añadido a la venta.'),
@@ -129,7 +181,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> get _screens => [
-    // Pásale la función a SaleScreen
     SaleScreen(
       onProductAdded: _onProductAddedToSale,
     ),
@@ -158,7 +209,6 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: const Menu(),
 
-      // El 'body' ahora es un PageView
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
@@ -173,7 +223,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: AppColors.background,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
-        type: BottomNavigationBarType.fixed, // Muestra todos los labels
+        type: BottomNavigationBarType.fixed, 
 
         items: [
           BottomNavigationBarItem(
@@ -195,23 +245,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Este método no necesita cambios, ya que depende de _currentIndex.
   Widget? _buildFloatingActionButton() {
     switch (_currentIndex) {
-      case 0: // Pestaña venta
+      case 0:
         return FloatingActionButton(
           onPressed: () => _mostrarDetallesDeMezcla(context),
           backgroundColor: AppColors.primary,
           child: Icon(Symbols.edit_arrow_up, color: AppColors.secondary),
         );
-      case 1: // Pestaña compra
+      case 1:
         return FloatingActionButton(
-          // Llama a la función PÚBLICA de PurchaseScreen usando la llave
           onPressed: () => _purchaseScreenKey.currentState?.showProductSearchModal(),
           backgroundColor: AppColors.primary,
           child: Icon(Icons.add, color: AppColors.secondary),
         );
-      case 2: // Pestaña inventario
+      case 2:
         return FloatingActionButton(
           onPressed: _addNewItem,
           backgroundColor: AppColors.primary,
@@ -222,26 +270,17 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // *** ¡PASO 3: ACTUALIZA TU DraggableScrollableSheet! ***
-  // Asegúrate de que usa la lista correcta (_itemsParaLaVenta)
-  // Tu código original usa 'itemsSelled', lo cual es confuso.
-  // Vamos a usar '_itemsParaLaVenta'
   void _mostrarDetallesDeMezcla(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      // ... (el resto de tu código)
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
-          // ... (el resto de tu código)
           builder: (context, scrollController) {
             return Container(
-              // ... (el resto de tu código)
               child: Column(
                 children: [
-                  // ... (el agarrador y el título)
                   
                   Text(
-                    // Usa la lista correcta
                     "Total: ${_itemsParaLaVenta.length} items", 
                     style: AppTextStyles.bodyMedium,
                   ),
@@ -249,19 +288,11 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: ListView.builder(
                       controller: scrollController,
-                      itemCount: _itemsParaLaVenta.length, // Lista correcta
+                      itemCount: _itemsParaLaVenta.length,
                       itemBuilder: (context, index) {
-                        // ¡PROBLEMA!
-                        // Tu 'DetailProductCart' espera un 'InventoryItem'
-                        // pero tu lista es de 'Product'.
-                        // Debes crear un 'DetailProductCart' que acepte 'Product'
-                        // o (mejor) unificar tus modelos.
-                        
-                        // Por ahora, solo mostraré el nombre
                         final product = _itemsParaLaVenta[index];
                         return ListTile(
                           title: Text(product.name),
-                          // (Aquí iría tu 'DetailProductCart' adaptado)
                         );
                       },
                     ),
