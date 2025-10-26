@@ -4,9 +4,9 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
-import 'package:sicv_flutter/ui/screen/inventory_screen.dart';
-import 'package:sicv_flutter/ui/screen/purchase_screen.dart';
-import 'package:sicv_flutter/ui/screen/sale_screen.dart';
+import 'package:sicv_flutter/ui/screen/home/inventory_screen.dart';
+import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
+import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 import 'package:sicv_flutter/ui/widgets/add_product_form.dart';
 
