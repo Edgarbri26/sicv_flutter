@@ -1,8 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors
 
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/admin/add_user_form_seet.dart';
-import 'package:sicv_flutter/ui/widgets/menu.dart';
 // Importa el nuevo formulario que crearemos (mira el paso 2)
 // import 'package:tu_proyecto/widgets/admin/add_user_form_sheet.dart';
 
@@ -133,7 +133,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
           ),
         ],
       ),
-      drawer: const Menu(),
+      //drawer: const Menu(),
       body: Column(
         children: [
           // --- SECCIÓN DE FILTROS ---
@@ -183,7 +183,21 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
             return Column(children: [
               _buildSearchField(),
               SizedBox(height: 16),
-              _buildRoleFilter(),
+              Card(
+                elevation: 0.0, 
+                // 2. Define el borde exterior usando 'shape'
+                shape: RoundedRectangleBorder(
+                  // Define el radio de las esquinas
+                  borderRadius: BorderRadius.circular(8.0), 
+                  
+                  // Define el borde (grosor y color)
+                  side: BorderSide(
+                    color: AppColors.border, // El color del borde
+                    width: 3.0,                // El grosor del borde
+                  ),
+                ),
+                child: _buildRoleFilter()
+              ),
             ]);
           }
         },
@@ -195,10 +209,30 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   Widget _buildSearchField() {
     return TextField(
       decoration: InputDecoration(
-        labelText: 'Buscar por Nombre o Email',
+        filled: true,
+        fillColor: AppColors.secondary,
+        labelText: 'Buscar por Nombre o SKU',
         prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+        labelStyle: TextStyle(
+          fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+          color: AppColors.textSecondary, // (Opcional: define el color del label)
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 2.0, // <-- Tu grosor deseado
+            color: AppColors.border, // Color del borde
+          ),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+              color: AppColors.textSecondary, // Color del borde al enfocar
+          ),
+        ),
       ),
       onChanged: (value) {
         _searchQuery = value;
@@ -211,9 +245,30 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   Widget _buildRoleFilter() {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
-        labelText: 'Filtrar por Rol',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        filled: true,
+        fillColor: AppColors.secondary,
+        labelText: 'Buscar por Nombre o SKU',
+        prefixIcon: Icon(Icons.search),
+        labelStyle: TextStyle(
+          fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+          color: AppColors.textSecondary, // (Opcional: define el color del label)
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 2.0, // <-- Tu grosor deseado
+            color: AppColors.border, // Color del borde
+          ),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+              color: AppColors.textSecondary, // Color del borde al enfocar
+          ),
+        ),
       ),
       initialValue: _selectedRole,
       items: _rolesDisponibles.map((String role) {
@@ -238,6 +293,11 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
       columnSpacing: 20.0,
       sortColumnIndex: _sortColumnIndex,
       sortAscending: _sortAscending,
+
+      dataRowColor: WidgetStateProperty.all(AppColors.background), // Color de fondo de las filas
+      headingRowColor: WidgetStateProperty.all(AppColors.border), // Color de fondo de la cabecera
+      //dataRowHeight: 60.0, // <-- Altura fija para las filas (útil para imágenes)
+      headingRowHeight: 48.0, // <-- Altura fija para la cabecera
       
       columns: [
         DataColumn(

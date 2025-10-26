@@ -1,36 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart'; // Mantienes tus colores
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/pages/home_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 import 'package:sicv_flutter/ui/pages/user_management.dart';
-// Asume que tienes una página de perfil
-// import 'package/sicv_flutter/ui/pages/profile_page.dart'; 
 
 class Menu extends StatelessWidget {
-  // --- MEJORA: Recibe la ruta actual para resaltar ---
-  final String currentPageRoute; // Ejemplo: '/home', '/reports', '/users'
+  // Propiedades requeridas para la navegación de HomePage
+  final int currentIndex;
+  final Function(int) onItemSelected; 
+  
+  // Propiedad para resaltar rutas que no sean del PageView (Reportes, Config)
+  final String currentPageRoute;
 
   const Menu({
     super.key,
-    this.currentPageRoute = '', // Valor por defecto si no se pasa
+    this.currentPageRoute = '',
+    required this.currentIndex,
+    required this.onItemSelected,
   });
+  
+  // Ítems de navegación principales (coinciden con el PageView de HomePage)
+  final List<Map<String, dynamic>> _pageMenuItems = const [
+    {'title': 'Venta', 'icon': Icons.point_of_sale, 'index': 0},
+    {'title': 'Compra', 'icon': Icons.shopping_cart, 'index': 1},
+    {'title': 'Inventario', 'icon': Icons.inventory, 'index': 2},
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // --- MEJORA: Simula datos del usuario (deberías obtenerlos del estado global) ---
-    const String userName = "Usuario Real"; // Reemplaza con datos reales
-    const String userEmail = "usuario@ejemplo.com"; // Reemplaza con datos reales
+    // Definición de datos de usuario simulados
+    const String userName = "Usuario Real";
+    const String userEmail = "usuario@ejemplo.com";
     final String userInitials = userName.isNotEmpty ? userName.substring(0, 1).toUpperCase() : '?';
 
-    return Drawer(
-      backgroundColor: Colors.white,
+    // 1. EL CAMBIO CLAVE: Usamos un Container en lugar de Drawer.
+    // El tamaño (ancho) lo define el ConstrainedBox en HomePage.
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          // --- MEJORA: Usa UserAccountsDrawerHeader ---
+          // Header de Usuario
           UserAccountsDrawerHeader(
             accountName: const Text(
               userName,
@@ -38,65 +52,57 @@ class Menu extends StatelessWidget {
             ),
             accountEmail: Text(userEmail),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: AppColors.secondary, // O usa una imagen
+              backgroundColor: AppColors.secondary,
               child: Text(
                 userInitials,
                 style: const TextStyle(fontSize: 40.0, color: AppColors.primary),
               ),
             ),
             decoration: const BoxDecoration(
-              color: AppColors.primary, // Usa tu color primario
+              color: AppColors.primary,
             ),
-            // Puedes añadir otros avatares aquí si quieres
-            // otherAccountsPictures: <Widget>[ ... ],
           ),
+          
+          // --- ÍTEMS DE NAVEGACIÓN (Venta, Compra, Inventario) ---
+          ..._pageMenuItems.map((item) {
+            final int itemIndex = item['index'] as int;
+            
+            return _buildMenuItem(
+              context: context,
+              icon: item['icon'] as IconData,
+              title: item['title'] as String,
+              isSelected: itemIndex == currentIndex, // Resalta según el PageView
+              onTap: () {
+                // Llama a la función de HomePage para cambiar de página
+                onItemSelected(itemIndex);
+              },
+              // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
+            );
+          }).toList(),
+          
+          const Divider(thickness: 1), 
 
-          // --- MEJORA: Usa _buildMenuItem helper ---
+          // --- ÍTEMS DE NAVEGACIÓN DE RUTAS (Reportes, Usuarios, Configuración) ---
+          
+          // Ítem: Reportes
           _buildMenuItem(
             context: context,
-            icon: Icons.person_outline, // Icono de perfil
-            title: 'Perfil',
-            route: '/profile', // Asume que tienes una ruta para perfil
-            currentPageRoute: currentPageRoute,
-            onTap: () {
-              // Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
-              // O mejor con rutas nombradas:
-              //Navigator.pushReplacementNamed(context, '/profile');
-            },
-          ),
-          _buildMenuItem(
-            context: context,
-            icon: Icons.home, // Icono de reportes
-            title: 'Inicio',
-            route: '/home',
-            currentPageRoute: currentPageRoute,
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const HomePage()),
-              );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/reports');
-            },
-          ),
-          _buildMenuItem(
-            context: context,
-            icon: Icons.assessment_outlined, // Icono de reportes
+            icon: Icons.assessment_outlined,
             title: 'Reportes',
-            route: '/reports',
+            route: '/reports', // Usamos la ruta para resaltar
             currentPageRoute: currentPageRoute,
             onTap: () {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const ReportDashboardPage()),
               );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/reports');
             },
           ),
+          
+          // Ítem: Administrar Usuarios
           _buildMenuItem(
             context: context,
-            icon: Icons.group_outlined, // Icono de usuarios
+            icon: Icons.group_outlined,
             title: 'Administrar usuarios',
             route: '/users',
             currentPageRoute: currentPageRoute,
@@ -105,32 +111,30 @@ class Menu extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
               );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/users');
             },
           ),
+          
+          // Ítem: Administrar Movimientos
           _buildMenuItem(
             context: context,
-            icon: Icons.compare_arrows, // Icono de usuarios
+            icon: Icons.compare_arrows,
             title: 'Administrar movimientos',
-            route: '/users',
+            route: '/movements', // Usa una ruta única
             currentPageRoute: currentPageRoute,
             onTap: () {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => MovementsScreen()),
               );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/users');
             },
           ),
 
-          // --- MEJORA: Separador antes de configuración y logout ---
           const Divider(thickness: 1),
 
+          // Ítem: Configuración
           _buildMenuItem(
             context: context,
-            icon: Icons.settings_outlined, // Icono de configuración
+            icon: Icons.settings_outlined,
             title: 'Configuración',
             route: '/settings',
             currentPageRoute: currentPageRoute,
@@ -139,17 +143,15 @@ class Menu extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/settings');
             },
           ),
 
-          // --- MEJORA: Logout al final con confirmación ---
+          // Ítem: Cerrar Sesión
           _buildMenuItem(
             context: context,
-            icon: Icons.logout, // Icono de logout
+            icon: Icons.logout,
             title: 'Cerrar Sesión',
-            onTap: () => _showLogoutConfirmation(context), // Llama al diálogo
+            onTap: () => _showLogoutConfirmation(context),
           ),
         ],
       ),
@@ -162,16 +164,22 @@ class Menu extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    String route = '', // Ruta asociada a este item
-    String currentPageRoute = '', // Ruta actual de la app
+    String route = '',
+    String currentPageRoute = '',
+    bool isSelected = false, // Lo usamos para los ítems del PageView
   }) {
-    // Determina si este item es el seleccionado
-    final bool isSelected = route.isNotEmpty && route == currentPageRoute;
-
+    // Si la ruta no es PageView, usamos la comparación de rutas para resaltar
+    if (route.isNotEmpty) {
+      isSelected = route == currentPageRoute;
+    }
+    
+    // Identificamos si es móvil o PC
+    // Usamos el mismo breakpoint de 800px que definiste en HomePage
+    final bool isMobile = MediaQuery.of(context).size.width <= 800.0;
+    
     return ListTile(
       leading: Icon(
         icon,
-        // --- MEJORA: Usa colores del tema o resalta si está seleccionado ---
         color: isSelected ? Theme.of(context).primaryColor : Colors.black54,
       ),
       title: Text(
@@ -179,23 +187,29 @@ class Menu extends StatelessWidget {
         style: TextStyle(
           color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 20
+          fontSize: 16, // Tamaño de fuente más estándar para menú
         ),
       ),
-      // --- MEJORA: Efecto visual al seleccionar ---
       selected: isSelected,
       // ignore: deprecated_member_use
       selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
       onTap: () {
-        Navigator.pop(context); // Cierra el drawer ANTES de navegar
-        // Pequeña espera para que el drawer se cierre suavemente (opcional)
+        // --- LÓGICA CLAVE: Cierra el Drawer solo si es móvil ---
+        if (isMobile) {
+          // Si estamos en móvil, cerramos el drawer antes de navegar
+          Navigator.pop(context); 
+        }
+        
+        // Pequeña espera para una transición más suave (opcional)
         Future.delayed(const Duration(milliseconds: 150), onTap);
       },
     );
   }
-
-  /// Muestra un diálogo de confirmación antes de cerrar sesión
+  
+  // (Mantenemos tu función _showLogoutConfirmation)
   void _showLogoutConfirmation(BuildContext context) {
+    // ... (Tu código de _showLogoutConfirmation) ...
+    // ...
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -206,22 +220,23 @@ class Menu extends StatelessWidget {
             TextButton(
               child: const Text('Cancelar'),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Cierra el diálogo
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
               child: Text('Cerrar Sesión', style: TextStyle(color: Colors.red[700])),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Cierra el diálogo
-                Navigator.pop(context); // Cierra el drawer si sigue abierto
-
-                // --- MEJORA: Usa pushAndRemoveUntil para limpiar la pila de navegación ---
+                Navigator.of(dialogContext).pop();
+                // Si el drawer sigue abierto (solo posible en móvil), lo cerramos
+                if (Navigator.of(context).canPop()) { 
+                   Navigator.pop(context);
+                }
+                
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (Route<dynamic> route) => false, // Elimina todas las rutas anteriores
+                  (Route<dynamic> route) => false,
                 );
-                // Aquí también deberías limpiar el estado de autenticación (tokens, etc.)
               },
             ),
           ],

@@ -3,6 +3,7 @@ import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
+import 'package:sicv_flutter/ui/pages/user_management.dart';
 import 'ui/screen/config/company_screen.dart';
 import 'ui/screen/config/currency_screen.dart';
 import 'ui/screen/config/units_screen.dart';
@@ -59,7 +60,7 @@ class InventoryApp extends StatelessWidget {
           case AppRoutes.roles:
             return MaterialPageRoute(builder: (context) => const RolesScreen());
           case AppRoutes.users:
-            return MaterialPageRoute(builder: (context) => const UsersScreen());
+            return MaterialPageRoute(builder: (context) => AdminUserManagementPage());
           case AppRoutes.sku:
             return MaterialPageRoute(builder: (context) => const SkuScreen());
           case AppRoutes.atributes:

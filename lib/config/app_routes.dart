@@ -18,5 +18,5 @@ class AppRoutes {
   static const String currency = 'CurrencyScreen';
   static const String roles = 'RolesScreen';
   static const String units = 'UnitsScreen';
-  static const String users = 'UsersScreen';
+  static const String users = 'AdminUserManagement';
 }
