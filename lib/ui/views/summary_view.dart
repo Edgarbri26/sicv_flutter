@@ -7,45 +7,52 @@ import 'package:fl_chart/fl_chart.dart';
 /// ResumenView
 ///
 /// Esta es la pantalla principal del dashboard (índice 0).
-/// Muestra los KPIs (Key Performance Indicators) y el gráfico principal.
+/// Muestra los KPIs y gráficos principales.
 ///
-/// Es un [Consumer] de [ReportProvider] para que pueda leer y
-/// reaccionar a los cambios de estado (como el filtro).
+/// Es un [Consumer] de [ReportProvider] para reaccionar a los cambios de estado.
 class ResumeView extends StatelessWidget {
   const ResumeView({super.key});
 
   @override
   Widget build(BuildContext context) {
     // Usamos Consumer para "escuchar" los cambios en ReportProvider.
-    // Cada vez que llames a notifyListeners() en el provider,
-    // este "builder" se volverá a ejecutar.
     return Consumer<ReportProvider>(
       builder: (context, provider, child) {
-        // Usamos un SingleChildScrollView para que en pantallas pequeñas
-        // o si el contenido crece, se pueda hacer scroll.
+        // SingleChildScrollView permite hacer scroll si el contenido
+        // no cabe en la pantalla (importante en móvil).
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
+          // Columna principal que organiza la vista verticalmente.
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // --- 1. SECCIÓN DE FILTROS ---
-              // Reutilizamos el filtro, pero ahora está conectado al Provider.
               _buildFilterSection(context, provider),
               const SizedBox(height: 16),
 
-              // --- 2. SECCIÓN DE KPIs ---
-              // Un Wrap es responsivo: si no caben en una línea,
-              // bajan a la siguiente. Perfecto para PC y móvil.
+              // --- 2. SECCIÓN DE KPIs (AHORA RESPONSIVA) ---
+              // Esta sección ahora usa GridView para adaptarse.
               _buildKpiSection(provider),
               const SizedBox(height: 24),
 
-              // --- 3. SECCIÓN DE GRÁFICOS ---
-              Text(
-                'Ventas vs Compras (${provider.selectedFilter})',
-                style: Theme.of(context).textTheme.titleLarge,
+              // --- 3. SECCIÓN DE CONTENIDO PRINCIPAL (AHORA RESPONSIVA) ---
+              // Usamos LayoutBuilder para decidir si mostrar
+              // el layout de móvil (1 columna) o el de PC (2 columnas).
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  // Definimos un "breakpoint" (punto de quiebre).
+                  // Si el ancho es mayor a 900px, es PC.
+                  final bool isDesktop = constraints.maxWidth > 900;
+
+                  if (isDesktop) {
+                    // Si es PC, usamos el layout de 2 columnas.
+                    return _buildDesktopContent(context, provider);
+                  } else {
+                    // Si es móvil, apilamos todo en 1 columna.
+                    return _buildMobileContent(context, provider);
+                  }
+                },
               ),
-              const SizedBox(height: 16),
-              _buildGraphSection(provider),
             ],
           ),
         );
@@ -54,29 +61,26 @@ class ResumeView extends StatelessWidget {
   }
 
   /// Construye la UI para la sección de filtros.
-  /// Ahora recibe el [provider] para leer y actualizar el estado.
   Widget _buildFilterSection(BuildContext context, ReportProvider provider) {
-    // Asegúrate de que tu DropdownButton esté envuelto en un Expanded
-    // si está dentro de un Row.
-    
-    // EJEMPLO SI LO TIENES EN UN ROW:
+    // Un Row para alinear el texto "Filtrar por:" y el Dropdown.
     return Row(
       children: [
         const Text(
           'Filtrar por:',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
-        const SizedBox(width: 16), // Un poco de espacio
+        const SizedBox(width: 16),
         
-        // --- LA SOLUCIÓN ---
+        // Expanded es VITAL aquí. Le dice al DropdownButton
+        // que ocupe todo el espacio restante en el Row.
         Expanded(
           child: DropdownButton<String>(
             value: provider.selectedFilter,
-            isExpanded: true, // <-- Importante: dile que se expanda
+            isExpanded: true, // Le dice al Dropdown que llene el Expanded.
             items: provider.filterOptions.map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
-                child: Text(value, overflow: TextOverflow.ellipsis), // Evita desbordes
+                child: Text(value, overflow: TextOverflow.ellipsis),
               );
             }).toList(),
             onChanged: (newValue) {
@@ -86,103 +90,209 @@ class ResumeView extends StatelessWidget {
             },
           ),
         ),
-        // --- FIN DE LA SOLUCIÓN ---
       ],
     );
-
-    // --- O SI EL DROPDOWN ESTABA SOLO ---
-    // Si no tenías un Row, simplemente asegúrate de que isExpanded sea true
-    /*
-    return DropdownButton<String>(
-      value: provider.selectedFilter,
-      isExpanded: true, // <-- Asegúrate de que esto sea true
-      items: provider.filterOptions.map((String value) {
-        // ...
-      }).toList(),
-      onChanged: (newValue) {
-        // ...
-      },
-    );
-    */
   }
 
   /// Construye la sección de tarjetas de KPIs.
+  /// REESTRUCTURADO: Ahora usa GridView en lugar de Wrap.
   Widget _buildKpiSection(ReportProvider provider) {
-    // Si está cargando, mostramos un indicador en lugar de las tarjetas.
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Wrap(
-      spacing: 16.0, // Espacio horizontal
-      runSpacing: 16.0, // Espacio vertical
+    // Creamos la lista de tarjetas de KPI primero.
+    // Conectarías los valores reales del provider aquí.
+    final kpiCards = [
+      _KpiCard(
+        title: 'Ventas Totales',
+        value: '\$1,250.00',
+        icon: Icons.attach_money,
+        color: Colors.green,
+      ),
+      _KpiCard(
+        title: 'Compras Totales',
+        value: '\$450.00',
+        icon: Icons.shopping_cart,
+        color: Colors.red,
+      ),
+      _KpiCard(
+        title: 'Bajo Stock',
+        value: '8 Productos',
+        icon: Icons.warning_amber,
+        color: Colors.orange,
+      ),
+      _KpiCard(
+        title: 'Nuevos Clientes',
+        value: '12',
+        icon: Icons.person_add,
+        color: Colors.blue,
+      ),
+    ];
+
+    // LayoutBuilder nos da el ancho real (constraints) disponible.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount; // Número de columnas
+        double childAspectRatio; // Relación ancho/alto de las tarjetas
+
+        // Decidimos cuántas columnas mostrar según el ancho.
+        if (constraints.maxWidth < 600) {
+          // Vista Móvil: 2 columnas
+          crossAxisCount = 2;
+          childAspectRatio = 1.8; // Tarjetas más altas que anchas
+        } else {
+          // Vista PC/Tablet: 4 columnas
+          crossAxisCount = 4;
+          childAspectRatio = 2.0; // Tarjetas más anchas que altas
+        }
+
+        // GridView es el widget correcto para una "cuadrícula".
+        // A diferencia de Wrap, GridView *forzará* a los hijos
+        // a tener el mismo ancho, llenando el espacio.
+        return GridView.builder(
+          // shrinkWrap y physics son necesarios porque GridView
+          // está dentro de un SingleChildScrollView.
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount, // Columnas
+            crossAxisSpacing: 16.0,       // Espacio horizontal
+            mainAxisSpacing: 16.0,        // Espacio vertical
+            childAspectRatio: childAspectRatio, // Relación de aspecto
+          ),
+          itemCount: kpiCards.length,
+          itemBuilder: (context, index) {
+            return kpiCards[index];
+          },
+        );
+      },
+    );
+  }
+
+  /// NUEVO WIDGET: Contenido para la vista Móvil.
+  /// Simplemente apila todo en una columna.
+  Widget _buildMobileContent(BuildContext context, ReportProvider provider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // (AQUÍ conectarías los datos reales desde el provider)
-        _KpiCard(
-          title: 'Ventas Totales',
-          value: '\$1,250.00',
-          icon: Icons.attach_money,
-          color: Colors.green,
+        // --- Gráfico Principal ---
+        Text(
+          'Ventas vs Compras (${provider.selectedFilter})',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        _KpiCard(
-          title: 'Compras Totales',
-          value: '\$450.00',
-          icon: Icons.shopping_cart,
-          color: Colors.red,
+        const SizedBox(height: 16),
+        _buildGraphSection(provider), // El gráfico de líneas
+        const SizedBox(height: 24),
+
+        // --- MÓDULO NUEVO 1 (para llenar espacio) ---
+        Text(
+          'Productos Más Vendidos',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        _KpiCard(
-          title: 'Bajo Stock',
-          value: '8 Productos',
-          icon: Icons.warning_amber,
-          color: Colors.orange,
+        const SizedBox(height: 16),
+        _buildTopProductsChart(context, provider), // Gráfico de torta
+        const SizedBox(height: 24),
+
+        // --- MÓDULO NUEVO 2 (para llenar espacio) ---
+        Text(
+          'Alertas de Stock',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        _KpiCard(
-          title: 'Nuevos Clientes',
-          value: '12',
-          icon: Icons.person_add,
-          color: Colors.blue,
+        const SizedBox(height: 16),
+        _buildLowStockList(context, provider), // Lista de stock bajo
+      ],
+    );
+  }
+
+  /// NUEVO WIDGET: Contenido para la vista Desktop.
+  /// Divide el contenido en 2 columnas (Row).
+  Widget _buildDesktopContent(BuildContext context, ReportProvider provider) {
+    // Usamos un Row para crear las columnas.
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start, // Alinea al inicio (arriba)
+      children: [
+        // --- COLUMNA IZQUIERDA (Gráfico principal) ---
+        // Expanded le dice a esta columna que ocupe una porción del Row.
+        Expanded(
+          flex: 3, // Ocupa 3 "partes" (ej. 60%) del espacio.
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Ventas vs Compras (${provider.selectedFilter})',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              _buildGraphSection(provider), // El gráfico de líneas
+            ],
+          ),
+        ),
+        const SizedBox(width: 16), // Espacio entre columnas
+
+        // --- COLUMNA DERECHA (Nuevos módulos) ---
+        // Esta columna ocupa el espacio restante.
+        Expanded(
+          flex: 2, // Ocupa 2 "partes" (ej. 40%) del espacio.
+          child: Column(
+            children: [
+              // --- MÓDULO NUEVO 1 ---
+              Text(
+                'Productos Más Vendidos',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              _buildNetProfitChart(context, provider),// Gráfico de torta
+              const SizedBox(height: 24),
+
+              // --- MÓDULO NUEVO 2 ---
+              Text(
+                'Alertas de Stock',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              _buildLowStockList(context, provider), // Lista de stock bajo
+            ],
+          ),
         ),
       ],
     );
   }
 
-  /// Construye el contenedor para los gráficos.
-  /// Lee el filtro desde el [provider].
+  /// Construye el contenedor para el gráfico de líneas.
+  /// (Este método no cambió, solo se movió)
   Widget _buildGraphSection(ReportProvider provider) {
     return Card(
       elevation: 2,
       child: Container(
-        height: 250,
+        height: 300, // Aumenté la altura un poco para PC
         width: double.infinity,
         padding: const EdgeInsets.all(16.0),
         child: Center(
-          // 4. Mostramos el gráfico o un indicador de carga
           child: provider.isLoading
               ? const CircularProgressIndicator()
               : provider.ventasData.isEmpty
                   ? const Text('No hay datos para este filtro')
-                  // 5. El widget principal del gráfico
                   : LineChart(
-                      _buildChartData(provider), // Llama al método de configuración
+                      _buildChartData(provider),
                     ),
         ),
       ),
     );
   }
 
-  /// 6. NUEVO MÉTODO: Configuración del LineChart
+  /// Configuración del LineChart.
+  /// (Este método no cambió)
   LineChartData _buildChartData(ReportProvider provider) {
-    // Definimos los colores
     final Color ventasColor = Colors.green[400]!;
     final Color comprasColor = Colors.red[400]!;
 
     return LineChartData(
-      // --- Bordes ---
       borderData: FlBorderData(
         show: true,
         border: Border.all(color: const Color(0xffe7e7e7), width: 1),
       ),
-      // --- Cuadrícula (Grid) ---
       gridData: FlGridData(
         show: true,
         drawVerticalLine: true,
@@ -192,17 +302,13 @@ class ResumeView extends StatelessWidget {
           strokeWidth: 1,
         ),
       ),
-
-      // --- Títulos (Ejes X e Y) ---
       titlesData: FlTitlesData(
         show: true,
-        // Eje Y (Izquierda)
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 45, // Espacio para los números
+            reservedSize: 45,
             getTitlesWidget: (value, meta) {
-              // Muestra etiquetas de $
               return Text(
                 '\$${value.toInt()}',
                 style: const TextStyle(color: Colors.grey, fontSize: 10),
@@ -211,43 +317,41 @@ class ResumeView extends StatelessWidget {
             },
           ),
         ),
-        // Eje X (Abajo)
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: 22,
             getTitlesWidget: (value, meta) {
-              // Muestra etiquetas de días (Día 1, Día 2...)
+              // Ajusté el texto para que sea más genérico
+              final label = provider.ventasData[value.toInt()].x;
               return Text(
-                'D ${value.toInt() + 1}',
+                'D ${label.toInt() + 1}', // Asume que X es un índice
                 style: const TextStyle(color: Colors.grey, fontSize: 10),
               );
             },
           ),
         ),
-        // Ocultamos los ejes superior y derecho
         topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
       ),
-
-      // --- LOS DATOS (Las Líneas) ---
       lineBarsData: [
         // --- Línea de Ventas ---
         LineChartBarData(
-          spots: provider.ventasData, // <-- Datos del Provider
+          spots: provider.ventasData,
           isCurved: true,
           color: ventasColor,
           barWidth: 3,
           isStrokeCapRound: true,
-          dotData: FlDotData(show: false), // Oculta los puntos
+          dotData: FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
-            color: ventasColor.withOpacity(0.2), // Sombra bajo la línea
+            // ignore: deprecated_member_use
+            color: ventasColor.withOpacity(0.2),
           ),
         ),
         // --- Línea de Compras ---
         LineChartBarData(
-          spots: provider.comprasData, // <-- Datos del Provider
+          spots: provider.comprasData,
           isCurved: true,
           color: comprasColor,
           barWidth: 3,
@@ -255,16 +359,104 @@ class ResumeView extends StatelessWidget {
           dotData: FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
+            // ignore: deprecated_member_use
             color: comprasColor.withOpacity(0.2),
           ),
         ),
       ],
     );
   }
+
+  // --- NUEVOS WIDGETS DE EJEMPLO (PLACEHOLDERS) ---
+
+  /// EJEMPLO: Gráfico de Torta (PieChart)
+  Widget _buildTopProductsChart(BuildContext context, ReportProvider provider) {
+    return Card(
+      elevation: 2,
+      child: Container(
+        // Altura fija para que los gráficos se vean ordenados
+        height: 300, 
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            'Aquí puedes poner un PieChart\n(Top 5 Productos)',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+        // TODO: Implementa tu PieChart aquí usando fl_chart
+        // child: PieChart(...),
+      ),
+    );
+  }
+
+  /// EJEMPLO: Lista de Stock Bajo (DataTable o ListView)
+  Widget _buildLowStockList(BuildContext context, ReportProvider provider) {
+    return Card(
+      elevation: 2,
+      child: Container(
+        height: 300, // Altura fija
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            'Aquí puedes poner una DataTable\n(Los 8 productos con bajo stock)',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+        // TODO: Implementa tu DataTable o ListView aquí
+        // child: DataTable(...),
+      ),
+    );
+  }
 }
 
+/// EJEMPLO: Gráfico de Barras de Ganancia Neta
+Widget _buildNetProfitChart(BuildContext context, ReportProvider provider) {
+  return Card(
+    elevation: 2,
+    child: Container(
+      height: 300, 
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Text(
+          'Aquí puedes poner un BarChart\n(Ganancia Neta por día)',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+      // TODO: Implementa tu BarChart aquí
+      // child: BarChart(...),
+    ),
+  );
+}
+
+/// EJEMPLO: Gráfico de Ventas por Usuario
+Widget _buildSalesByUserChart(BuildContext context, ReportProvider provider) {
+  return Card(
+    elevation: 2,
+    child: Container(
+      height: 300, 
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Text(
+          'Aquí puedes poner un PieChart\n(Ventas por Vendedor)',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+      // TODO: Implementa tu PieChart aquí
+      // child: PieChart(...),
+    ),
+  );
+}
 
 /// Widget privado para mostrar una tarjeta de KPI individual.
+/// REESTRUCTURADO: Se eliminó ConstrainedBox.
 class _KpiCard extends StatelessWidget {
   final String title;
   final String value;
@@ -280,37 +472,40 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Usamos ConstrainedBox para que en PC las tarjetas no sean
-    // demasiado anchas, pero en móvil puedan ser más pequeñas.
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 200, maxWidth: 250),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: color.withOpacity(0.1),
-                child: Icon(icon, color: color),
+    // ¡HEMOS QUITADO EL ConstrainedBox!
+    // GridView ahora controla el tamaño y ancho de la tarjeta.
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              // ignore: deprecated_member_use
+              backgroundColor: color.withOpacity(0.1),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 16),
+            // Expanded para que la columna de texto ocupe el resto
+            // del espacio del Row dentro de la tarjeta.
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center, // Centra el texto
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    overflow: TextOverflow.ellipsis, // Evita desbordes
+                  ),
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis, // Evita desbordes
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      value,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

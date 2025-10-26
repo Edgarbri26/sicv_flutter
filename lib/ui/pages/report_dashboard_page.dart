@@ -51,6 +51,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
             // --- LAYOUT DE PC ---
             // Usamos un Row: [NavigationRail] | [Contenido]
             return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDesktopNavigationRail(),
                 const VerticalDivider(thickness: 1, width: 1),
