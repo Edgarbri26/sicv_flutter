@@ -228,13 +228,13 @@ class _Indicator extends StatelessWidget {
   final Color color;
   final String text;
   final bool isSquare;
-  final double size;
+  final double? size;
 
   const _Indicator({
     required this.color,
     required this.text,
+    this.size,
     this.isSquare = false,
-    this.size = 16,
   });
 
   @override

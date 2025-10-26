@@ -1,8 +1,6 @@
 // lib/ui/widgets/add_product_form_sheet.dart
 
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 // import 'package:sicv_flutter/services/product_api_service.dart';

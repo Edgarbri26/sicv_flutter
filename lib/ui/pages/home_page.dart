@@ -5,9 +5,9 @@ import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/pages/add_product_screen.dart';
-import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
-import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';
-import 'package:sicv_flutter/ui/pages/screen/sale_screen.dart';
+import 'package:sicv_flutter/ui/screen/inventory_screen.dart';
+import 'package:sicv_flutter/ui/screen/purchase_screen.dart';
+import 'package:sicv_flutter/ui/screen/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 class HomePage extends StatefulWidget {
@@ -53,6 +53,8 @@ class _HomePageState extends State<HomePage> {
   final List<Product> _itemsParaLaVenta = [];
   
   final List<String> _screenTitles = ['Venta', 'Compra', 'Inventario'];
+
+  final GlobalKey<PurchaseScreenState> _purchaseScreenKey = GlobalKey<PurchaseScreenState>();
 
   @override
   void initState() {
@@ -131,7 +133,7 @@ class _HomePageState extends State<HomePage> {
     SaleScreen(
       onProductAdded: _onProductAddedToSale,
     ),
-    PurchaseScreen(), // (Haremos lo mismo para PurchaseScreen)
+    PurchaseScreen(key: _purchaseScreenKey),
     InventoryDatatableScreen(),
   ];
 
@@ -150,8 +152,8 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: AppColors.primary,
         actions: [
-          IconButton(icon: Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+          //IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          //IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       drawer: const Menu(),
@@ -204,7 +206,8 @@ class _HomePageState extends State<HomePage> {
         );
       case 1: // Pestaña compra
         return FloatingActionButton(
-          onPressed: () {},
+          // Llama a la función PÚBLICA de PurchaseScreen usando la llave
+          onPressed: () => _purchaseScreenKey.currentState?.showProductSearchModal(),
           backgroundColor: AppColors.primary,
           child: Icon(Icons.add, color: AppColors.secondary),
         );
