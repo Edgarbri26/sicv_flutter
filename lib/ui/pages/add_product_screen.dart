@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sicv_flutter/services/product_api_service.dart';
 
 class AddProductScreen extends StatefulWidget {
+  const AddProductScreen({super.key});
+
   @override
   _AddProductScreenState createState() => _AddProductScreenState();
 }
@@ -16,7 +18,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
-  
+
   XFile? _imageFile;
   Uint8List? _imageBytes; // Variable para guardar los bytes de la imagen en web
   final ImagePicker _picker = ImagePicker();
@@ -26,13 +28,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       _imageFile = pickedFile;
-      
+
       // Lógica condicional para la vista previa
       if (kIsWeb) {
         // En web, leemos los bytes para Image.memory
         _imageBytes = await pickedFile.readAsBytes();
       }
-      
+
       setState(() {}); // Redibuja el widget para mostrar la vista previa
     }
   }
@@ -45,17 +47,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
     // MANEJO PARA WEB Y MÓVIL
     if (kIsWeb) {
       // En web, usa Image.memory porque File() no está disponible
-      return Image.memory(_imageBytes!, fit: BoxFit.cover, width: double.infinity);
+      return Image.memory(
+        _imageBytes!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
     } else {
       // En móvil, usa Image.file
-      return Image.file(File(_imageFile!.path), fit: BoxFit.cover, width: double.infinity);
+      return Image.file(
+        File(_imageFile!.path),
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
     }
   }
 
   Future<void> _submitData() async {
-    if (_nameController.text.isEmpty || _priceController.text.isEmpty || _imageFile == null) {
+    if (_nameController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, completa todos los campos y selecciona una imagen.')),
+        const SnackBar(
+          content: Text(
+            'Por favor, completa todos los campos y selecciona una imagen.',
+          ),
+        ),
       );
       return;
     }
@@ -73,12 +89,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
       price: double.parse(_priceController.text),
       imageFile: _imageFile!,
     );
-    
+
     Navigator.of(context).pop(); // Cierra el indicador de carga
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('¡Producto enviado!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('¡Producto enviado!')));
   }
 
   @override
@@ -90,11 +106,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Nombre del Producto')),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Nombre del Producto',
+              ),
+            ),
             const SizedBox(height: 10),
-            TextField(controller: _descriptionController, decoration: const InputDecoration(labelText: 'Descripción')),
+            TextField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Descripción'),
+            ),
             const SizedBox(height: 10),
-            TextField(controller: _priceController, decoration: const InputDecoration(labelText: 'Precio'), keyboardType: TextInputType.number),
+            TextField(
+              controller: _priceController,
+              decoration: const InputDecoration(labelText: 'Precio'),
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: 20),
             Container(
               height: 200,
@@ -111,8 +139,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitData,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
               child: const Text('Guardar Producto'),
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
             ),
           ],
         ),

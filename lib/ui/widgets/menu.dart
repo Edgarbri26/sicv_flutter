@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/report_inventory.dart';
-import 'package:sicv_flutter/ui/pages/settings_page.dart';
+import 'package:sicv_flutter/ui/pages/screen/config/settings_screen.dart';
 import 'package:sicv_flutter/ui/pages/user_management.dart';
 
 class Menu extends StatelessWidget {
@@ -81,10 +81,10 @@ class Menu extends StatelessWidget {
             ),
             onTap: () {
               Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => ReportPage()),
-                        );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ReportPage()),
+              );
             },
           ),
           ListTile(

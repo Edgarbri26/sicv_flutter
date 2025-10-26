@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
-import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/add_product_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';

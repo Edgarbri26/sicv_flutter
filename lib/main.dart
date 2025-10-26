@@ -1,6 +1,6 @@
-import 'package:sicv_flutter/app.dart';
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/app.dart';
 
 void main() {
-  runApp(InventoryApp());
+  runApp(const InventoryApp());
 }
