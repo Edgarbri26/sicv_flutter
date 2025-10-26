@@ -52,7 +52,8 @@ class DetailProductCart extends StatelessWidget {
                   spacing: AppSizes.spacingXXS,
                   children: [
                     InfoChip(
-                      text: '${item.quantity} Uds.',
+                      text:
+                          '\$${(item.price * item.quantity).toStringAsFixed(2)}',
                       color: AppColors.info,
                     ),
                     InfoChip(
@@ -64,7 +65,23 @@ class DetailProductCart extends StatelessWidget {
               ],
             ),
           ),
-          Text((item.price * item.quantity).toStringAsFixed(2)),
+          // Text((item.price * item.quantity).toStringAsFixed(2)),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(
+                Radius.circular(AppSizes.borderRadiusM),
+              ),
+              color: AppColors.background,
+            ),
+
+            child: Row(
+              children: [
+                IconButton(onPressed: () {}, icon: Icon(Icons.add)),
+                Text((item.quantity).toString()),
+                IconButton(onPressed: () {}, icon: Icon(Icons.remove)),
+              ],
+            ),
+          ),
           Row(
             spacing: 0,
             children: [
