@@ -158,8 +158,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text('Guardar Producto'),
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-              child: const Text('Guardar Producto'),
             ),
           ],
         ),
