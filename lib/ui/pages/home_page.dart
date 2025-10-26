@@ -243,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     // Usa la lista correcta
                     "Total: ${_itemsParaLaVenta.length} items", 
-                    style: AppTextStyles.bodyMediumBold,
+                    style: AppTextStyles.bodyMedium,
                   ),
 
                   Expanded(

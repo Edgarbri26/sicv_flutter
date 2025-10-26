@@ -47,7 +47,7 @@ class DetailProductCart extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name, style: AppTextStyles.bodyMediumBold),
+                Text(item.name, style: AppTextStyles.bodyMedium),
                 Row(
                   spacing: AppSizes.spacingXXS,
                   children: [

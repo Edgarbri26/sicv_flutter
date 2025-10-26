@@ -1,65 +1,58 @@
+// lib/config/themes/app_text_styles.dart
+
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_sizes.dart';
+import 'package:google_fonts/google_fonts.dart'; // 1. Importa google_fonts
+import 'app_colors.dart'; // (Asumo que tienes tus colores aquí)
 
 class AppTextStyles {
-  AppTextStyles._(); // Evita instanciación
 
-  // 🧱 Titulares
-  static const displayMedium = TextStyle(
-    fontSize: AppSizes.displayL,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
+  // 2. Define tu fuente base UNA SOLA VEZ
+  //    Esto usa "Inter" como la fuente por defecto para todo.
+  static final TextStyle _base = GoogleFonts.inter(
+    color: AppColors.textPrimary, // Asigna un color de texto por defecto
   );
 
-  static const displaySmall = TextStyle(
-    fontSize: AppSizes.displayM,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textPrimary,
+  // 3. Usa .copyWith() para crear todos tus estilos
+  //    Esto toma la fuente "Inter" y solo cambia lo que necesitas.
+  
+  static final TextStyle displayMedium = _base.copyWith(
+    fontSize: 45,
+    fontWeight: FontWeight.w400,
+  );
+  
+  static final TextStyle displaySmall = _base.copyWith(
+    fontSize: 36,
+    fontWeight: FontWeight.w400,
   );
 
-  // 📰 Encabezados
-  static const headlineLarge = TextStyle(
-    fontSize: AppSizes.headlineL,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-
-  static const headlineMedium = TextStyle(
-    fontSize: AppSizes.headlineM,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textPrimary,
-  );
-
-  // 📋 Texto principal
-  static const bodyLarge = TextStyle(
-    fontSize: AppSizes.bodyL,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textPrimary,
-  );
-
-  static const bodyMedium = TextStyle(
-    fontSize: AppSizes.bodyM,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textPrimary,
-  );
-
-    static const bodyMediumBold = TextStyle(
-    fontSize: AppSizes.bodyM,
+  static final TextStyle headlineLarge = _base.copyWith(
+    fontSize: 24,
     fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
   );
 
-  static const bodySmall = TextStyle(
-    fontSize: AppSizes.bodyS,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary,
+  static final TextStyle headlineMedium = _base.copyWith(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
   );
-
-  // 🏷️ Etiquetas y estados
-  static const labelSmall = TextStyle(
-    fontSize: AppSizes.labelS,
+  
+  static final TextStyle bodyLarge = _base.copyWith(
+    fontSize: 18,
     fontWeight: FontWeight.w500,
-    color: AppColors.iconPassive,
+  );
+  
+  static final TextStyle bodyMedium = _base.copyWith(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+  );
+  
+  static final TextStyle bodySmall = _base.copyWith(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary, // Un color diferente, por ejemplo
+  );
+  
+  static final TextStyle labelSmall = _base.copyWith(
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
   );
 }

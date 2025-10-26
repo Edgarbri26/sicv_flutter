@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors
 
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/category.dart';
 import 'package:sicv_flutter/models/product.dart';
 
@@ -36,7 +37,127 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     super.initState();
 
     _allProducts = [
-    Product(
+      Product(
+        id: 1,
+        name: 'Gaseosa 2L',
+        description: 'Refresco sabor a cola de 2 litros.',
+        price: 2.5,
+        imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
+        stock: 50,
+        category: catBebidas,
+        sku: 'GAS-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 2,
+        name: 'Jabón en Polvo 1kg',
+        description: 'Detergente en polvo para ropa blanca y de color.',
+        price: 4.0,
+        imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
+        stock: 8,
+        category: catLimpieza,
+        sku: 'LIM-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 3,
+        name: 'Arroz 1kg',
+        description: 'Arroz blanco de grano largo tipo 1.',
+        price: 1.2,
+        imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
+        stock: 120,
+        category: catAlimentos,
+        sku: 'ALI-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 4,
+        name: 'Shampoo 500ml',
+        description: 'Shampoo para cabello seco con aceite de argán.',
+        price: 5.5,
+        imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
+        stock: 0,
+        category: catPersonal,
+        sku: 'PER-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 5,
+        name: 'Agua Mineral 1.5L',
+        description: 'Agua mineral de manantial sin gas.',
+        price: 1.0,
+        imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
+        stock: 3,
+        category: catBebidas,
+        sku: 'GAS-002', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 6,
+        name: 'Lentejas 500g',
+        description: 'Lentejas secas, fuente de proteína.',
+        price: 0.9,
+        imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
+        stock: 75,
+        category: catAlimentos,
+        sku: 'ALI-002', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 1,
+        name: 'Gaseosa 2L',
+        description: 'Refresco sabor a cola de 2 litros.',
+        price: 2.5,
+        imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
+        stock: 50,
+        category: catBebidas,
+        sku: 'GAS-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 2,
+        name: 'Jabón en Polvo 1kg',
+        description: 'Detergente en polvo para ropa blanca y de color.',
+        price: 4.0,
+        imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
+        stock: 8,
+        category: catLimpieza,
+        sku: 'LIM-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 3,
+        name: 'Arroz 1kg',
+        description: 'Arroz blanco de grano largo tipo 1.',
+        price: 1.2,
+        imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
+        stock: 120,
+        category: catAlimentos,
+        sku: 'ALI-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 4,
+        name: 'Shampoo 500ml',
+        description: 'Shampoo para cabello seco con aceite de argán.',
+        price: 5.5,
+        imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
+        stock: 0,
+        category: catPersonal,
+        sku: 'PER-001', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 5,
+        name: 'Agua Mineral 1.5L',
+        description: 'Agua mineral de manantial sin gas.',
+        price: 1.0,
+        imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
+        stock: 3,
+        category: catBebidas,
+        sku: 'GAS-002', // <-- ¡AÑADIDO!
+      ),
+      Product(
+        id: 6,
+        name: 'Lentejas 500g',
+        description: 'Lentejas secas, fuente de proteína.',
+        price: 0.9,
+        imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
+        stock: 75,
+        category: catAlimentos,
+        sku: 'ALI-002', // <-- ¡AÑADIDO!
+      ),
+      Product(
         id: 1,
         name: 'Gaseosa 2L',
         description: 'Refresco sabor a cola de 2 litros.',
@@ -185,9 +306,20 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
           SizedBox(
             width: double.infinity, // Ocupa todo el ancho posible
             child: Card(
+              elevation: 0.0, 
+              // 2. Define el borde exterior usando 'shape'
+              shape: RoundedRectangleBorder(
+                // Define el radio de las esquinas
+                borderRadius: BorderRadius.circular(8.0), 
+                
+                // Define el borde (grosor y color)
+                side: BorderSide(
+                  color: AppColors.border, // El color del borde
+                  width: 3.0,                // El grosor del borde
+                ),
+              ),
               clipBehavior: Clip.antiAlias, // Evita que la tabla se salga
               
-              // *** CAMBIO AQUÍ (Inicio) ***
               // 1. Usamos LayoutBuilder para obtener el ancho del padre (la Card)
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -205,7 +337,6 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                   );
                 },
               ),
-              // *** CAMBIO AQUÍ (Fin) ***
             ),
           ),
         ],
@@ -297,9 +428,15 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   /// Widget helper para una tarjeta de KPI
   Widget _buildKpiCard(String title, String value, Color color) {
     return Card(
-      elevation: 2,
-      // ignore: deprecated_member_use
-      color: color.withOpacity(0.1),
+      color: AppColors.background,
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+        side: BorderSide(
+          color: AppColors.border,
+          width: 2.5
+        )
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -314,56 +451,60 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
             ),
             Text(
               title,
-              style: TextStyle(fontSize: 12, color: Colors.black54),
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
             ),
           ],
         ),
       ),
     );
   }
+  
 
   /// Construye la barra de búsqueda, filtro y botón de añadir (RESPONSIVO)
   Widget _buildFiltersAndSearch() {
-    return Column(
-      children: [
-        
-        // *** ¡AQUÍ ESTÁ LA MAGIA! ***
-        // LayoutBuilder nos da el ancho disponible
-        LayoutBuilder(
-          builder: (context, constraints) {
-            
-            // Define un "punto de quiebre". 600px es un buen estándar
-            // (la mayoría de los teléfonos en vertical son < 600px)
-            bool isWideScreen = constraints.maxWidth > 600;
-
-            if (isWideScreen) {
-              // --- VISTA ANCHA: Usa un Row ---
-              return Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: _buildSearchField(), // TextField
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    flex: 1,
-                    child: _buildCategoryFilter(), // Dropdown
-                  ),
-                ],
-              );
-            } else {
-              // --- VISTA ANGOSTA: Usa un Column ---
-              return Column(
-                children: [
-                  _buildSearchField(), // TextField
-                  SizedBox(height: 16),
-                  _buildCategoryFilter(), // Dropdown
-                ],
-              );
-            }
-          },
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          
+          // *** ¡AQUÍ ESTÁ LA MAGIA! ***
+          // LayoutBuilder nos da el ancho disponible
+          LayoutBuilder(
+            builder: (context, constraints) {
+              
+              // Define un "punto de quiebre". 600px es un buen estándar
+              // (la mayoría de los teléfonos en vertical son < 600px)
+              bool isWideScreen = constraints.maxWidth > 600;
+      
+              if (isWideScreen) {
+                // --- VISTA ANCHA: Usa un Row ---
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: _buildSearchField(), // TextField
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      flex: 1,
+                      child: _buildCategoryFilter(), // Dropdown
+                    ),
+                  ],
+                );
+              } else {
+                // --- VISTA ANGOSTA: Usa un Column ---
+                return Column(
+                  children: [
+                    _buildSearchField(), // TextField
+                    SizedBox(height: 16),
+                    _buildCategoryFilter(), // Dropdown
+                  ],
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -380,12 +521,36 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   /// Construye el campo de búsqueda
   Widget _buildSearchField() {
     return TextField(
+      style: TextStyle(
+        fontSize: 15.0, // <-- Cambia este valor al tamaño que quieras
+        color: AppColors.textPrimary, // (Opcional: define el color del texto)
+      ),
       decoration: InputDecoration(
+        filled: true,
+        fillColor: AppColors.background,
         labelText: 'Buscar por Nombre o SKU',
         prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+        labelStyle: TextStyle(
+          fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+          color: AppColors.textSecondary, // (Opcional: define el color del label)
         ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 2.0, // <-- Tu grosor deseado
+            color: AppColors.border, // Color del borde
+          ),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+              color: AppColors.textSecondary, // Color del borde al enfocar
+          ),
+        ),
+        
         contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       ),
       onChanged: (value) {
@@ -398,10 +563,40 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   /// Construye el filtro de categoría
   Widget _buildCategoryFilter() {
     return DropdownButtonFormField<String>(
+      // --- 👇 2. ESTILO DEL MENÚ DESPLEGABLE (LA CAJA QUE APARECE) ---
+      dropdownColor: AppColors.background, // Color de fondo del menú
+      borderRadius: BorderRadius.circular(12), // Bordes redondeados del menú
+
+      // --- 👇 3. ESTILO DEL ÍCONO (LA FLECHA) ---
+      icon: Icon(Icons.keyboard_arrow_down_rounded), // Cambia el ícono
+      iconSize: 24, // Tamaño del ícono
+      //focusColor: AppColors.textSecondary, // Color del ícono
+
+      menuMaxHeight: 500.0,
+
       decoration: InputDecoration(
+        labelStyle: TextStyle(
+          fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+          color: AppColors.textSecondary, // (Opcional: define el color del label)
+        ),
+        
+        filled: true,
+        fillColor: AppColors.background,
         labelText: 'Categoría',
-        border: OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 2.0, // <-- Tu grosor deseado
+            color: AppColors.border, // Color del borde
+          ),
+        ),
+      
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+              color: AppColors.textSecondary, // Color del borde al enfocar
+          ),
         ),
         contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       ),
@@ -409,7 +604,13 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       items: _categories.map((String category) {
         return DropdownMenuItem<String>(
           value: category,
-          child: Text(category),
+          child: Text(
+            category,
+            style: TextStyle(
+              color: Colors.black87, // Color del texto de los ítems
+              fontSize: 16,
+            ),
+          ),
         );
       }).toList(),
       onChanged: (newValue) {
@@ -420,20 +621,20 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       },
     );
   }
-  
-  // (Debes incluir los métodos _buildSearchField y _buildCategoryFilter 
-  // que puse en la Solución 1)
-
-  /// Construye el DataTable principal
-  // *** ¡REEMPLAZA TU MÉTODO _buildDataTable CON ESTE! ***
 
   /// Construye el DataTable principal
   Widget _buildDataTable() {
     return DataTable(
-      horizontalMargin: 12.0,
+      horizontalMargin: 15.0,
       columnSpacing: 20.0, // <-- Reduje un poco el espacio
       sortColumnIndex: _sortColumnIndex,
       sortAscending: _sortAscending,
+
+       dataRowColor: WidgetStateProperty.all(AppColors.background), // Color de fondo de las filas
+       headingRowColor: WidgetStateProperty.all(AppColors.border), // Color de fondo de la cabecera
+       //dataRowHeight: 60.0, // <-- Altura fija para las filas (útil para imágenes)
+       headingRowHeight: 48.0, // <-- Altura fija para la cabecera
+       //border: TableBorder.all(width: 2, color: AppColors.border), // <-- Borde para toda la tabla
 
       // Definición de las Columnas
       columns: [
@@ -487,6 +688,7 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       // Definición de las Filas
       rows: _filteredProducts.map((product) {
         final stockColor = _getStockColor(product.stock);
+        
         return DataRow(
           cells: [
             // *** ¡NUEVA CELDA DE IMAGEN! (Índice 0) ***
