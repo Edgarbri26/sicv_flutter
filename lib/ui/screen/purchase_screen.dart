@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos reales
 import 'package:sicv_flutter/models/category.dart';
 import 'package:sicv_flutter/models/product.dart';
@@ -266,57 +267,57 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    /*return Scaffold(
-      //appBar: AppBar( // (También quitaremos esto en el Paso 2)
-      //  title: const Text('Registrar Nueva Compra'),
-      //),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showProductSearchModal,
-        child: const Icon(Icons.add),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildSupplierSelector(),
-            const SizedBox(height: 16),
-            const Divider(),
-            _buildProductList(), // Este es el Expanded()
-            
-            // --- LO PEGAMOS AQUÍ ---
-            // Ya no ocupa toda la pantalla, respetará el Padding
-            _buildSummaryAndSave(), 
-          ],
-        ),
-      ),
-      // --- YA NO HAY bottomNavigationBar ---
-    );*/
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
+  return Center( // Centra el contenido horizontalmente
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 1000.0), // Limita el ancho
+      child: Column( // Usamos Column para darle espacio al SingleChildScrollView
         children: [
-          _buildSupplierSelector(),
-          const SizedBox(height: 16),
-          const Divider(),
-          _buildProductList(), // Este es el Expanded()
-          
-          // El resumen ahora usará la versión corregida de la Parte 1
-          _buildSummaryAndSave(), 
+          Expanded( // Expanded hace que el SingleChildScrollView tome todo el alto restante
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                // Alinea el contenido interno a la izquierda
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                mainAxisSize: MainAxisSize.min, // Deja que el contenido defina la altura
+                children: [
+                  _buildSupplierSelector(),
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  _buildProductList(), // Esta función debe ser modificada (ver punto 2)
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+          // La barra de resumen queda fija en la parte inferior
+          _buildSummaryAndSave(),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// El Dropdown para seleccionar el proveedor
   Widget _buildSupplierSelector() {
     return DropdownButtonFormField<Supplier>(
       initialValue: _selectedSupplier,
+
       hint: const Text('Selecciona un Proveedor...'),
+
       decoration: InputDecoration(
         labelText: 'Proveedor',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(Icons.store),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 2.0, // <-- Tu grosor deseado
+            color: AppColors.border, // Color del borde
+          ),
+        ),
       ),
+      
       items: _allSuppliers.map((supplier) {
         return DropdownMenuItem(
           value: supplier,
@@ -337,37 +338,56 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   /// La lista expandible de productos añadidos
   Widget _buildProductList() {
+
     if (_purchaseItems.isEmpty) {
-      return Expanded(
-        child: Center(
-          child: Text(
-            // Mensaje simplificado.
-            'Añade productos a la orden usando el botón (+).',
-            style: Theme.of(context).textTheme.titleMedium,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
+        // No necesitamos Expanded, pero sí podemos darle un alto mínimo para que el mensaje se vea bien
+        return SizedBox( 
+            height: 300, // Alto mínimo para el mensaje
+            child: Center(
+                child: Text(
+                    'Añade productos a la orden usando el botón (+).',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                ),
+            ),
+        );
     }
 
-    // Si hay items, muestra la lista
-    return Expanded(
-      child: ListView.builder(
-        itemCount: _purchaseItems.length,
-        itemBuilder: (context, index) {
-          final item = _purchaseItems[index];
-          return _buildPurchaseItemTile(item, index);
-        },
-      ),
+    // Si hay items, muestra la lista con una altura limitada
+    return ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 600), // Limita la lista a 600px de altura
+        child: ListView.builder(
+            shrinkWrap: true, // Esto es vital para ListView dentro de SingleChildScrollView
+            physics: const ClampingScrollPhysics(), // Mejor manejo del scroll
+            itemCount: _purchaseItems.length,
+            itemBuilder: (context, index) {
+                final item = _purchaseItems[index];
+                return _buildPurchaseItemTile(item, index);
+            },
+        ),
     );
   }
 
   /// La tarjeta individual para cada item en la lista
   Widget _buildPurchaseItemTile(PurchaseDetail item, int index) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      elevation: 0.0,
+      color: AppColors.background,
+      // 2. Define el borde exterior usando 'shape'
+      shape: RoundedRectangleBorder(
+        // Define el radio de las esquinas
+        borderRadius: BorderRadius.circular(8.0), 
+        
+        // Define el borde (grosor y color)
+        side: BorderSide(
+          color: AppColors.border, // El color del borde
+          width: 2.0,                // El grosor del borde
+        ),
+      ),
+
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             ListTile(
@@ -386,30 +406,81 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                   flex: 2,
                   child: TextField(
                     controller: item.quantityController,
+                     style: const TextStyle(
+                        fontSize: 14.0, // <-- Reduce este valor (ej. de 16.0 a 14.0)
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Cantidad',
                       prefixIcon: Icon(Icons.inventory_2_outlined, size: 20),
                       border: OutlineInputBorder(),
+
+                      labelStyle: TextStyle(
+                        fontSize: 16.0, // <-- Cambia el tamaño de la fuente del label
+                        color: AppColors.textSecondary, // (Opcional: define el color del label)
+                      ),
+
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          width: 2.0, // <-- Tu grosor deseado
+                          color: AppColors.border, // Color del borde
+                        ),
+                      ),
+
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+                            color: AppColors.textSecondary, // Color del borde al enfocar
+                        ),
+                      ),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
                 ),
+
                 const SizedBox(width: 8),
+
                 // Campo de Costo
                 Expanded(
                   flex: 3,
                   child: TextField(
                     controller: item.costController,
+                    style: const TextStyle(
+                        fontSize: 14.0, // <-- Reduce este valor (ej. de 16.0 a 14.0)
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Costo por Unidad',
                       prefixIcon: Icon(Icons.attach_money, size: 20),
                       border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        fontSize: 16.0, // <-- Cambia el tamaño de la fuente del label
+                        color: AppColors.textSecondary, // (Opcional: define el color del label)
+                      ),
+                      
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          width: 2.0, // <-- Tu grosor deseado
+                          color: AppColors.border, // Color del borde
+                        ),
+                      ),
+
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+                            color: AppColors.textSecondary, // Color del borde al enfocar
+                        ),
+                      ),
+
                     ),
                     keyboardType: TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
                   ),
                 ),
+
               ],
             ),
           ],
@@ -420,56 +491,75 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   /// La barra inferior que muestra el total y el botón de Guardar
   Widget _buildSummaryAndSave() {
-    return Container(
-      padding: const EdgeInsets.only(top: 16.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+    return Card(
+      
+      elevation: 0.0, 
+      // 2. Define el borde exterior usando 'shape'
+      shape: RoundedRectangleBorder(
+        // Define el radio de las esquinas
+        borderRadius: BorderRadius.circular(8.0), 
+        
+        // Define el borde (grosor y color)
+        side: BorderSide(
+          color: AppColors.border, // El color del borde
+          width: 3.0,                // El grosor del borde
+        ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        // --- 1. CAMBIO: Centra TODO en la columna ---
-        crossAxisAlignment: CrossAxisAlignment.center, 
-        children: [
-          // Resumen de Total
-          // Como el Column centra, este Row necesita ocupar todo el ancho
-          // para que spaceBetween funcione. Padding lo fuerza.
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0), // Añade padding horizontal al Row
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('TOTAL DE LA ORDEN:', style: Theme.of(context).textTheme.titleMedium),
-                Text(
-                  '\$${_totalCost.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
+
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          // --- 1. CAMBIO: Centra TODO en la columna ---
+          crossAxisAlignment: CrossAxisAlignment.center, 
+          children: [
+            // Resumen de Total
+            // Como el Column centra, este Row necesita ocupar todo el ancho
+            // para que spaceBetween funcione. Padding lo fuerza.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0), // Añade padding horizontal al Row
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('TOTAL DE LA ORDEN:', style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    '\$${_totalCost.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+        
+            // --- 2. CAMBIO: El botón ahora está DIRECTAMENTE en el Column ---
+            // Como el Column tiene crossAxisAlignment: center, el botón se centrará
+            // y tomará su tamaño natural.
+            Center(
+              
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.save),
+                label: const Text('Registrar Compra'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(250.0, 60),
+                  padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
+                  backgroundColor: Colors.green[700],
+                  foregroundColor: Colors.white,
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0), // Botón más redondeado (Pill shape)
                   ),
                 ),
-              ],
+                onPressed: _registerPurchase,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          // --- 2. CAMBIO: El botón ahora está DIRECTAMENTE en el Column ---
-          // Como el Column tiene crossAxisAlignment: center, el botón se centrará
-          // y tomará su tamaño natural.
-          ElevatedButton.icon(
-            icon: const Icon(Icons.save),
-            label: const Text('Registrar Compra'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-              backgroundColor: Colors.green[700],
-              foregroundColor: Colors.white,
-              textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            onPressed: _registerPurchase,
-          ),
-          // --- FIN DEL CAMBIO ---
-
-          const SizedBox(height: 16), // Espacio al final
-        ],
+            // --- FIN DEL CAMBIO ---
+        
+            const SizedBox(height: 16), // Espacio al final
+          ],
+        ),
       ),
     );
   }

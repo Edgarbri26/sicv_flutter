@@ -428,7 +428,7 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   /// Widget helper para una tarjeta de KPI
   Widget _buildKpiCard(String title, String value, Color color) {
     return Card(
-      color: AppColors.background,
+      color: AppColors.secondary,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
@@ -525,9 +525,10 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
         fontSize: 15.0, // <-- Cambia este valor al tamaño que quieras
         color: AppColors.textPrimary, // (Opcional: define el color del texto)
       ),
+      
       decoration: InputDecoration(
         filled: true,
-        fillColor: AppColors.background,
+        fillColor: AppColors.secondary,
         labelText: 'Buscar por Nombre o SKU',
         prefixIcon: Icon(Icons.search),
         labelStyle: TextStyle(
@@ -581,7 +582,7 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
         ),
         
         filled: true,
-        fillColor: AppColors.background,
+        fillColor: AppColors.secondary,
         labelText: 'Categoría',
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
