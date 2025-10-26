@@ -179,10 +179,12 @@ class Menu extends StatelessWidget {
         style: TextStyle(
           color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          fontSize: 20
         ),
       ),
       // --- MEJORA: Efecto visual al seleccionar ---
       selected: isSelected,
+      // ignore: deprecated_member_use
       selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
       onTap: () {
         Navigator.pop(context); // Cierra el drawer ANTES de navegar
