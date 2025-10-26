@@ -9,9 +9,9 @@ class SaleScreen extends StatefulWidget {
   final Function(Product) onProductAdded;
 
   const SaleScreen({
-    Key? key,
+    super.key,
     required this.onProductAdded,
-  }) : super(key: key);
+  });
 
   @override
   State<SaleScreen> createState() => _SaleScreenState();

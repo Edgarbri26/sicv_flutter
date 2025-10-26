@@ -13,10 +13,10 @@ class AddProductFormSheet extends StatefulWidget {
   final ScrollController scrollController;
 
   const AddProductFormSheet({
-    Key? key,
+    super.key,
     required this.scrollController,
     // required this.categories
-  }) : super(key: key);
+  });
 
   @override
   _AddProductFormSheetState createState() => _AddProductFormSheetState();
@@ -34,7 +34,7 @@ class _AddProductFormSheetState extends State<AddProductFormSheet> {
   XFile? _imageFile;
   Uint8List? _imageBytes;
   final ImagePicker _picker = ImagePicker();
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   // (Aquí van tus funciones _pickImage, _submitData, etc.)
   // ... (Asegúrate de copiar _pickImage, _buildImagePreview y _submitData

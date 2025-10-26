@@ -213,7 +213,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       ),
-      value: _selectedRole,
+      initialValue: _selectedRole,
       items: _rolesDisponibles.map((String role) {
         return DropdownMenuItem<String>(
           value: role,

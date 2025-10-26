@@ -8,7 +8,6 @@ import 'package:sicv_flutter/ui/pages/add_product_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/inventory_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/purchase_screen.dart';
 import 'package:sicv_flutter/ui/pages/screen/sale_screen.dart';
-import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 class HomePage extends StatefulWidget {

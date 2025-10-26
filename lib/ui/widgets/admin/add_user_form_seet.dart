@@ -7,10 +7,10 @@ class AddUserFormSheet extends StatefulWidget {
   final List<String> rolesDisponibles;
 
   const AddUserFormSheet({
-    Key? key,
+    super.key,
     required this.scrollController,
     required this.rolesDisponibles,
-  }) : super(key: key);
+  });
 
   @override
   _AddUserFormSheetState createState() => _AddUserFormSheetState();
@@ -134,7 +134,7 @@ class _AddUserFormSheetState extends State<AddUserFormSheet> {
                 SizedBox(height: 10),
 
                 DropdownButtonFormField<String>(
-                  value: _selectedRole,
+                  initialValue: _selectedRole,
                   decoration: InputDecoration(
                     labelText: 'Rol del Usuario',
                     prefixIcon: Icon(Icons.admin_panel_settings),
@@ -155,12 +155,12 @@ class _AddUserFormSheetState extends State<AddUserFormSheet> {
                 
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submitData,
-                  child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : const Text('Crear Usuario'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : const Text('Crear Usuario'),
                 ),
                 SizedBox(height: 20),
               ],

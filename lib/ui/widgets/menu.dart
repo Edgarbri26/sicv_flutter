@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
-import 'package:sicv_flutter/ui/pages/report_inventory.dart';
+import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/settings_page.dart';
 import 'package:sicv_flutter/ui/pages/user_management.dart';
 
@@ -83,7 +83,7 @@ class Menu extends StatelessWidget {
               Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => ReportPage()),
+                          MaterialPageRoute(builder: (_) => ReportDashboardPage()),
                         );
             },
           ),

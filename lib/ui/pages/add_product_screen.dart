@@ -9,6 +9,8 @@ import 'package:sicv_flutter/services/product_api_service.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 class AddProductScreen extends StatefulWidget {
+  const AddProductScreen({super.key});
+
   @override
   _AddProductScreenState createState() => _AddProductScreenState();
 }
@@ -140,8 +142,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitData,
-              child: const Text('Guardar Producto'),
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+              child: const Text('Guardar Producto'),
             ),
           ],
         ),
