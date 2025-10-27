@@ -362,7 +362,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     double totalValue = _allProducts.fold(0, (sum, item) => sum + (item.price * item.stock));
     int lowStockItems = _allProducts.where((p) => p.stock > 0 && p.stock <= _stockLowThreshold).length;
     // Añadí el contador de Agotados que tenías en el código anterior
-    int outOfStockItems = _allProducts.where((p) => p.stock == 0).length;
+    //int outOfStockItems = _allProducts.where((p) => p.stock == 0).length;
 
 
     return Padding(
