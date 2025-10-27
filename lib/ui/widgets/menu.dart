@@ -40,7 +40,7 @@ class Menu extends StatelessWidget {
               backgroundColor: AppColors.secondary, // O usa una imagen
               child: Text(
                 userInitials,
-                style: const TextStyle(fontSize: 40.0, color: AppColors.primary),
+                style: TextStyle(fontSize: 40.0, color: Theme.of(context).colorScheme.primary),
               ),
             ),
             decoration: const BoxDecoration(
