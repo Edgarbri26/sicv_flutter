@@ -538,21 +538,32 @@ class PurchaseScreenState extends State<PurchaseScreen> {
             // Como el Column tiene crossAxisAlignment: center, el botón se centrará
             // y tomará su tamaño natural.
             Center(
-              
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.save),
-                label: const Text('Registrar Compra'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(250.0, 60),
-                  padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                  backgroundColor: Colors.green[700],
-                  foregroundColor: Colors.white,
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0), // Botón más redondeado (Pill shape)
-                  ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 250,
                 ),
-                onPressed: _registerPurchase,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.save),
+                  label: const Text(
+                    'Registrar Compra',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600, // Ligeramente más negrita
+                      letterSpacing: 0.8,         // Aumenta el espaciado entre letras
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    // Usa el color primario de tu tema para un look de marca
+                    backgroundColor: Theme.of(context).colorScheme.primary, 
+                    // Color del texto y el ícono
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary, 
+                    // Define un padding más generoso para hacerlo más grande
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10), // Esquinas ligeramente redondeadas
+                    ),
+                  ),
+                  onPressed: _registerPurchase,
+                ),
               ),
             ),
             // --- FIN DEL CAMBIO ---

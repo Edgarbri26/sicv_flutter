@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   ];
   int _currentIndex = 0;
   final List<Product> _itemsParaLaVenta = [];
-  final List<String> _screenTitles = ['Venta', 'Compra', 'Inventario'];
+  final List<String> _screenTitles = ['Registro de Ventas', 'Registro de Compras', 'Gestión del Inventario'];
 
   final GlobalKey<PurchaseScreenState> _purchaseScreenKey = GlobalKey<PurchaseScreenState>();
 
@@ -193,19 +193,40 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        // 1. Apariencia limpia: Fondo blanco/claro y sin elevación marcada
+        backgroundColor: Theme.of(context).colorScheme.surface, // Usa el color de fondo del tema
+        surfaceTintColor: Colors.transparent, // Elimina el tinte al hacer scroll (Android 12+)
+        elevation: 0, // 0 para un look plano y moderno
+
+        // 2. Título estilizado
         title: Text(
           _screenTitles[_currentIndex],
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: AppColors.secondary,
+            fontWeight: FontWeight.bold, // Título en negrita
+            fontSize: 20,
+            color: Theme.of(context).colorScheme.onSurface, // Color de texto basado en el tema
           ),
-          textAlign: TextAlign.start,
         ),
-        backgroundColor: AppColors.primary,
+        
+        // 3. Altura de la barra (opcional pero profesional)
+        toolbarHeight: 64.0, // Un poco más de altura para un mejor 'feel'
+
+        // 4. Integración con la interfaz de usuario (Buscador y Ajuste Manual)
+        // Nota: Si el FAB (Ajuste Manual) está en la parte inferior, puedes dejar esto vacío.
+        // Si deseas una acción de ícono en la AppBar, úsala aquí.
         actions: [
-          //IconButton(icon: Icon(Icons.search), onPressed: () {}),
-          //IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+          // IconButton(
+          //   icon: const Icon(Icons.add_circle_outline),
+          //   onPressed: () => _showAddMovementModal(context),
+          //   tooltip: 'Registrar Ajuste Manual',
+          // ),
+          const SizedBox(width: 16), // Espacio al final
         ],
+        
+        // 5. Configuración de Tema (para íconos y otros elementos)
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.primary, // Íconos con color primario del tema
+        ),
       ),
       drawer: const Menu(),
 

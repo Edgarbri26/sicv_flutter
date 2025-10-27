@@ -255,7 +255,7 @@ class _SaleScreenState extends State<SaleScreen> {
                                               fontWeight: FontWeight.bold,
                                               fontSize:
                                                   ancho *
-                                                  0.12, // Puedes ajustar el factor
+                                                  0.095, // Puedes ajustar el factor
                                             ),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
