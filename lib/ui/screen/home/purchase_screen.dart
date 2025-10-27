@@ -225,9 +225,30 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                     controller: _searchController,
                     onChanged: filterModalList,
                     decoration: InputDecoration(
-                      labelText: 'Buscar producto por nombre o SKU',
+                      labelStyle: TextStyle(
+                        fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+                        color: AppColors.textSecondary, // (Opcional: define el color del label)
+                      ),
+                      
+                      filled: true,
+                      fillColor: AppColors.secondary,
                       prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      labelText: 'Buscar producto por nombre o SKU',
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          width: 3.0, // <-- Tu grosor deseado
+                          color: AppColors.border, // Color del borde
+                        ),
+                      ),
+                    
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+                            color: AppColors.textSecondary, // Color del borde al enfocar
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -241,6 +262,19 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                             .any((item) => item.product.id == product.id);
 
                         return Card(
+                          elevation: 0.0, 
+                          // 2. Define el borde exterior usando 'shape'
+                          shape: RoundedRectangleBorder(
+                            // Define el radio de las esquinas
+                            borderRadius: BorderRadius.circular(8.0), 
+                            
+                            // Define el borde (grosor y color)
+                            side: BorderSide(
+                              color: AppColors.border, // El color del borde
+                              width: 3.0,                // El grosor del borde
+                            ),
+                          ),
+                          clipBehavior: Clip.antiAlias,
                           color: isAlreadyAdded ? Colors.grey[300] : null,
                           child: ListTile(
                             title: Text(product.name),
@@ -269,7 +303,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   Widget build(BuildContext context) {
   return Center( // Centra el contenido horizontalmente
     child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 1000.0), // Limita el ancho
+      constraints: const BoxConstraints(maxWidth: 800.0), // Limita el ancho
       child: Column( // Usamos Column para darle espacio al SingleChildScrollView
         children: [
           Expanded( // Expanded hace que el SingleChildScrollView tome todo el alto restante
@@ -301,23 +335,34 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   Widget _buildSupplierSelector() {
     return DropdownButtonFormField<Supplier>(
       initialValue: _selectedSupplier,
-
-      hint: const Text('Selecciona un Proveedor...'),
-
+      
       decoration: InputDecoration(
+        labelStyle: TextStyle(
+          fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+          color: AppColors.textSecondary, // (Opcional: define el color del label)
+        ),
+        
+        filled: true,
+        fillColor: AppColors.secondary,
+        prefixIcon: Icon(Icons.store, size: 20,),
         labelText: 'Proveedor',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        prefixIcon: Icon(Icons.store),
-
+        hintText: 'Selecciona un Proveedor...',
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            width: 2.0, // <-- Tu grosor deseado
+            width: 3.0, // <-- Tu grosor deseado
             color: AppColors.border, // Color del borde
           ),
         ),
-      ),
       
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+              color: AppColors.textSecondary, // Color del borde al enfocar
+          ),
+        ),
+      ),
       items: _allSuppliers.map((supplier) {
         return DropdownMenuItem(
           value: supplier,
@@ -362,14 +407,127 @@ class PurchaseScreenState extends State<PurchaseScreen> {
             itemCount: _purchaseItems.length,
             itemBuilder: (context, index) {
                 final item = _purchaseItems[index];
-                return _buildPurchaseItemTile(item, index);
+                return _buildPurchaseItemTile(item, index, () => _removeItem(index));
             },
         ),
     );
   }
 
+  Widget _buildPurchaseItemTile(PurchaseDetail item, int index, VoidCallback onRemove) { // Añadido onRemove como parámetro
+  return Card(
+    elevation: 0.0,
+    color: AppColors.background,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8.0),
+      side: const BorderSide(
+        color: AppColors.border,
+        width: 2.0,
+      ),
+    ),
+    margin: const EdgeInsets.symmetric(vertical: 8.0), // Reduje un poco el margen vertical
+    child: Padding(
+      padding: const EdgeInsets.all(12.0), // Ajuste ligero del padding
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Alinea todo al inicio
+        children: [
+          // Sección Superior: Nombre, SKU y Botón Eliminar
+          ListTile(
+            contentPadding: EdgeInsets.zero, // Quitamos padding extra del ListTile
+            title: Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.w600)), // Nombre más resaltado
+            subtitle: Text(item.product.sku ?? 'Sin SKU'),
+            trailing: IconButton(
+              icon: Icon(Icons.delete_outline, color: Colors.red[700]),
+              tooltip: 'Eliminar item', // Añadido tooltip
+              onPressed: onRemove, // Usamos la función pasada como parámetro
+            ),
+          ),
+          const SizedBox(height: 8), // Espacio antes de los campos
+
+          // Sección Inferior: Campos de Cantidad y Costo (Usando Wrap)
+          Wrap(
+            spacing: 12.0, // Espacio horizontal entre campos cuando están en la misma línea
+            runSpacing: 12.0, // Espacio vertical entre campos cuando se apilan
+            crossAxisAlignment: WrapCrossAlignment.end, // Alinea los campos por la base
+            children: [
+              // --- Campo de Cantidad ---
+              // Usamos ConstrainedBox para darle un tamaño mínimo y máximo razonable
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 130, maxWidth: 200),
+                child: TextField(
+                  controller: item.quantityController,
+                  style: const TextStyle(fontSize: 14.0),
+                  decoration: InputDecoration(
+                    labelText: 'Cantidad',
+                    prefixIcon: const Icon(Icons.inventory_2_outlined, size: 20),
+                    // Mantenemos tu estilo de decoración
+                    isDense: true, // Hace el campo un poco más compacto
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0), // Ajusta padding si es necesario
+                    labelStyle: const TextStyle(
+                      fontSize: 14.0, // Reducimos tamaño label
+                      color: AppColors.textSecondary,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(width: 2.0, color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(width: 2.5, color: AppColors.textSecondary), // Grosor ligeramente menor al enfocar
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (value) {
+                    // Aquí puedes añadir lógica si necesitas recalcular totales al cambiar cantidad
+                    print('Cantidad cambiada a: $value');
+                  },
+                ),
+              ),
+
+              // --- Campo de Costo ---
+              // Usamos ConstrainedBox para darle un tamaño mínimo y máximo razonable
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 160, maxWidth: 250),
+                child: TextField(
+                  controller: item.costController,
+                  style: const TextStyle(fontSize: 14.0),
+                  decoration: InputDecoration(
+                    labelText: 'Costo por Unidad',
+                    prefixIcon: const Icon(Icons.attach_money, size: 20),
+                    // Mantenemos tu estilo de decoración
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+                    labelStyle: const TextStyle(
+                      fontSize: 14.0, // Reducimos tamaño label
+                      color: AppColors.textSecondary,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(width: 2.0, color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(width: 2.5, color: AppColors.textSecondary),
+                    ),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
+                   onChanged: (value) {
+                    // Aquí puedes añadir lógica si necesitas recalcular totales al cambiar costo
+                    print('Costo cambiado a: $value');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
   /// La tarjeta individual para cada item en la lista
-  Widget _buildPurchaseItemTile(PurchaseDetail item, int index) {
+ /* Widget _buildPurchaseItemTile(PurchaseDetail item, int index) {
     return Card(
       elevation: 0.0,
       color: AppColors.background,
@@ -488,7 +646,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       ),
     );
   }
-
+*/
   /// La barra inferior que muestra el total y el botón de Guardar
   Widget _buildSummaryAndSave() {
     return Card(

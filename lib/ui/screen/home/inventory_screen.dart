@@ -1,17 +1,21 @@
 // ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/category.dart';
 import 'package:sicv_flutter/models/product.dart';
+import 'dart:io';        // Required for File (mobile/desktop)
+import 'package:flutter/foundation.dart'; // Required for kIsWeb constant
+import 'package:image_picker/image_picker.dart'; // Required for image picking
 
 class InventoryDatatableScreen extends StatefulWidget {
+  const InventoryDatatableScreen({super.key});
+
   @override
-  _InventoryDatatableScreenState createState() =>
-      _InventoryDatatableScreenState();
+  InventoryDatatableScreenState createState() => InventoryDatatableScreenState();
 }
 
-class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
+class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   // --- DATOS DE EJEMPLO ---
   final ProductCategory catBebidas = ProductCategory(id: 1, name: 'Bebidas');
   final ProductCategory catLimpieza = ProductCategory(id: 2, name: 'Limpieza');
@@ -31,11 +35,21 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   bool _sortAscending = true; // Dirección del orden (true = Ascendente)
 
   static const int _stockLowThreshold = 10;
+  
+  // ⭐️ 2. DECLARA LA LISTA AQUÍ
+  late final List<ProductCategory> _allCategories;
 
   @override
   void initState() {
     super.initState();
     
+    _allCategories = [
+      catBebidas,
+      catLimpieza,
+      catAlimentos,
+      catPersonal,
+    ];
+
     _allProducts = [
       Product(
         id: 1,
@@ -222,7 +236,6 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   }
 
   /// Filtra la lista de productos basado en la búsqueda y categoría
-  // *** ¡REEMPLAZA TU MÉTODO _filterProducts CON ESTE! ***
 
   /// Filtra Y ORDENA la lista de productos
   void _filterProducts() {
@@ -811,4 +824,280 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       ),
     );
   }
+
+  void addNewProduct() {
+    // --- Controllers ---
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final priceController = TextEditingController();
+    final stockController = TextEditingController();
+    final skuController = TextEditingController();
+
+    // --- State variables for the modal ---
+    ProductCategory? selectedCategory;
+    File? selectedImageFile;      // Used for mobile/desktop
+    Uint8List? selectedImageBytes; // Used for web
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext modalContext) {
+        return Padding(
+          padding: MediaQuery.of(modalContext).viewInsets,
+          child: StatefulBuilder(
+            builder: (context, setStateModal) {
+              // --- Image Picking Logic ---
+              Future<void> _pickImage() async {
+                final ImagePicker picker = ImagePicker();
+                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+                if (image != null) {
+                  if (kIsWeb) {
+                    // On Web: Read bytes
+                    final bytes = await image.readAsBytes();
+                    setStateModal(() {
+                      selectedImageBytes = bytes;
+                      selectedImageFile = null; // Clear file state if switching
+                    });
+                  } else {
+                    // On Mobile/Desktop: Use File path
+                    setStateModal(() {
+                      selectedImageFile = File(image.path);
+                      selectedImageBytes = null; // Clear byte state if switching
+                    });
+                  }
+                }
+              }
+              // --- End of Image Picking Logic ---
+
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.85, // Adjust height as needed
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    // --- Modal Title ---
+                    Text(
+                      'Registrar Nuevo Producto',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const Divider(height: 24),
+
+                    // --- Form Body ---
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: <Widget>[
+                            // --- Image Selection Section ---
+                            Center(
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.secondary,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppColors.border, width: 2),
+                                      // Platform-aware image display
+                                      image: kIsWeb
+                                        ? (selectedImageBytes != null ? DecorationImage(image: MemoryImage(selectedImageBytes!), fit: BoxFit.cover) : null)
+                                        : (selectedImageFile != null ? DecorationImage(image: FileImage(selectedImageFile!), fit: BoxFit.cover) : null),
+                                    ),
+                                    // Placeholder Icon
+                                    child: (kIsWeb ? selectedImageBytes == null : selectedImageFile == null)
+                                      ? const Center(
+                                          child: Icon(
+                                            Icons.add_a_photo_outlined,
+                                            size: 40,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        )
+                                      : null,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextButton.icon(
+                                    icon: Icon((kIsWeb ? selectedImageBytes == null : selectedImageFile == null) ? Icons.add : Icons.edit, size: 18),
+                                    label: Text((kIsWeb ? selectedImageBytes == null : selectedImageFile == null) ? 'Añadir Imagen' : 'Cambiar Imagen'),
+                                    onPressed: _pickImage, // Call the picker function
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // --- Other Form Fields ---
+                            _buildCustomTextField(controller: nameController, labelText: 'Nombre del Producto', prefixIcon: Icons.shopping_bag_outlined),
+                            const SizedBox(height: 16),
+                            _buildCustomTextField(controller: skuController, labelText: 'SKU / Código', prefixIcon: Icons.qr_code, keyboardType: TextInputType.text),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<ProductCategory>(
+                              initialValue: selectedCategory,
+                              decoration: _buildInputDecoration(labelText: 'Categoría'),
+                              items: _allCategories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat.name))).toList(),
+                              onChanged: (ProductCategory? newValue) => setStateModal(() => selectedCategory = newValue),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(child: _buildCustomTextField(controller: priceController, labelText: 'Precio', prefixIcon: Icons.attach_money, keyboardType: TextInputType.number)),
+                                const SizedBox(width: 16),
+                                Expanded(child: _buildCustomTextField(controller: stockController, labelText: 'Stock Inicial', prefixIcon: Icons.inventory_2_outlined, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly])),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            _buildCustomTextField(controller: descriptionController, labelText: 'Descripción (Opcional)', maxLines: 3),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // --- Action Buttons ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        TextButton(
+                          child: const Text('CANCELAR'),
+                          onPressed: () => Navigator.of(modalContext).pop(),
+                        ),
+                        const SizedBox(width: 8),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: 250, 
+                          ),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            // Disable button if required fields are empty
+                            onPressed: (nameController.text.isEmpty || skuController.text.isEmpty || selectedCategory == null)
+                              ? null
+                              : () async { // Make onPressed async
+                                  // --- Prepare Image Bytes for Upload ---
+                                  Uint8List? imageBytesToSend;
+                                  if (kIsWeb) {
+                                    imageBytesToSend = selectedImageBytes; // Already have bytes on web
+                                  } else if (selectedImageFile != null) {
+                                    imageBytesToSend = await selectedImageFile!.readAsBytes(); // Read bytes from File
+                                  }
+                                  // --- End of Image Preparation ---
+                          
+                                  // --- Placeholder for your save logic ---
+                                  print('--- Saving Product ---');
+                                  print('Name: ${nameController.text}');
+                                  print('SKU: ${skuController.text}');
+                                  print('Category: ${selectedCategory?.name}');
+                                  print('Price: ${priceController.text}');
+                                  print('Stock: ${stockController.text}');
+                                  print('Description: ${descriptionController.text}');
+                                  print('Image Bytes length: ${imageBytesToSend?.length ?? 'No Image Selected'}');
+                                  
+                                  // 🚨 Replace the print statements above with your actual API call
+                                  // Example:
+                                  // bool success = await ApiService.saveProduct(
+                                  //   name: nameController.text,
+                                  //   sku: skuController.text,
+                                  //   categoryId: selectedCategory!.id,
+                                  //   price: double.tryParse(priceController.text) ?? 0.0,
+                                  //   stock: int.tryParse(stockController.text) ?? 0,
+                                  //   description: descriptionController.text,
+                                  //   imageBytes: imageBytesToSend, // Pass the prepared bytes
+                                  // );
+                                  // if (success && mounted) { // Check mounted before interacting with context
+                                  //    Navigator.of(modalContext).pop();
+                                  //    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Producto guardado!')));
+                                  //    // Optionally refresh the product list here
+                                  // } else {
+                                  //   // Show error message
+                                  // }
+                                  // --- End of Placeholder ---
+                          
+                                  if (mounted) { // Check if widget is still in the tree
+                                      Navigator.of(modalContext).pop(); // Close modal after saving attempt
+                                  }
+                                },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.check, size: 20),
+                                SizedBox(width: 8),
+                                Text('GUARDAR PRODUCTO', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    ).whenComplete(() {
+      // Dispose controllers
+      nameController.dispose();
+      descriptionController.dispose();
+      priceController.dispose();
+      stockController.dispose();
+      skuController.dispose();
+    });
+  }
+
+  InputDecoration _buildInputDecoration({required String labelText, IconData? prefixIcon}) {
+    return InputDecoration(
+      labelStyle: const TextStyle(
+        fontSize: 16.0,
+        color: AppColors.textSecondary,
+      ),
+      filled: true,
+      fillColor: AppColors.secondary,
+      labelText: labelText,
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18) : null,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          width: 3.0,
+          color: AppColors.border,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          width: 3.0,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+    );
+  }
+
+// Widget auxiliar para mantener el código más limpio
+  Widget _buildCustomTextField({
+    required TextEditingController controller,
+    required String labelText,
+    IconData? prefixIcon,
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: _buildInputDecoration(labelText: labelText, prefixIcon: prefixIcon),
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      maxLines: maxLines,
+      textCapitalization: TextCapitalization.sentences,
+    );
+  }
+
+
 }
