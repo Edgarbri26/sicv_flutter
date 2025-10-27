@@ -13,7 +13,7 @@ class Product {
   
   // --- 2. Añade el campo 'category' ---
   // No es un String, es un objeto de tipo Category
-  final Category category;
+  final ProductCategory category;
 
   Product({
     required this.id,
@@ -38,7 +38,7 @@ class Product {
       // --- 4. La Magia (Llama al 'fromJson' de Category) ---
       // Le pasamos el objeto JSON anidado 'category'
       // al constructor 'Category.fromJson'.
-      category: Category.fromJson(json['category']),
+      category: ProductCategory.fromJson(json['category']),
     );
   }
 }

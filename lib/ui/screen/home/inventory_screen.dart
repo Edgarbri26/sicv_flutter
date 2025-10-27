@@ -13,10 +13,10 @@ class InventoryDatatableScreen extends StatefulWidget {
 
 class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   // --- DATOS DE EJEMPLO ---
-  final Category catBebidas = Category(id: 1, name: 'Bebidas');
-  final Category catLimpieza = Category(id: 2, name: 'Limpieza');
-  final Category catAlimentos = Category(id: 3, name: 'Alimentos');
-  final Category catPersonal = Category(id: 4, name: 'Cuidado Personal');
+  final ProductCategory catBebidas = ProductCategory(id: 1, name: 'Bebidas');
+  final ProductCategory catLimpieza = ProductCategory(id: 2, name: 'Limpieza');
+  final ProductCategory catAlimentos = ProductCategory(id: 3, name: 'Alimentos');
+  final ProductCategory catPersonal = ProductCategory(id: 4, name: 'Cuidado Personal');
   
   late final List<Product> _allProducts;
 
@@ -35,7 +35,7 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   @override
   void initState() {
     super.initState();
-
+    
     _allProducts = [
       Product(
         id: 1,
@@ -768,11 +768,11 @@ class _InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
   // --- Lógica de Acciones (Placeholder) ---
 
-  void _addNewProduct() {
+  /*void _addNewProduct() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Navegando a la pantalla de "Añadir Producto"...')),
     );
-  }
+  }*/
 
   void _editProduct(Product product) {
     ScaffoldMessenger.of(context).showSnackBar(

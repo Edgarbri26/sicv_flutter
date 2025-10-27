@@ -78,7 +78,7 @@ class InventoryApp extends StatelessWidget {
               builder: (context) => const NotificationsScreen(),
             );
           default:
-            return MaterialPageRoute(builder: (context) => const SalePage());
+            return MaterialPageRoute(builder: (context) => const HomePage());
         }
       },
     );

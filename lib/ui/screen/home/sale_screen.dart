@@ -25,7 +25,7 @@ class _SaleScreenState extends State<SaleScreen> {
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
   // Lista de categorías (incluyendo "Todos")
-  late List<Category> _categories;
+  late List<ProductCategory> _categories;
   // Categoría seleccionada actualmente
   int _selectedCategoryId = 0; // 0 para "Todos"
 
@@ -54,7 +54,7 @@ class _SaleScreenState extends State<SaleScreen> {
         description: '...',
         price: 1.40,
         stock: 50,
-        category: Category(id: 1, name: 'Alimentos'),
+        category: ProductCategory(id: 1, name: 'Alimentos'),
         sku: 'ALI-001',
       ),
       Product(
@@ -63,7 +63,7 @@ class _SaleScreenState extends State<SaleScreen> {
         description: '...',
         price: 5.99,
         stock: 5,
-        category: Category(id: 2, name: 'Tabaco'),
+        category: ProductCategory(id: 2, name: 'Tabaco'),
         sku: 'TAB-001',
       ),
       Product(
@@ -72,7 +72,7 @@ class _SaleScreenState extends State<SaleScreen> {
         description: '...',
         price: 10.99,
         stock: 0,
-        category: Category(id: 3, name: 'Bebidas'),
+        category: ProductCategory(id: 3, name: 'Bebidas'),
         sku: 'BEB-001',
       ),
       Product(
@@ -81,7 +81,7 @@ class _SaleScreenState extends State<SaleScreen> {
         description: '...',
         price: 2.5,
         stock: 50,
-        category: Category(id: 3, name: 'Bebidas'),
+        category: ProductCategory(id: 3, name: 'Bebidas'),
         sku: 'BEB-002',
       ),
       Product(
@@ -90,7 +90,7 @@ class _SaleScreenState extends State<SaleScreen> {
         description: '...',
         price: 2.0,
         stock: 15,
-        category: Category(id: 1, name: 'Alimentos'),
+        category: ProductCategory(id: 1, name: 'Alimentos'),
         sku: 'ALI-002',
       ),
       Product(
@@ -99,17 +99,17 @@ class _SaleScreenState extends State<SaleScreen> {
         description: '...',
         price: 1.0,
         stock: 30,
-        category: Category(id: 3, name: 'Bebidas'),
+        category: ProductCategory(id: 3, name: 'Bebidas'),
         sku: 'BEB-003',
       ),
     ];
 
     // Simula la carga de categorías (DEBERÍAS TRAERLAS DE TU API/BD)
     _categories = [
-      Category(id: 0, name: 'Todos'), // Categoría especial
-      Category(id: 1, name: 'Alimentos'),
-      Category(id: 2, name: 'Tabaco'),
-      Category(id: 3, name: 'Bebidas'),
+      ProductCategory(id: 0, name: 'Todos'), // Categoría especial
+      ProductCategory(id: 1, name: 'Alimentos'),
+      ProductCategory(id: 2, name: 'Tabaco'),
+      ProductCategory(id: 3, name: 'Bebidas'),
     ];
 
     // Al inicio, la lista filtrada es igual a la lista completa
