@@ -43,8 +43,8 @@ class Menu extends StatelessWidget {
                 style: TextStyle(fontSize: 40.0, color: Theme.of(context).colorScheme.primary),
               ),
             ),
-            decoration: const BoxDecoration(
-              color: AppColors.primary, // Usa tu color primario
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary, // Usa tu color primario
             ),
             // Puedes añadir otros avatares aquí si quieres
             // otherAccountsPictures: <Widget>[ ... ],
