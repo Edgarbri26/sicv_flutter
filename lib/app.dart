@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
+import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'package:sicv_flutter/ui/pages/user_management.dart';
@@ -27,7 +28,7 @@ class InventoryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
-      home: const HomePage(),
+      home: const LoginPage(),
 
       onGenerateRoute: (settings) {
         switch (settings.name) {

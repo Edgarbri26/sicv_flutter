@@ -94,7 +94,7 @@ class Menu extends StatelessWidget {
               // Navigator.pushReplacementNamed(context, '/reports');
             },
           ),
-          _buildMenuItem(
+          /*_buildMenuItem(
             context: context,
             icon: Icons.group_outlined, // Icono de usuarios
             title: 'Administrar usuarios',
@@ -108,7 +108,7 @@ class Menu extends StatelessWidget {
               // O mejor con rutas nombradas:
               // Navigator.pushReplacementNamed(context, '/users');
             },
-          ),
+          ),*/
           _buildMenuItem(
             context: context,
             icon: Icons.compare_arrows, // Icono de usuarios
