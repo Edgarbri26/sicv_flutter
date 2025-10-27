@@ -14,6 +14,8 @@ class ProductApiService {
     required String name,
     required String description,
     required double price,
+    // Stock: cantidad a ingresar en inventario
+    required int stock,
     // ... otros campos de texto
     required XFile imageFile,
   }) async {
@@ -24,10 +26,10 @@ class ProductApiService {
       // Añade los campos de texto (esto no cambia)
       request.fields['name'] = name;
       request.fields['description'] = description;
-      request.fields['base_price'] = price.toString();
-      request.fields['stock'] = '10';
-      request.fields['min_stock'] = '5';
-      request.fields['category_id'] = '1';
+  request.fields['base_price'] = price.toString();
+  request.fields['stock'] = stock.toString();
+  request.fields['min_stock'] = '5';
+  request.fields['category_id'] = '1';
 
       // --- 2. LÓGICA CORREGIDA PARA ADJUNTAR EL ARCHIVO ---
       http.MultipartFile file;

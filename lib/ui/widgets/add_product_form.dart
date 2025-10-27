@@ -17,6 +17,7 @@ class _AddProductFormState extends State<AddProductForm> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
+  final _stockController = TextEditingController();
   XFile? _imageFile;
   Uint8List? _imageBytes;
   final ImagePicker _picker = ImagePicker();
@@ -45,7 +46,7 @@ class _AddProductFormState extends State<AddProductForm> {
   }
 
   Future<void> _submitData() async {
-    if (_nameController.text.isEmpty || _priceController.text.isEmpty || _imageFile == null) {
+    if (_nameController.text.isEmpty || _priceController.text.isEmpty || _stockController.text.isEmpty || _imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, completa todos los campos y selecciona una imagen.')),
       );
@@ -58,10 +59,25 @@ class _AddProductFormState extends State<AddProductForm> {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
+    // parse stock
+    int stock;
+    try {
+      stock = int.parse(_stockController.text);
+      if (stock < 0) throw FormatException('stock negativo');
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La cantidad debe ser un número entero válido.')),
+      );
+      return;
+    }
+
+    // actual call
     await _apiService.createProduct(
       name: _nameController.text,
       description: _descriptionController.text,
       price: double.parse(_priceController.text),
+      stock: stock,
       imageFile: _imageFile!,
     );
 
@@ -70,6 +86,15 @@ class _AddProductFormState extends State<AddProductForm> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('¡Producto enviado!')),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _stockController.dispose();
+    super.dispose();
   }
 
   @override
@@ -83,6 +108,8 @@ class _AddProductFormState extends State<AddProductForm> {
           TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Nombre del Producto')),
           const SizedBox(height: 8),
           TextField(controller: _descriptionController, decoration: const InputDecoration(labelText: 'Descripción')),
+          const SizedBox(height: 8),
+          TextField(controller: _stockController, decoration: const InputDecoration(labelText: 'Cantidad'), keyboardType: TextInputType.number),
           const SizedBox(height: 8),
           TextField(controller: _priceController, decoration: const InputDecoration(labelText: 'Precio'), keyboardType: TextInputType.number),
           const SizedBox(height: 12),
