@@ -1,9 +1,9 @@
 // lib/pages/report_dashboard_page.dart
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/ui/views/clients_view.dart';
-import 'package:sicv_flutter/ui/views/finance_view.dart';
-import 'package:sicv_flutter/ui/views/inventory_view.dart';
-import 'package:sicv_flutter/ui/views/summary_view.dart';
+import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
+import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
+import 'package:sicv_flutter/ui/screen/report/inventory_view.dart';
+import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 /// ReportDashboardPage

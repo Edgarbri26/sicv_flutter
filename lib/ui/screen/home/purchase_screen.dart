@@ -492,7 +492,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   /// La barra inferior que muestra el total y el botón de Guardar
   Widget _buildSummaryAndSave() {
     return Card(
-      
+      color: AppColors.secondary,
       elevation: 0.0, 
       // 2. Define el borde exterior usando 'shape'
       shape: RoundedRectangleBorder(
