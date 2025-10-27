@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CategoriesScreen extends StatefulWidget {
-  const CategoriesScreen({Key? key}) : super(key: key);
+  const CategoriesScreen({super.key});
 
   @override
   _CategoriasScreenState createState() => _CategoriasScreenState();
@@ -40,8 +40,8 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _agregarCategoria,
-        child: const Icon(Icons.add),
         tooltip: 'Agregar Categoría',
+        child: const Icon(Icons.add),
       ),
     );
   }

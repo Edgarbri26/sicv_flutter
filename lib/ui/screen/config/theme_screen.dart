@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ThemeScreen extends StatefulWidget {
-  const ThemeScreen({Key? key}) : super(key: key);
+  const ThemeScreen({super.key});
 
   @override
   _ThemeScreenState createState() => _ThemeScreenState();
@@ -23,7 +23,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
               labelText: 'Tema de la Aplicación',
               icon: Icon(Icons.palette),
             ),
-            value: _theme,
+            initialValue: _theme,
             items: const [
               DropdownMenuItem(
                 value: 'sistema',
@@ -42,7 +42,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
               labelText: 'Idioma del Sistema',
               icon: Icon(Icons.language),
             ),
-            value: _language,
+            initialValue: _language,
             items: const [
               DropdownMenuItem(value: 'es', child: Text('Español')),
               DropdownMenuItem(value: 'en', child: Text('English')),

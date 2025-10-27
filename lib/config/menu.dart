@@ -78,7 +78,7 @@ class Menu extends StatelessWidget {
               },
               // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
             );
-          }).toList(),
+          }),
           
           const Divider(thickness: 1), 
 

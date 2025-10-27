@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class UsersScreen extends StatefulWidget {
-  const UsersScreen({Key? key}) : super(key: key);
+  const UsersScreen({super.key});
 
   @override
   _UsersScreenState createState() => _UsersScreenState();
@@ -46,8 +46,8 @@ class _UsersScreenState extends State<UsersScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _agregarUsuario,
-        child: const Icon(Icons.add),
         tooltip: 'Agregar Usuario',
+        child: const Icon(Icons.add),
       ),
     );
   }

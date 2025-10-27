@@ -5,7 +5,6 @@ import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
-import 'package:sicv_flutter/ui/pages/user_management.dart';
 // Asume que tienes una página de perfil
 // import 'package/sicv_flutter/ui/pages/profile_page.dart'; 
 

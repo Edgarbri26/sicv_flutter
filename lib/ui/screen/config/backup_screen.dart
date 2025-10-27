@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BackupScreen extends StatefulWidget {
-  const BackupScreen({Key? key}) : super(key: key);
+  const BackupScreen({super.key});
 
   @override
   _BackupScreenState createState() => _BackupScreenState();
@@ -33,7 +33,7 @@ class _BackupScreenState extends State<BackupScreen> {
               labelText: 'Frecuencia de Respaldo',
               icon: Icon(Icons.schedule),
             ),
-            value: _frecuencia,
+            initialValue: _frecuencia,
             items: const [
               DropdownMenuItem(value: 'diario', child: Text('Diariamente')),
               DropdownMenuItem(value: 'semanal', child: Text('Semanalmente')),
@@ -51,7 +51,7 @@ class _BackupScreenState extends State<BackupScreen> {
               labelText: 'Destino de Almacenamiento',
               icon: Icon(Icons.storage),
             ),
-            value: _destino,
+            initialValue: _destino,
             items: const [
               DropdownMenuItem(value: 'drive', child: Text('Google Drive')),
               DropdownMenuItem(value: 'dropbox', child: Text('Dropbox')),

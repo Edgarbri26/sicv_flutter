@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class StockScreen extends StatefulWidget {
-  const StockScreen({Key? key}) : super(key: key);
+  const StockScreen({super.key});
 
   @override
   _StockScreenState createState() => _StockScreenState();

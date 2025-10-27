@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AttributesScreen extends StatelessWidget {
-  const AttributesScreen({Key? key}) : super(key: key);
+  const AttributesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +43,11 @@ class GestionListaWidget extends StatelessWidget {
   final IconData icono;
 
   const GestionListaWidget({
-    Key? key,
+    super.key,
     required this.tipo,
     required this.items,
     required this.icono,
-  }) : super(key: key);
+  });
 
   void _agregarItem(BuildContext context) {
     print('TODO: Agregar $tipo');
@@ -71,8 +71,8 @@ class GestionListaWidget extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _agregarItem(context),
-        child: const Icon(Icons.add),
         tooltip: 'Agregar $tipo',
+        child: const Icon(Icons.add),
       ),
     );
   }

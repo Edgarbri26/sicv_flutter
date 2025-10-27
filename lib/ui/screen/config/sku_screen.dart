@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SkuScreen extends StatefulWidget {
-  const SkuScreen({Key? key}) : super(key: key);
+  const SkuScreen({super.key});
 
   @override
   _SkuScreenState createState() => _SkuScreenState();

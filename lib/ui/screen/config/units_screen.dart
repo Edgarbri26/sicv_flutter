@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class UnitsScreen extends StatefulWidget {
-  const UnitsScreen({Key? key}) : super(key: key);
+  const UnitsScreen({super.key});
 
   @override
   _UnitsScreenState createState() => _UnitsScreenState();
@@ -50,8 +50,8 @@ class _UnitsScreenState extends State<UnitsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _agregarUnidad,
-        child: const Icon(Icons.add),
         tooltip: 'Agregar Unidad',
+        child: const Icon(Icons.add),
       ),
     );
   }

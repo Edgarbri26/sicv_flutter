@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CurrencyScreen extends StatefulWidget {
-  const CurrencyScreen({Key? key}) : super(key: key);
+  const CurrencyScreen({super.key});
 
   @override
   _CurrencyScreenState createState() => _CurrencyScreenState();
@@ -22,10 +22,10 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               labelText: 'Tipo de Moneda Principal',
               icon: Icon(Icons.monetization_on),
             ),
-            value: _monedaSeleccionada,
+            initialValue: _monedaSeleccionada,
             items: ['USD', 'EUR', 'MXN', 'COP', 'ARS']
                 .map(
-                  (label) => DropdownMenuItem(child: Text(label), value: label),
+                  (label) => DropdownMenuItem(value: label, child: Text(label)),
                 )
                 .toList(),
             onChanged: (value) {

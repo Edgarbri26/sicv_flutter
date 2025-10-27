@@ -11,7 +11,6 @@ import 'ui/screen/config/units_screen.dart';
 import 'ui/screen/config/categories_screen.dart';
 import 'ui/screen/config/stock_screen.dart';
 import 'ui/screen/config/roles_screen.dart';
-import 'ui/screen/config/users_screen.dart';
 import 'ui/screen/config/sku_screen.dart';
 import 'ui/screen/config/attributes_screen.dart';
 import 'ui/screen/config/backup_screen.dart';
