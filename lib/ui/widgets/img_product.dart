@@ -28,7 +28,7 @@ class ImgProduct extends StatelessWidget {
               width: width,
               height: height,
             )
-          : Icon(Icons.inventory_2, size: 40, color: AppColors.primary),
+          : Icon(Icons.inventory_2, size: 40, color: Theme.of(context).colorScheme.primary),
     );
   }
 }
