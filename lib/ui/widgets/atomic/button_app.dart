@@ -1,51 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 
-enum TypeButton { primary, secundary}
+class PrimaryButtonApp extends StatelessWidget {
+  
+  final String text;
+  final IconData? icon;
+  final VoidCallback onPressed;
+  final bool isLoading;
+  final double maxWidth;
 
-class ButtonApp extends StatelessWidget {
-  final void Function() onPressed;
-  final Text title;
-  final Icon? icon;
-  final TypeButton typeButton;
-  const ButtonApp({
+  const PrimaryButtonApp({
     super.key,
+    required this.text,
     required this.onPressed,
-    required this.title,
     this.icon,
-    required this.typeButton,
+    this.isLoading = false,
+    this.maxWidth = 250,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient:
-            typeButton == TypeButton.primary
-                ? LinearGradient(
-                  colors: [AppColors.primary, AppColors.error],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                )
-                : LinearGradient(
-                  colors: [AppColors.secondary, AppColors.secondary],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+    // Determina el tamaño del ícono para que el spinner lo iguale
+    final iconSize = Theme.of(context).iconTheme.size ?? 24.0;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: ElevatedButton.icon(
+          
+          // --- AQUÍ ESTÁ EL CAMBIO ---
+          icon: isLoading 
+            ? SizedBox( // 1. El spinner AHORA es el ícono
+                width: iconSize,
+                height: iconSize,
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  strokeWidth: 3,
                 ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+              )
+            : Icon(icon ?? Icons.save), // 2. El ícono normal
+
+          label: Text( // 3. El texto SIEMPRE se muestra
+            text,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
           ),
+          // --- FIN DEL CAMBIO ---
+            
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            minimumSize: const Size(64, 50), 
+          ),
+          
+          onPressed: isLoading ? null : onPressed, 
         ),
-        icon: icon,
-        label: title,
-        onPressed: onPressed,
       ),
     );
   }

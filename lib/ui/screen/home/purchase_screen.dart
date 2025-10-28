@@ -8,6 +8,7 @@ import 'package:sicv_flutter/models/category.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/models/purchase_detail.dart';
 import 'package:sicv_flutter/models/supplier.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
 class PurchaseScreen extends StatefulWidget {
   const PurchaseScreen({super.key});
@@ -25,6 +26,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   // Listas "maestras" (vendrían de tu API)
   List<Supplier> _allSuppliers = [];
   List<Product> _allProducts = [];
+  bool _isRegistering = false;
 
   // El "carrito" de la compra. Usamos la helper class.
   final List<PurchaseDetail> _purchaseItems = [];
@@ -139,6 +141,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   /// Guarda la compra (lógica final)
   void _registerPurchase() {
+    setState(() => _isRegistering = true);
     if (_selectedSupplier == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecciona un proveedor.')),
@@ -691,41 +694,12 @@ class PurchaseScreenState extends State<PurchaseScreen> {
               ),
             ),
             const SizedBox(height: 16),
-        
-            // --- 2. CAMBIO: El botón ahora está DIRECTAMENTE en el Column ---
-            // Como el Column tiene crossAxisAlignment: center, el botón se centrará
-            // y tomará su tamaño natural.
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: 250,
-                ),
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: const Text(
-                    'Registrar Compra',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600, // Ligeramente más negrita
-                      letterSpacing: 0.8,         // Aumenta el espaciado entre letras
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    // Usa el color primario de tu tema para un look de marca
-                    backgroundColor: Theme.of(context).colorScheme.primary, 
-                    // Color del texto y el ícono
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary, 
-                    // Define un padding más generoso para hacerlo más grande
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Esquinas ligeramente redondeadas
-                    ),
-                  ),
-                  onPressed: _registerPurchase,
-                ),
-              ),
+            PrimaryButtonApp(
+              text: 'Registrar Compra',
+              icon: Icons.save,
+              isLoading: _isRegistering, // Conectas tu variable de estado
+              onPressed: _registerPurchase, // Conectas tu función
             ),
-            // --- FIN DEL CAMBIO ---
-        
             const SizedBox(height: 16), // Espacio al final
           ],
         ),

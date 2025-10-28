@@ -4,7 +4,7 @@ import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
-import 'package:sicv_flutter/ui/pages/user_management.dart';
+import 'package:sicv_flutter/ui/screen/config/user_management.dart';
 import 'ui/screen/config/company_screen.dart';
 import 'ui/screen/config/currency_screen.dart';
 import 'ui/screen/config/units_screen.dart';

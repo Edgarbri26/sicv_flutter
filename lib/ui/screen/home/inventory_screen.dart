@@ -6,7 +6,10 @@ import 'package:sicv_flutter/models/category.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'dart:io';        // Required for File (mobile/desktop)
 import 'package:flutter/foundation.dart'; // Required for kIsWeb constant
-import 'package:image_picker/image_picker.dart'; // Required for image picking
+import 'package:image_picker/image_picker.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Required for image picking
 
 class InventoryDatatableScreen extends StatefulWidget {
   const InventoryDatatableScreen({super.key});
@@ -21,6 +24,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   final ProductCategory catLimpieza = ProductCategory(id: 2, name: 'Limpieza');
   final ProductCategory catAlimentos = ProductCategory(id: 3, name: 'Alimentos');
   final ProductCategory catPersonal = ProductCategory(id: 4, name: 'Cuidado Personal');
+  final ProductCategory catTodas = ProductCategory(id: 0, name: 'Todas');
   
   late final List<Product> _allProducts;
 
@@ -28,8 +32,8 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
   // Estado para los filtros
   String _searchQuery = '';
-  String _selectedCategory = 'Todas';
-  final List<String> _categories = ['Todas', 'Bebidas', 'Limpieza', 'Alimentos', 'Personal'];
+  ProductCategory? _selectedCategory;
+  //final List<String> _categories = ['Todas', 'Bebidas', 'Limpieza', 'Alimentos', 'Personal'];
 
   int? _sortColumnIndex;      // Índice de la columna ordenada (null = ninguna)
   bool _sortAscending = true; // Dirección del orden (true = Ascendente)
@@ -44,6 +48,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     super.initState();
     
     _allCategories = [
+      catTodas,
       catBebidas,
       catLimpieza,
       catAlimentos,
@@ -239,67 +244,64 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
   /// Filtra Y ORDENA la lista de productos
   void _filterProducts() {
-    setState(() {
-      List<Product> tempProducts = _allProducts;
+  // 1. Haz TODO el trabajo pesado AFUERA
+  List<Product> tempProducts = _allProducts;
 
-      // 1. Filtrar por Categoría (igual que antes)
-      if (_selectedCategory != 'Todas') {
-        tempProducts = tempProducts
-            .where((product) => product.category.name == _selectedCategory)
-            .toList();
+  if (_selectedCategory != null && _selectedCategory!.name != 'Todas') {
+    tempProducts = tempProducts
+        .where((product) => product.category.name == _selectedCategory!.name)
+        .toList();
+  }
+
+  if (_searchQuery.isNotEmpty) {
+    tempProducts = tempProducts
+        .where((product) =>
+            product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            product.sku!.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+  }
+
+  if (_sortColumnIndex != null) {
+    tempProducts.sort((a, b) {
+      // ... tu lógica de sort ...
+      dynamic aValue;
+      dynamic bValue;
+
+      switch (_sortColumnIndex) {
+        case 1: // Producto (Nombre)
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 2: // SKU
+          aValue = a.sku!.toLowerCase();
+          bValue = b.sku!.toLowerCase();
+          break;
+        case 3: // Categoría
+          aValue = a.category.name.toLowerCase();
+          bValue = b.category.name.toLowerCase();
+          break;
+        case 4: // Stock
+          aValue = a.stock;
+          bValue = b.stock;
+          break;
+        case 5: // Precio
+          aValue = a.price;
+          bValue = b.price;
+          break;
+        default:
+          return 0;
       }
 
-      // 2. Filtrar por Búsqueda (igual que antes)
-      if (_searchQuery.isNotEmpty) {
-        tempProducts = tempProducts
-            .where((product) =>
-                product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                product.sku!.toLowerCase().contains(_searchQuery.toLowerCase()))
-            .toList();
-      }
-
-      // 3. Aplicar Ordenamiento
-      if (_sortColumnIndex != null) {
-        tempProducts.sort((a, b) {
-          dynamic aValue;
-          dynamic bValue;
-
-          // *** ¡LOS ÍNDICES AQUÍ CAMBIARON! ***
-          switch (_sortColumnIndex) {
-            case 0: // Img
-              return 0; // No se ordena por imagen
-            case 1: // Producto (Nombre)
-              aValue = a.name.toLowerCase();
-              bValue = b.name.toLowerCase();
-              break;
-            case 2: // SKU
-              aValue = a.sku!.toLowerCase();
-              bValue = b.sku!.toLowerCase();
-              break;
-            case 3: // Categoría
-              aValue = a.category.name.toLowerCase();
-              bValue = b.category.name.toLowerCase();
-              break;
-            case 4: // Stock
-              aValue = a.stock;
-              bValue = b.stock;
-              break;
-            case 5: // Precio
-              aValue = a.price;
-              bValue = b.price;
-              break;
-            default:
-              return 0; // No ordenar (para 'Acciones', etc.)
-          }
-
-          final comparison = aValue.compareTo(bValue);
-          return _sortAscending ? comparison : -comparison;
-        });
-      }
-
-      _filteredProducts = tempProducts;
+      final comparison = aValue.compareTo(bValue);
+      return _sortAscending ? comparison : -comparison;
     });
   }
+
+  // 2. Llama a setState SÓLO para asignar el resultado final
+  setState(() {
+    _filteredProducts = tempProducts;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -472,7 +474,6 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     );
   }
   
-
   /// Construye la barra de búsqueda, filtro y botón de añadir (RESPONSIVO)
   Widget _buildFiltersAndSearch() {
     return Padding(
@@ -495,12 +496,32 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                   children: [
                     Expanded(
                       flex: 2,
-                      child: _buildSearchField(), // TextField
+                      child: SearchTextFieldApp(
+                        onChanged: (value) {
+                          _searchQuery = value;
+                          _filterProducts();
+                        },
+                        labelText: 'Buscar por Nombre o SKU'
+                      ),  // TextField
                     ),
                     SizedBox(width: 16),
                     Expanded(
                       flex: 1,
-                      child: _buildCategoryFilter(), // Dropdown
+                      child: DropDownApp(
+                        labelText: "Categorías",
+                        hintText: "Selecciona una categoría...",
+                        initialValue: _selectedCategory, 
+                        items: _allCategories,
+                        itemToString: (ProductCategory categoria) {
+                          return categoria.name; // <-- Cambia 'name' por la propiedad de texto de tu clase
+                        },
+                        onChanged: (newValue) { 
+                          setState(() {
+                            _selectedCategory = newValue!;
+                          });
+                          _filterProducts();
+                        },
+                      ),
                     ),
                   ],
                 );
@@ -508,9 +529,29 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                 // --- VISTA ANGOSTA: Usa un Column ---
                 return Column(
                   children: [
-                    _buildSearchField(), // TextField
+                    SearchTextFieldApp(
+                      onChanged: (value) {
+                        _searchQuery = value;
+                        _filterProducts();
+                      }, 
+                      labelText: 'Buscar por Nombre o SKU'
+                    ), // TextField
                     SizedBox(height: 16),
-                    _buildCategoryFilter(), // Dropdown
+                    DropDownApp(
+                      labelText: "Categorías",
+                      hintText: "Selecciona una categoría...",
+                      initialValue: _selectedCategory, 
+                      items: _allCategories,
+                      itemToString: (ProductCategory categoria) {
+                        return categoria.name; // <-- Cambia 'name' por la propiedad de texto de tu clase
+                      },
+                      onChanged: (newValue) { 
+                        setState(() {
+                          _selectedCategory = newValue!;
+                        });
+                        _filterProducts();
+                      },
+                    ), // Dropdown
                   ],
                 );
               }
@@ -532,7 +573,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   // --- Widgets de ayuda (separados para limpieza) ---
 
   /// Construye el campo de búsqueda
-  Widget _buildSearchField() {
+ /* Widget _buildSearchField() {
     return TextField(
       style: TextStyle(
         fontSize: 15.0, // <-- Cambia este valor al tamaño que quieras
@@ -573,9 +614,9 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       },
     );
   }
-
+*/
   /// Construye el filtro de categoría
-  Widget _buildCategoryFilter() {
+ /* Widget _buildCategoryFilter() {
     return DropdownButtonFormField<String>(
       // --- 👇 2. ESTILO DEL MENÚ DESPLEGABLE (LA CAJA QUE APARECE) ---
       dropdownColor: AppColors.background, // Color de fondo del menú
@@ -635,7 +676,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       },
     );
   }
-
+*/
   /// Construye el DataTable principal
   Widget _buildDataTable() {
     return DataTable(
@@ -778,14 +819,6 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       return Colors.green.shade800;
     }
   }
-
-  // --- Lógica de Acciones (Placeholder) ---
-
-  /*void _addNewProduct() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Navegando a la pantalla de "Añadir Producto"...')),
-    );
-  }*/
 
   void _editProduct(Product product) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -930,26 +963,34 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                             const SizedBox(height: 24),
 
                             // --- Other Form Fields ---
-                            _buildCustomTextField(controller: nameController, labelText: 'Nombre del Producto', prefixIcon: Icons.shopping_bag_outlined),
+                            TextFieldApp(controller: nameController, labelText: 'Nombre del Producto', prefixIcon: Icons.shopping_bag_outlined),
                             const SizedBox(height: 16),
-                            _buildCustomTextField(controller: skuController, labelText: 'SKU / Código', prefixIcon: Icons.qr_code, keyboardType: TextInputType.text),
+                            TextFieldApp(controller: skuController, labelText: 'SKU / Código', prefixIcon: Icons.qr_code, keyboardType: TextInputType.text),
                             const SizedBox(height: 16),
-                            DropdownButtonFormField<ProductCategory>(
-                              initialValue: selectedCategory,
-                              decoration: _buildInputDecoration(labelText: 'Categoría'),
-                              items: _allCategories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat.name))).toList(),
-                              onChanged: (ProductCategory? newValue) => setStateModal(() => selectedCategory = newValue),
+                            DropDownApp(
+                              labelText: "Categoría",
+                              prefixIcon: Icons.category,
+                              initialValue: selectedCategory, 
+                              items: _allCategories,
+                              itemToString: (ProductCategory categoria) {
+                                return categoria.name; // <-- Cambia 'name' por la propiedad de texto de tu clase
+                              },
+                              onChanged: (newValue) { 
+                                setState(() {
+                                  _selectedCategory = newValue!;
+                                });
+                              },
                             ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                Expanded(child: _buildCustomTextField(controller: priceController, labelText: 'Precio', prefixIcon: Icons.attach_money, keyboardType: TextInputType.number)),
+                                Expanded(child: TextFieldApp(controller: priceController, labelText: 'Precio', prefixIcon: Icons.attach_money, keyboardType: TextInputType.number)),
                                 const SizedBox(width: 16),
-                                Expanded(child: _buildCustomTextField(controller: stockController, labelText: 'Stock Inicial', prefixIcon: Icons.inventory_2_outlined, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly])),
+                                Expanded(child: TextFieldApp(controller: stockController, labelText: 'Stock Inicial', prefixIcon: Icons.inventory_2_outlined, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly])),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            _buildCustomTextField(controller: descriptionController, labelText: 'Descripción (Opcional)', maxLines: 3),
+                            TextFieldApp(controller: descriptionController, labelText: 'Descripción (Opcional)', maxLines: 3,),
                             const SizedBox(height: 24),
                           ],
                         ),
@@ -977,7 +1018,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                             // Disable button if required fields are empty
-                            onPressed: (nameController.text.isEmpty || skuController.text.isEmpty || selectedCategory == null)
+                            onPressed: (nameController.text.isEmpty || skuController.text.isEmpty)
                               ? null
                               : () async { // Make onPressed async
                                   // --- Prepare Image Bytes for Upload ---
@@ -993,7 +1034,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                                   print('--- Saving Product ---');
                                   print('Name: ${nameController.text}');
                                   print('SKU: ${skuController.text}');
-                                  print('Category: ${selectedCategory?.name}');
+                                  print('Category: ${selectedCategory!.name}');
                                   print('Price: ${priceController.text}');
                                   print('Stock: ${stockController.text}');
                                   print('Description: ${descriptionController.text}');
@@ -1052,7 +1093,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     });
   }
 
-  InputDecoration _buildInputDecoration({required String labelText, IconData? prefixIcon}) {
+/*  InputDecoration _buildInputDecoration({required String labelText, IconData? prefixIcon}) {
     return InputDecoration(
       labelStyle: const TextStyle(
         fontSize: 16.0,
@@ -1079,9 +1120,9 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
     );
   }
-
+*/
 // Widget auxiliar para mantener el código más limpio
-  Widget _buildCustomTextField({
+/*  Widget _buildCustomTextField({
     required TextEditingController controller,
     required String labelText,
     IconData? prefixIcon,
@@ -1099,5 +1140,5 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     );
   }
 
-
+*/
 }

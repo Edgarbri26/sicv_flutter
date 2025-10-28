@@ -4,7 +4,7 @@ import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
-import 'package:sicv_flutter/ui/pages/user_management.dart';
+import 'package:sicv_flutter/ui/screen/config/user_management.dart';
 
 class Menu extends StatelessWidget {
   // Propiedades requeridas para la navegación de HomePage
