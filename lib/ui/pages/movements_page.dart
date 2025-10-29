@@ -433,7 +433,7 @@ class _MovementsPageState extends State<MovementsPage> {
           ),
         ],
       ),
-      drawer: const Menu(),
+      drawer: const MenuMovil(),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add_circle_outline),
         label: const Text('Ajuste Manual'),

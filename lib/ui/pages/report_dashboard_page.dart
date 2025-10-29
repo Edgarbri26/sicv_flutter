@@ -39,7 +39,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
         title: const Text('Dashboard de Reportes'),
         elevation: 1,
       ),
-      drawer: const Menu(),
+      drawer: const MenuMovil(),
       // LayoutBuilder es la clave de la responsividad.
       // Nos da "constraints" (restricciones) del widget padre.
       body: LayoutBuilder(
