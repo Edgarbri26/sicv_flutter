@@ -6,7 +6,7 @@ import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 // Asume que tienes una página de perfil
-// import 'package/sicv_flutter/ui/pages/profile_page.dart'; 
+// import 'package/sicv_flutter/ui/pages/profile_page.dart';
 
 class MenuMovil extends StatelessWidget {
   // --- MEJORA: Recibe la ruta actual para resaltar ---
@@ -21,8 +21,11 @@ class MenuMovil extends StatelessWidget {
   Widget build(BuildContext context) {
     // --- MEJORA: Simula datos del usuario (deberías obtenerlos del estado global) ---
     const String userName = "Usuario Real"; // Reemplaza con datos reales
-    const String userEmail = "usuario@ejemplo.com"; // Reemplaza con datos reales
-    final String userInitials = userName.isNotEmpty ? userName.substring(0, 1).toUpperCase() : '?';
+    const String userEmail =
+        "usuario@ejemplo.com"; // Reemplaza con datos reales
+    final String userInitials = userName.isNotEmpty
+        ? userName.substring(0, 1).toUpperCase()
+        : '?';
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -40,11 +43,16 @@ class MenuMovil extends StatelessWidget {
               backgroundColor: AppColors.primary, // O usa una imagen
               child: Text(
                 userInitials,
-                style: TextStyle(fontSize: 40.0, color: AppColors.secondary),
+                style: TextStyle(
+                  fontSize: 40.0,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
             decoration: BoxDecoration(
-              color: Colors.transparent, // Usa tu color primario
+              color: Theme.of(
+                context,
+              ).colorScheme.primary, // Usa tu color primario
             ),
             // Puedes añadir otros avatares aquí si quieres
             // otherAccountsPictures: <Widget>[ ... ],
@@ -178,7 +186,7 @@ class MenuMovil extends StatelessWidget {
         style: TextStyle(
           color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 20
+          fontSize: 20,
         ),
       ),
       // --- MEJORA: Efecto visual al seleccionar ---
@@ -209,7 +217,10 @@ class MenuMovil extends StatelessWidget {
               },
             ),
             TextButton(
-              child: Text('Cerrar Sesión', style: TextStyle(color: Colors.red[700])),
+              child: Text(
+                'Cerrar Sesión',
+                style: TextStyle(color: Colors.red[700]),
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop(); // Cierra el diálogo
                 Navigator.pop(context); // Cierra el drawer si sigue abierto
@@ -218,7 +229,8 @@ class MenuMovil extends StatelessWidget {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (Route<dynamic> route) => false, // Elimina todas las rutas anteriores
+                  (Route<dynamic> route) =>
+                      false, // Elimina todas las rutas anteriores
                 );
                 // Aquí también deberías limpiar el estado de autenticación (tokens, etc.)
               },

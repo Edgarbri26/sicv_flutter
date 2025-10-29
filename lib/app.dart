@@ -17,6 +17,7 @@ import 'ui/screen/config/attributes_screen.dart';
 import 'ui/screen/config/backup_screen.dart';
 import 'ui/screen/config/theme_screen.dart';
 import 'ui/screen/config/notifications_screen.dart';
+import 'ui/screen/config/settings_screen.dart';
 import 'core/theme/themes.dart';
 import 'ui/pages/home_page.dart';
 
@@ -34,6 +35,10 @@ class InventoryApp extends StatelessWidget {
         switch (settings.name) {
           case AppRoutes.home:
             return MaterialPageRoute(builder: (context) => const HomePage());
+          case AppRoutes.settings:
+            return MaterialPageRoute(
+              builder: (context) => const SettingsScreen(),
+            );
           case AppRoutes.sale:
             return MaterialPageRoute(builder: (context) => const SalePage());
           case AppRoutes.addEditInventory:
@@ -41,9 +46,7 @@ class InventoryApp extends StatelessWidget {
               builder: (context) => const AddEditInventoryScreen(),
             );
           case AppRoutes.movements:
-            return MaterialPageRoute(
-              builder: (context) => MovementsPage(),
-            );
+            return MaterialPageRoute(builder: (context) => MovementsPage());
           case AppRoutes.company:
             return MaterialPageRoute(
               builder: (context) => const CompanyScreen(),
