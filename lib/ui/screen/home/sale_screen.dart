@@ -151,6 +151,21 @@ class _SaleScreenState extends State<SaleScreen> {
     // Usamos Column para añadir el buscador y filtros sobre la cuadrícula
     return Column(
       children: [
+        /*Expanded(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: 100,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.primary
+              ),
+              child: Center(
+                child: Text("Ejemplo", style: TextStyle(color: AppColors.secondary),),
+              ),
+            ),
+          ),
+        ),*/
         // --- 1. WIDGET DE BÚSQUEDA ---
         Padding(
           padding: const EdgeInsets.all(16.0),

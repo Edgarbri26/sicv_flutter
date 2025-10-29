@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart'; // Mantienes tus colores
-import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
+import 'package:sicv_flutter/ui/pages/home_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
-
+import 'package:sicv_flutter/ui/pages/movements_page.dart';
+import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
+import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 // Asume que tienes una página de perfil
 // import 'package/sicv_flutter/ui/pages/profile_page.dart';
 
-class Menu extends StatelessWidget {
+class MenuMovil extends StatelessWidget {
   // --- MEJORA: Recibe la ruta actual para resaltar ---
   final String currentPageRoute; // Ejemplo: '/home', '/reports', '/users'
 
-  const Menu({
+  const MenuMovil({
     super.key,
     this.currentPageRoute = '', // Valor por defecto si no se pasa
   });
@@ -27,36 +27,32 @@ class Menu extends StatelessWidget {
         ? userName.substring(0, 1).toUpperCase()
         : '?';
 
-    return Container(
-      color: Theme.of(context).canvasColor,
+    return Drawer(
+      backgroundColor: Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           // --- MEJORA: Usa UserAccountsDrawerHeader ---
           UserAccountsDrawerHeader(
-            accountName: Text(
+            accountName: const Text(
               userName,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.secondary,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            accountEmail: Text(
-              userEmail,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.secondary,
-              ),
-            ),
+            accountEmail: Text(userEmail),
             currentAccountPicture: CircleAvatar(
               backgroundColor: AppColors.secondary, // O usa una imagen
               child: Text(
                 userInitials,
-                style: AppTextStyles.headlineLarge.copyWith(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  fontSize: 40.0,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
             decoration: BoxDecoration(
-              color: AppColors.primary, // Usa tu color primario
+              color: Theme.of(
+                context,
+              ).colorScheme.primary, // Usa tu color primario
             ),
             // Puedes añadir otros avatares aquí si quieres
             // otherAccountsPictures: <Widget>[ ... ],
@@ -82,7 +78,10 @@ class Menu extends StatelessWidget {
             route: '/home',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacementNamed(context, AppRoutes.home);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const HomePage()),
+              );
               // O mejor con rutas nombradas:
               // Navigator.pushReplacementNamed(context, '/reports');
             },
@@ -94,10 +93,12 @@ class Menu extends StatelessWidget {
             route: '/reports',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacementNamed(
+              Navigator.pushReplacement(
                 context,
-                AppRoutes.reportDashboard,
+                MaterialPageRoute(builder: (_) => const ReportDashboardPage()),
               );
+              // O mejor con rutas nombradas:
+              // Navigator.pushReplacementNamed(context, '/reports');
             },
           ),
           /*_buildMenuItem(
@@ -107,7 +108,10 @@ class Menu extends StatelessWidget {
             route: '/users',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacementNamed(context, AppRoutes.users);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
+              );
               // O mejor con rutas nombradas:
               // Navigator.pushReplacementNamed(context, '/users');
             },
@@ -119,7 +123,12 @@ class Menu extends StatelessWidget {
             route: '/users',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacementNamed(context, AppRoutes.movements);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => MovementsPage()),
+              );
+              // O mejor con rutas nombradas:
+              // Navigator.pushReplacementNamed(context, '/users');
             },
           ),
 
@@ -133,7 +142,12 @@ class Menu extends StatelessWidget {
             route: '/settings',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.settings);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+              // O mejor con rutas nombradas:
+              // Navigator.pushReplacementNamed(context, '/settings');
             },
           ),
 
@@ -165,14 +179,14 @@ class Menu extends StatelessWidget {
       leading: Icon(
         icon,
         // --- MEJORA: Usa colores del tema o resalta si está seleccionado ---
-        color: isSelected ? AppColors.primary : AppColors.textPrimary,
+        color: isSelected ? Theme.of(context).primaryColor : Colors.black54,
       ),
       title: Text(
         title,
         style: TextStyle(
-          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+          color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: AppSizes.bodyM,
+          fontSize: 20,
         ),
       ),
       // --- MEJORA: Efecto visual al seleccionar ---
