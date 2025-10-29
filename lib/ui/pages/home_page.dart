@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         )
                         .toList(),
                   ),*/
-            backgroundColor: AppColors.primary,
+            backgroundColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             title: Text(
@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: AppColors.secondary,
+                color: AppColors.textPrimary,
               ),
             ),
             toolbarHeight: 64.0,
