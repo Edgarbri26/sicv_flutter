@@ -20,6 +20,8 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   ];
   List<String> _categoriasFiltradas = [];
   final TextEditingController _searchController = TextEditingController();
+  // Mapa simple para almacenar prefijos por categoría (id o nombre -> prefijo)
+  final Map<String, String> _prefixes = {};
 
   @override
   void initState() {
@@ -49,10 +51,45 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   }
 
   void _editarCategoria(String categoria) {
-    print('TODO: Editar $categoria');
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Editando categoría: $categoria')));
+    // Mostrar diálogo para editar prefijo de la categoría
+    final controller = TextEditingController(text: _prefixes[categoria] ?? '');
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Prefijo para $categoria'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Ej. ELEC-'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = controller.text.trim();
+                setState(() {
+                  if (value.isEmpty) {
+                    _prefixes.remove(categoria);
+                  } else {
+                    _prefixes[categoria] = value;
+                  }
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Prefijo actualizado para $categoria')),
+                );
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -86,9 +123,11 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
               itemCount: _categoriasFiltradas.length,
               itemBuilder: (context, index) {
                 final categoria = _categoriasFiltradas[index];
+                final prefix = _prefixes[categoria];
                 return ListTile(
                   title: Text(categoria),
                   leading: const Icon(Icons.category_outlined),
+                  subtitle: prefix != null && prefix.isNotEmpty ? Text('Prefijo: $prefix') : null,
                   onTap: () => print('TODO: Ver subcategorías de $categoria'),
                   trailing: IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blue),

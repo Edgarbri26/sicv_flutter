@@ -12,6 +12,7 @@ class TextFieldApp extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final int maxLines;
   final bool obscureText;
+  final bool enabled;
   final TextCapitalization textCapitalization;
 
   const TextFieldApp({
@@ -24,12 +25,14 @@ class TextFieldApp extends StatelessWidget {
     this.inputFormatters,
     this.maxLines = 1,
     this.obscureText = false, // Añadido para contraseñas
+    this.enabled = true,
     this.textCapitalization = TextCapitalization.sentences,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      enabled: enabled,
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
