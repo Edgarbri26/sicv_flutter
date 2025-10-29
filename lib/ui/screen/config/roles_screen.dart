@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 
 // --- 1. MODELOS DE DATOS (Simulación) ---
 
@@ -225,11 +227,7 @@ class _RolesScreenState extends State<RolesScreen> {
     const double breakpoint = 650.0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Roles y Permisos'),
-        // Botón "Atrás" que des-selecciona el rol en modo móvil
-        leading: _buildAppBarLeading(context, breakpoint),
-      ),
+      appBar: AppBarApp(title: 'Roles y Permisos', iconColor: AppColors.textPrimary,),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWide = constraints.maxWidth >= breakpoint;

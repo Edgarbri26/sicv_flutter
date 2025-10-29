@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
@@ -95,49 +97,45 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Categorías y Subcategorías',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+      appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary,),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 600,
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SearchTextFieldApp(
+                  controller: _searchController,
+                  labelText: 'Buscar Categoría',
+                  hintText: 'Ej. Electrónica',
+                  onChanged: _filtrarCategorias,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _categoriasFiltradas.length,
+                  itemBuilder: (context, index) {
+                    final categoria = _categoriasFiltradas[index];
+                    final prefix = _prefixes[categoria];
+                    return ListTile(
+                      title: Text(categoria),
+                      leading: const Icon(Icons.category_outlined),
+                      subtitle: prefix != null && prefix.isNotEmpty ? Text('Prefijo: $prefix') : null,
+                      onTap: () => print('TODO: Ver subcategorías de $categoria'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _editarCategoria(categoria),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SearchTextFieldApp(
-              controller: _searchController,
-              labelText: 'Buscar Categoría',
-              hintText: 'Ej. Electrónica',
-              onChanged: _filtrarCategorias,
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _categoriasFiltradas.length,
-              itemBuilder: (context, index) {
-                final categoria = _categoriasFiltradas[index];
-                final prefix = _prefixes[categoria];
-                return ListTile(
-                  title: Text(categoria),
-                  leading: const Icon(Icons.category_outlined),
-                  subtitle: prefix != null && prefix.isNotEmpty ? Text('Prefijo: $prefix') : null,
-                  onTap: () => print('TODO: Ver subcategorías de $categoria'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _editarCategoria(categoria),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _agregarCategoria,

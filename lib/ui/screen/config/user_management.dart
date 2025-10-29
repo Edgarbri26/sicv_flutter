@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/admin/add_user_form_seet.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 // Importa el nuevo formulario que crearemos (mira el paso 2)
 // import 'package:tu_proyecto/widgets/admin/add_user_form_sheet.dart';
 
@@ -124,7 +125,8 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBarApp(title: 'Gestionar Usuarios', iconColor: AppColors.textPrimary,),
+      /*appBar: AppBar(
         // 1. Apariencia limpia: Fondo blanco/claro y sin elevación marcada
         backgroundColor: Theme.of(context).colorScheme.surface, // Usa el color de fondo del tema
         surfaceTintColor: Colors.transparent, // Elimina el tinte al hacer scroll (Android 12+)
@@ -158,7 +160,7 @@ class _AdminUserManagementPageState extends State<AdminUserManagementPage> {
         iconTheme: IconThemeData(
           color: Theme.of(context).colorScheme.primary, // Íconos con color primario del tema
         ),
-      ),
+      ),*/
       //drawer: const Menu(),
       body: Column(
         children: [

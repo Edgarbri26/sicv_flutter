@@ -149,7 +149,38 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         // 7. Quitamos el DefaultTabController
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: AppBarApp(title: _screenTitles[_currentIndex]),
+          //appBar: AppBarApp(title:_screenTitles[_currentIndex], iconColor: AppColors.textPrimary,)
+          appBar: AppBar(
+            // 8. Pasamos el TabController y la función de Tap
+            /*bottom: isWide
+                ? null
+                : TabBar(
+                    controller: _tabController,
+                    onTap: _navigateToPage, // Usamos la nueva función
+                    tabs: bottomNavItems
+                        .map(
+                          (item) =>
+                              Tab(icon: Icon(item.icon), text: item.label),
+                        )
+                        .toList(),
+                  ),*/
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              _screenTitles[_currentIndex],
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            toolbarHeight: 64.0,
+            actions: [const SizedBox(width: 16)],
+            iconTheme: IconThemeData(
+              color: AppColors.textPrimary,
+            ),
+          ),
 
           // 9. Lógica del Drawer: Si es angosto, usa el Menu widget
           // 9. Lógica del Drawer: Si es angosto, usa el MyDrawer original
@@ -339,123 +370,129 @@ class AppSidebar extends StatelessWidget {
     // 1. EL CAMBIO CLAVE: Usamos un Container en lugar de Drawer.
     // El tamaño (ancho) lo define el ConstrainedBox en HomePage.
     return Container(
-      width: double.infinity,
-      color: Colors.white, // O AppColors.background si prefieres
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          // Header de Usuario
-          UserAccountsDrawerHeader(
-            accountName: Text(
-              userName,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), // Asegura texto blanco
-            ),
-            accountEmail: Text(userEmail, style: TextStyle(color: Colors.white70)), // Asegura texto blanco
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: AppColors.secondary,
-              child: Text(
-                userInitials,
-                style: const TextStyle(
-                  fontSize: 40.0,
-                  color: AppColors.primary,
+      decoration: BoxDecoration(  
+        color: Colors.white,  // Agrega un color para poder ver la forma
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      width: double.infinity, // O AppColors.background si prefieres
+      child: ClipRRect(
+        borderRadius:  BorderRadius.only(topRight:Radius.circular(20)),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            // Header de Usuario
+            UserAccountsDrawerHeader(
+              accountName: Text(
+                userName,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), // Asegura texto blanco
+              ),
+              accountEmail: Text(userEmail, style: TextStyle(color: Colors.white70)), // Asegura texto blanco
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: AppColors.secondary,
+                child: Text(
+                  userInitials,
+                  style: const TextStyle(
+                    fontSize: 40.0,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
+              decoration: const BoxDecoration(color: AppColors.primary),
             ),
-            decoration: const BoxDecoration(color: AppColors.primary),
-          ),
-
-          // --- ÍTEMS DE NAVEGACIÓN (Venta, Compra, Inventario) ---
-          ..._pageMenuItems.map((item) {
-            final int itemIndex = item['index'] as int;
-
-            return _buildMenuItem(
+        
+            // --- ÍTEMS DE NAVEGACIÓN (Venta, Compra, Inventario) ---
+            ..._pageMenuItems.map((item) {
+              final int itemIndex = item['index'] as int;
+        
+              return _buildMenuItem(
+                context: context,
+                icon: item['icon'] as IconData,
+                title: item['title'] as String,
+                isSelected:
+                    itemIndex == currentIndex, // Resalta según el PageView
+                onTap: () {
+                  // Llama a la función de HomePage para cambiar de página
+                  onItemSelected(itemIndex);
+                },
+                // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
+              );
+            }),
+        
+            const Divider(thickness: 1),
+        
+            // --- ÍTEMS DE NAVEGACIÓN DE RUTAS (Reportes, Usuarios, Configuración) ---
+        
+            // Ítem: Reportes
+            _buildMenuItem(
               context: context,
-              icon: item['icon'] as IconData,
-              title: item['title'] as String,
-              isSelected:
-                  itemIndex == currentIndex, // Resalta según el PageView
+              icon: Icons.assessment_outlined,
+              title: 'Reportes',
+              route: '/reports', // Usamos la ruta para resaltar
+              currentPageRoute: currentPageRoute,
               onTap: () {
-                // Llama a la función de HomePage para cambiar de página
-                onItemSelected(itemIndex);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ReportDashboardPage()),
+                );
               },
-              // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
-            );
-          }),
-
-          const Divider(thickness: 1),
-
-          // --- ÍTEMS DE NAVEGACIÓN DE RUTAS (Reportes, Usuarios, Configuración) ---
-
-          // Ítem: Reportes
-          _buildMenuItem(
-            context: context,
-            icon: Icons.assessment_outlined,
-            title: 'Reportes',
-            route: '/reports', // Usamos la ruta para resaltar
-            currentPageRoute: currentPageRoute,
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const ReportDashboardPage()),
-              );
-            },
-          ),
-
-          // Ítem: Administrar Usuarios
-          /*_buildMenuItem(
-            context: context,
-            icon: Icons.group_outlined,
-            title: 'Administrar usuarios',
-            route: '/users',
-            currentPageRoute: currentPageRoute,
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
-              );
-            },
-          ),*/
-
-          // Ítem: Administrar Movimientos
-          _buildMenuItem(
-            context: context,
-            icon: Icons.compare_arrows,
-            title: 'Administrar movimientos',
-            route: '/movements', // Usa una ruta única
-            currentPageRoute: currentPageRoute,
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => MovementsPage()),
-              );
-            },
-          ),
-
-          const Divider(thickness: 1),
-
-          // Ítem: Configuración
-          _buildMenuItem(
-            context: context,
-            icon: Icons.settings_outlined,
-            title: 'Configuración',
-            route: '/settings',
-            currentPageRoute: currentPageRoute,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-          ),
-
-          // Ítem: Cerrar Sesión
-          _buildMenuItem(
-            context: context,
-            icon: Icons.logout,
-            title: 'Cerrar Sesión',
-            onTap: () => _showLogoutConfirmation(context),
-          ),
-        ],
+            ),
+        
+            // Ítem: Administrar Usuarios
+            /*_buildMenuItem(
+              context: context,
+              icon: Icons.group_outlined,
+              title: 'Administrar usuarios',
+              route: '/users',
+              currentPageRoute: currentPageRoute,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
+                );
+              },
+            ),*/
+        
+            // Ítem: Administrar Movimientos
+            _buildMenuItem(
+              context: context,
+              icon: Icons.compare_arrows,
+              title: 'Administrar movimientos',
+              route: '/movements', // Usa una ruta única
+              currentPageRoute: currentPageRoute,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => MovementsPage()),
+                );
+              },
+            ),
+        
+            const Divider(thickness: 1),
+        
+            // Ítem: Configuración
+            _buildMenuItem(
+              context: context,
+              icon: Icons.settings_outlined,
+              title: 'Configuración',
+              route: '/settings',
+              currentPageRoute: currentPageRoute,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+        
+            // Ítem: Cerrar Sesión
+            _buildMenuItem(
+              context: context,
+              icon: Icons.logout,
+              title: 'Cerrar Sesión',
+              onTap: () => _showLogoutConfirmation(context),
+            ),
+          ],
+        ),
       ),
     );
   }

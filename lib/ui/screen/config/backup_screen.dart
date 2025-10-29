@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 
@@ -62,18 +64,7 @@ class _BackupScreenState extends State<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Backup Automático',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      appBar: AppBarApp(title: 'Backup Automático', iconColor: AppColors.textPrimary,),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
