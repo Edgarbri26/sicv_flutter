@@ -13,7 +13,7 @@ import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
-import 'package:sicv_flutter/ui/screen/config/user_management.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 // import 'package:sicv_flutter/ui/widgets/MyDrawer.dart'; // Ya no se usa
 // import 'package:sicv_flutter/ui/widgets/my_side_nav_rail.dart'; // Ya no se usa
@@ -149,37 +149,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         // 7. Quitamos el DefaultTabController
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: AppBar(
-            // 8. Pasamos el TabController y la función de Tap
-            /*bottom: isWide
-                ? null
-                : TabBar(
-                    controller: _tabController,
-                    onTap: _navigateToPage, // Usamos la nueva función
-                    tabs: bottomNavItems
-                        .map(
-                          (item) =>
-                              Tab(icon: Icon(item.icon), text: item.label),
-                        )
-                        .toList(),
-                  ),*/
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              _screenTitles[_currentIndex],
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            toolbarHeight: 64.0,
-            actions: [const SizedBox(width: 16)],
-            iconTheme: IconThemeData(
-              color: AppColors.secondary,
-            ),
-          ),
+          appBar: AppBarApp(title: _screenTitles[_currentIndex]),
 
           // 9. Lógica del Drawer: Si es angosto, usa el Menu widget
           // 9. Lógica del Drawer: Si es angosto, usa el MyDrawer original
