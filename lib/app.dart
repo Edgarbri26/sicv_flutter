@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
+import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'package:sicv_flutter/ui/screen/config/user_management.dart';
@@ -16,7 +17,7 @@ import 'ui/screen/config/attributes_screen.dart';
 import 'ui/screen/config/backup_screen.dart';
 import 'ui/screen/config/theme_screen.dart';
 import 'ui/screen/config/notifications_screen.dart';
-import 'core/theme/app_themes.dart';
+import 'core/theme/themes.dart';
 import 'ui/pages/home_page.dart';
 
 class InventoryApp extends StatelessWidget {
@@ -39,8 +40,10 @@ class InventoryApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => const AddEditInventoryScreen(),
             );
-          case AppRoutes.report:
-            return MaterialPageRoute(builder: (context) => ReportDashboardPage());
+          case AppRoutes.movements:
+            return MaterialPageRoute(
+              builder: (context) => MovementsPage(),
+            );
           case AppRoutes.company:
             return MaterialPageRoute(
               builder: (context) => const CompanyScreen(),
@@ -60,7 +63,9 @@ class InventoryApp extends StatelessWidget {
           case AppRoutes.roles:
             return MaterialPageRoute(builder: (context) => const RolesScreen());
           case AppRoutes.users:
-            return MaterialPageRoute(builder: (context) => AdminUserManagementPage());
+            return MaterialPageRoute(
+              builder: (context) => AdminUserManagementPage(),
+            );
           case AppRoutes.sku:
             return MaterialPageRoute(builder: (context) => const SkuScreen());
           case AppRoutes.atributes:
@@ -77,6 +82,11 @@ class InventoryApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => const NotificationsScreen(),
             );
+          case AppRoutes.reportDashboard:
+            return MaterialPageRoute(
+              builder: (context) => const ReportDashboardPage(),
+            );
+
           default:
             return MaterialPageRoute(builder: (context) => const HomePage());
         }

@@ -6,7 +6,8 @@ class AppRoutes {
   static const String login = 'LoginPage';
   static const String settings = 'SettingsScreen';
   static const String purchase = 'PurchasePage';
-  static const String report = 'ReportPage';
+  static const String reportDashboard = 'ReportDashboardPage';
+  static const String movements = 'MovementsPage';
   static const String backup = 'BackupPage';
   static const String theme = 'ThemeScreen';
   static const String notifications = 'NotificationsScreen';
@@ -19,4 +20,5 @@ class AppRoutes {
   static const String roles = 'RolesScreen';
   static const String units = 'UnitsScreen';
   static const String users = 'AdminUserManagement';
+  static const String perfil = 'perfil';
 }

@@ -2,23 +2,16 @@ import 'package:flutter/material.dart';
 import 'app_sizes.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
-// 1. ELIMINADO: No necesitas importar 'google_fonts' aquí.
-//    Se importa en 'app_text_styles.dart'.
 
 class Themes {
   Themes._();
 
   // Tema por defecto
   static ThemeData defaultTheme = ThemeData(
-    // 2. ELIMINADO: Esta línea es redundante.
-    //    La fuente ya está definida en tu 'textTheme'.
-    // fontFamily: 'Inter', 
     primaryColor: AppColors.primary,
+    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
     scaffoldBackgroundColor: AppColors.secondary,
 
-    // 3. AJUSTE: Se quitó 'const'
-    //    Porque 'AppTextStyles.headlineLarge' ya no es 'const'
-    //    (ahora usa GoogleFonts, que es 'final').
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.secondary,

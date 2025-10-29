@@ -37,10 +37,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Padding vertical general para el ListView
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         children: [
-          Center( // 1. Centra el bloque de contenido
+          Center(
+            // 1. Centra el bloque de contenido
             child: ConstrainedBox(
               // 2. Limita el ancho máximo del contenido
-              constraints: const BoxConstraints(maxWidth: 700), // Ancho máximo deseado
+              constraints: const BoxConstraints(
+                maxWidth: 700,
+              ), // Ancho máximo deseado
               child: Padding(
                 // 3. Padding horizontal DENTRO del área restringida
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -153,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: 'Configuración de Reportes',
                       subtitle: 'Formatos de exportación (PDF, Excel)',
                       icon: Icons.picture_as_pdf,
-                      routeName: AppRoutes.report,
+                      routeName: AppRoutes.reportDashboard,
                     ),
                     _buildConfigTile(
                       context: context,
@@ -167,13 +170,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildSwitchTile(
                       title: 'Modo Oscuro',
                       value: _darkModeEnabled,
-                      onChanged: (value) => setState(() => _darkModeEnabled = value),
+                      onChanged: (value) =>
+                          setState(() => _darkModeEnabled = value),
                       icon: Icons.dark_mode,
                     ),
                     _buildSwitchTile(
                       title: 'Notificaciones',
                       value: _notificationsEnabled,
-                      onChanged: (value) => setState(() => _notificationsEnabled = value),
+                      onChanged: (value) =>
+                          setState(() => _notificationsEnabled = value),
                       icon: Icons.notifications,
                     ),
                     _buildConfigTile(
@@ -190,7 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
-      ),   
+      ),
     );
   }
 

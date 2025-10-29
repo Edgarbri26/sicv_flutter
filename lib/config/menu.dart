@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
@@ -9,8 +10,8 @@ import 'package:sicv_flutter/ui/screen/config/user_management.dart';
 class Menu extends StatelessWidget {
   // Propiedades requeridas para la navegación de HomePage
   final int currentIndex;
-  final Function(int) onItemSelected; 
-  
+  final Function(int) onItemSelected;
+
   // Propiedad para resaltar rutas que no sean del PageView (Reportes, Config)
   final String currentPageRoute;
 
@@ -20,7 +21,7 @@ class Menu extends StatelessWidget {
     required this.currentIndex,
     required this.onItemSelected,
   });
-  
+
   // Ítems de navegación principales (coinciden con el PageView de HomePage)
   final List<Map<String, dynamic>> _pageMenuItems = const [
     {'title': 'Venta', 'icon': Icons.point_of_sale, 'index': 0},
@@ -33,7 +34,9 @@ class Menu extends StatelessWidget {
     // Definición de datos de usuario simulados
     const String userName = "Usuario Real";
     const String userEmail = "usuario@ejemplo.com";
-    final String userInitials = userName.isNotEmpty ? userName.substring(0, 1).toUpperCase() : '?';
+    final String userInitials = userName.isNotEmpty
+        ? userName.substring(0, 1).toUpperCase()
+        : '?';
 
     // 1. EL CAMBIO CLAVE: Usamos un Container en lugar de Drawer.
     // El tamaño (ancho) lo define el ConstrainedBox en HomePage.
@@ -45,32 +48,34 @@ class Menu extends StatelessWidget {
         children: <Widget>[
           // Header de Usuario
           UserAccountsDrawerHeader(
-            accountName: const Text(
+            accountName: Text(
               userName,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             accountEmail: Text(userEmail),
             currentAccountPicture: CircleAvatar(
               backgroundColor: AppColors.secondary,
               child: Text(
                 userInitials,
-                style: const TextStyle(fontSize: 40.0, color: AppColors.primary),
+                style: const TextStyle(
+                  fontSize: 40.0,
+                  color: AppColors.primary,
+                ),
               ),
             ),
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-            ),
+            decoration: const BoxDecoration(color: AppColors.primary),
           ),
-          
+
           // --- ÍTEMS DE NAVEGACIÓN (Venta, Compra, Inventario) ---
           ..._pageMenuItems.map((item) {
             final int itemIndex = item['index'] as int;
-            
+
             return _buildMenuItem(
               context: context,
               icon: item['icon'] as IconData,
               title: item['title'] as String,
-              isSelected: itemIndex == currentIndex, // Resalta según el PageView
+              isSelected:
+                  itemIndex == currentIndex, // Resalta según el PageView
               onTap: () {
                 // Llama a la función de HomePage para cambiar de página
                 onItemSelected(itemIndex);
@@ -78,11 +83,11 @@ class Menu extends StatelessWidget {
               // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
             );
           }),
-          
-          const Divider(thickness: 1), 
+
+          const Divider(thickness: 1),
 
           // --- ÍTEMS DE NAVEGACIÓN DE RUTAS (Reportes, Usuarios, Configuración) ---
-          
+
           // Ítem: Reportes
           _buildMenuItem(
             context: context,
@@ -97,7 +102,7 @@ class Menu extends StatelessWidget {
               );
             },
           ),
-          
+
           // Ítem: Administrar Usuarios
           _buildMenuItem(
             context: context,
@@ -112,7 +117,7 @@ class Menu extends StatelessWidget {
               );
             },
           ),
-          
+
           // Ítem: Administrar Movimientos
           _buildMenuItem(
             context: context,
@@ -123,7 +128,7 @@ class Menu extends StatelessWidget {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (_) => MovementsScreen()),
+                MaterialPageRoute(builder: (_) => MovementsPage()),
               );
             },
           ),
@@ -171,11 +176,11 @@ class Menu extends StatelessWidget {
     if (route.isNotEmpty) {
       isSelected = route == currentPageRoute;
     }
-    
+
     // Identificamos si es móvil o PC
     // Usamos el mismo breakpoint de 800px que definiste en HomePage
     final bool isMobile = MediaQuery.of(context).size.width <= 800.0;
-    
+
     return ListTile(
       leading: Icon(
         icon,
@@ -196,15 +201,15 @@ class Menu extends StatelessWidget {
         // --- LÓGICA CLAVE: Cierra el Drawer solo si es móvil ---
         if (isMobile) {
           // Si estamos en móvil, cerramos el drawer antes de navegar
-          Navigator.pop(context); 
+          Navigator.pop(context);
         }
-        
+
         // Pequeña espera para una transición más suave (opcional)
         Future.delayed(const Duration(milliseconds: 150), onTap);
       },
     );
   }
-  
+
   // (Mantenemos tu función _showLogoutConfirmation)
   void _showLogoutConfirmation(BuildContext context) {
     // ... (Tu código de _showLogoutConfirmation) ...
@@ -223,14 +228,17 @@ class Menu extends StatelessWidget {
               },
             ),
             TextButton(
-              child: Text('Cerrar Sesión', style: TextStyle(color: Colors.red[700])),
+              child: Text(
+                'Cerrar Sesión',
+                style: TextStyle(color: Colors.red[700]),
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 // Si el drawer sigue abierto (solo posible en móvil), lo cerramos
-                if (Navigator.of(context).canPop()) { 
-                   Navigator.pop(context);
+                if (Navigator.of(context).canPop()) {
+                  Navigator.pop(context);
                 }
-                
+
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginPage()),
