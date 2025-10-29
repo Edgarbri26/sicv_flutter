@@ -1,63 +1,6 @@
 import 'package:flutter/material.dart';
-
-// Definición mínima de AppColors para que los widgets compilen
-class AppColors {
-  static const Color background = Color(0xFFF5F5F5);
-  static const Color secondary = Color(0xFFE0E0E0);
-  static const Color textSecondary = Color(0xFF616161);
-  static const Color border = Color(0xFFBDBDBD);
-  static const Color textPrimary = Colors.black87;
-}
-
-// (Plantilla 3)
-class SearchTextFieldApp extends StatelessWidget {
-  final ValueChanged<String> onChanged;
-  final String labelText;
-  final String? hintText;
-  final IconData prefixIcon;
-  final TextEditingController? controller;
-
-  const SearchTextFieldApp({
-    super.key,
-    required this.onChanged,
-    required this.labelText,
-    this.hintText,
-    this.prefixIcon = Icons.search,
-    this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(fontSize: 15.0, color: AppColors.textPrimary),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: AppColors.secondary,
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: Icon(prefixIcon, size: 20),
-        labelStyle: const TextStyle(
-          fontSize: 14.0,
-          color: AppColors.textSecondary,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 3.0, color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            width: 3.0,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-      ),
-      onChanged: onChanged,
-    );
-  }
-}
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});

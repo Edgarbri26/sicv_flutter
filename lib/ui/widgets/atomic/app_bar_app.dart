@@ -48,7 +48,7 @@ class AppBarApp extends StatelessWidget implements PreferredSizeWidget {
       
       // --- Estilos Fijos de tu Diseño ---
       iconTheme: IconThemeData(
-        color: AppColors.secondary, // Mantenemos tu tema de íconos
+        color: AppColors.textPrimary, // Mantenemos tu tema de íconos
       ),
     );
   }
