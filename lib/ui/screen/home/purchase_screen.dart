@@ -7,7 +7,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/category.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/models/purchase_detail.dart';
-import '../../../../supplier.dart';
+import 'package:sicv_flutter/models/supplier.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
 class PurchaseScreen extends StatefulWidget {
