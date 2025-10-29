@@ -16,6 +16,8 @@ class AppBarApp extends StatelessWidget implements PreferredSizeWidget {
   
   /// (Opcional) La altura que tendrá el AppBar.
   final double toolbarHeight;
+  /// Color de los iconos (por ejemplo el botón "back"). Si es nulo, usa AppColors.secondary.
+  final Color? iconColor;
 
   const AppBarApp({
     super.key,
@@ -23,6 +25,7 @@ class AppBarApp extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leading,
     this.toolbarHeight = 64.0, // Usamos 64.0 como tu valor por defecto
+    this.iconColor,
   });
 
   @override
@@ -48,7 +51,7 @@ class AppBarApp extends StatelessWidget implements PreferredSizeWidget {
       
       // --- Estilos Fijos de tu Diseño ---
       iconTheme: IconThemeData(
-        color: AppColors.secondary, // Mantenemos tu tema de íconos
+        color: iconColor ?? AppColors.secondary, // Permite override desde el widget
       ),
     );
   }
