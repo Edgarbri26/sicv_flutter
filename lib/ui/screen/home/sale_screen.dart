@@ -436,19 +436,19 @@ class _SaleScreenState extends State<SaleScreen> {
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
-                  child:
-                      (product.imageUrl != null && product.imageUrl!.isNotEmpty)
-                      ? Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, progress) =>
-                              progress == null
-                              ? child
-                              : Center(child: CircularProgressIndicator()),
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildImagePlaceholder(),
-                        )
-                      : _buildImagePlaceholder(),
+                  child: ImgProduct(imageUrl: product.imageUrl ?? ''),
+                  // (product.imageUrl != null && product.imageUrl!.isNotEmpty)
+                  // ? Image.network(
+                  //     product.imageUrl!,
+                  //     fit: BoxFit.cover,
+                  //     loadingBuilder: (context, child, progress) =>
+                  //         progress == null
+                  //         ? child
+                  //         : Center(child: CircularProgressIndicator()),
+                  //     errorBuilder: (context, error, stackTrace) =>
+                  //         _buildImagePlaceholder(),
+                  //   )
+                  // : _buildImagePlaceholder(),
                 ),
               ),
 
@@ -465,12 +465,13 @@ class _SaleScreenState extends State<SaleScreen> {
                     const SizedBox(height: 10),
                     Text(
                       // Asumo que tu producto tiene 'descripcion'
-                      product.description ??
-                          "Este producto no tiene descripción.",
+                      product.description,
                       style: Theme.of(context).textTheme.bodyMedium,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
+
+                    // ubicacion
                     const SizedBox(height: 16),
                     Text(
                       // Asumo que tiene 'precio'
