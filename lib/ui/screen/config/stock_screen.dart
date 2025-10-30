@@ -12,8 +12,12 @@ class StockScreen extends StatefulWidget {
 
 class _StockScreenState extends State<StockScreen> {
   bool _alertasActivas = true;
-  final TextEditingController _minController = TextEditingController(text: '10');
-  final TextEditingController _maxController = TextEditingController(text: '100');
+  final TextEditingController _minController = TextEditingController(
+    text: '10',
+  );
+  final TextEditingController _maxController = TextEditingController(
+    text: '100',
+  );
 
   @override
   void dispose() {
@@ -28,19 +32,26 @@ class _StockScreenState extends State<StockScreen> {
     final max = _maxController.text.trim();
 
     return Scaffold(
-      appBar: const AppBarApp(title: 'Niveles de Stock', iconColor: Colors.black),
+      appBar: const AppBarApp(
+        title: 'Niveles de Stock',
+        iconColor: Colors.black,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             elevation: 1,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12.0,
+                vertical: 12.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Stock mínimo
                   TextFieldApp(
                     controller: _minController,
                     labelText: 'Stock Mínimo por Defecto',
@@ -50,7 +61,6 @@ class _StockScreenState extends State<StockScreen> {
 
                   const SizedBox(height: 12),
 
-                  // Stock máximo
                   TextFieldApp(
                     controller: _maxController,
                     labelText: 'Stock Máximo por Defecto',
@@ -64,7 +74,10 @@ class _StockScreenState extends State<StockScreen> {
                     children: [
                       const Icon(Icons.info_outline, size: 18),
                       const SizedBox(width: 8),
-                      Text('Rango: ', style: Theme.of(context).textTheme.bodyMedium),
+                      Text(
+                        'Rango: ',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                       const SizedBox(width: 6),
                       Chip(label: Text('$min - $max')),
                     ],
@@ -104,14 +117,20 @@ class _StockScreenState extends State<StockScreen> {
               final maxVal = int.tryParse(_maxController.text) ?? 0;
               if (minVal < 0 || maxVal < 0 || minVal > maxVal) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Rango inválido: revisa los valores')),
+                  const SnackBar(
+                    content: Text('Rango inválido: revisa los valores'),
+                  ),
                 );
                 return;
               }
               // Guardado simulado
-              debugPrint('Guardar stock: min=$minVal, max=$maxVal, alerts=$_alertasActivas');
+              debugPrint(
+                'Guardar stock: min=$minVal, max=$maxVal, alerts=$_alertasActivas',
+              );
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Configuración de stock guardada')),
+                const SnackBar(
+                  content: Text('Configuración de stock guardada'),
+                ),
               );
             },
           ),

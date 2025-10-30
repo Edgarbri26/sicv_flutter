@@ -24,7 +24,7 @@ class AppBarApp extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.actions,
     this.leading,
-    this.toolbarHeight = 64.0, // Usamos 64.0 como tu valor por defecto
+    this.toolbarHeight = 64.0,
     this.iconColor,
   });
 
