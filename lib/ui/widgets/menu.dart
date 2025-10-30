@@ -34,29 +34,23 @@ class MenuMovil extends StatelessWidget {
         children: <Widget>[
           // --- MEJORA: Usa UserAccountsDrawerHeader ---
           UserAccountsDrawerHeader(
-            accountName: const Text(
-              userName,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
-            ),
-            accountEmail: Text(userEmail, style: TextStyle(color: AppColors.textPrimary),),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: AppColors.primary, // O usa una imagen
-              child: Text(
-                userInitials,
-                style: TextStyle(
-                  fontSize: 40.0,
-                  color: Theme.of(context).colorScheme.primary,
+              accountName: Text(
+                userName,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), // Asegura texto blanco
+              ),
+              accountEmail: Text(userEmail, style: TextStyle(color: Colors.white70)), // Asegura texto blanco
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: AppColors.secondary,
+                child: Text(
+                  userInitials,
+                  style: const TextStyle(
+                    fontSize: 40.0,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
+              decoration: const BoxDecoration(color: AppColors.primary),
             ),
-            decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary, // Usa tu color primario
-            ),
-            // Puedes añadir otros avatares aquí si quieres
-            // otherAccountsPictures: <Widget>[ ... ],
-          ),
 
           // --- MEJORA: Usa _buildMenuItem helper ---
           _buildMenuItem(

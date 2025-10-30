@@ -1,9 +1,11 @@
 // lib/pages/report_dashboard_page.dart
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
 import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
 import 'package:sicv_flutter/ui/screen/report/inventory_view.dart';
 import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 
 /// ReportDashboardPage
@@ -35,10 +37,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard de Reportes'),
-        elevation: 1,
-      ),
+      appBar: AppBarApp(title: 'Dashboard de Reportes', iconColor: AppColors.textPrimary,),
       drawer: const MenuMovil(),
       // LayoutBuilder es la clave de la responsividad.
       // Nos da "constraints" (restricciones) del widget padre.

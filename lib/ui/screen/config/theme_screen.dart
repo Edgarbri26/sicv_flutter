@@ -128,6 +128,14 @@ class _ThemeScreenState extends State<ThemeScreen> {
               );
             },
           ),
+          const SizedBox(height: 20),
+          PrimaryButtonApp (
+            text: 'Guardar Configuración',
+            icon: Icons.save,
+            onPressed: (){},
+            isLoading: false,
+            maxWidth: 400,
+          ),
         ],
       ),
     );
