@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
@@ -14,7 +15,9 @@ import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/side_bar_app.dart';
+import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
 // import 'package:sicv_flutter/ui/widgets/MyDrawer.dart'; // Ya no se usa
 // import 'package:sicv_flutter/ui/widgets/my_side_nav_rail.dart'; // Ya no se usa
@@ -27,7 +30,8 @@ class HomePage extends StatefulWidget {
 }
 
 // 1. Añadimos SingleTickerProviderStateMixin para el TabController
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
   late TabController _tabController; // 2. Controlador para Tabs (escritorio)
   final double breakpoint = 650.0;
@@ -95,7 +99,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   // 6. Esta es la nueva función "maestra" para NAVEGAR CON CLIC
   // (BottomNav, Menu lateral, TabBar superior)
   void _navigateToPage(int index) {
-    if (_currentIndex == index) return; 
+    if (_currentIndex == index) return;
 
     setState(() {
       _currentIndex = index;
@@ -119,9 +123,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     // ... (tu lógica de añadir producto se mantiene igual)
     setState(() {
       final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
-
       if (index != -1) {
-        _itemsParaLaVenta.add(product);
+        _itemsParaLaVenta[index].quantity =
+            _itemsParaLaVenta[index].quantity! + 1;
+        // final existingProduct = _itemsParaLaVenta[index];
+        // _itemsParaLaVenta[index] = existingProduct.copyWith(
+        //   quantity: existingProduct.quantity! + 1,
+        // );
       } else {
         _itemsParaLaVenta.add(product);
       }
@@ -136,10 +144,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   List<Widget> get _screens => [
-        SaleScreen(onProductAdded: _onProductAddedToSale),
-        PurchaseScreen(key: _purchaseScreenKey),
-        InventoryDatatableScreen(key: _inventoryScreenKey),
-      ];
+    SaleScreen(onProductAdded: _onProductAddedToSale),
+    PurchaseScreen(key: _purchaseScreenKey),
+    InventoryDatatableScreen(key: _inventoryScreenKey),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -178,9 +186,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
             toolbarHeight: 64.0,
             actions: [const SizedBox(width: 16)],
-            iconTheme: IconThemeData(
-              color: AppColors.textPrimary,
-            ),
+            iconTheme: IconThemeData(color: AppColors.textPrimary),
           ),
 
           // 9. Lógica del Drawer: Si es angosto, usa el Menu widget
@@ -271,7 +277,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     switch (_currentIndex) {
       case 0:
         return FloatingActionButton(
-          onPressed: () => _mostrarDetallesDeMezcla(context),
+          onPressed: () => _mostrarDetallesDeVenta(context),
           backgroundColor: AppColors.primary,
           child: Icon(Symbols.edit_arrow_up, color: AppColors.secondary),
         );
@@ -293,34 +299,181 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
-  void _mostrarDetallesDeMezcla(BuildContext context) {
-    // ... (Tu lógica de showModalBottomSheet se mantiene igual)
+  void _mostrarDetallesDeVenta(BuildContext context) {
+    double total = _itemsParaLaVenta.fold(
+      0,
+      (previousValue, element) =>
+          previousValue + (element.quantity! * element.price),
+    );
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          builder: (context, scrollController) {
-            return Container(
-              child: Column(
-                children: [
-                  Text(
-                    "Total: ${_itemsParaLaVenta.length} items",
-                    style: AppTextStyles.bodyMedium,
+        // 1. Usamos StatefulBuilder para obtener un setState local para el modal
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter modalSetState) {
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.5,
+              minChildSize: 0.3,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                return Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ... (Tu código del 'handle' gris y título no cambia)
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          margin: const EdgeInsets.only(bottom: 15),
+                          decoration: BoxDecoration(
+                            color: AppColors
+                                .border, // Asumiendo que tienes AppColors
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Text(
+                          textAlign: TextAlign.center,
+                          "Detalles de la Venta",
+                          style: AppTextStyles.headlineLarge,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Total: \$${total.toStringAsFixed(2)}",
+                            style: AppTextStyles.bodyLarge,
+                          ),
+                          PrimaryButtonApp(text: "Confirmar", onPressed: () {}),
+                        ],
+                      ),
+
+                      // 2. El ListView ahora puede usar el modalSetState
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: _itemsParaLaVenta.length,
+                          itemBuilder: (context, index) {
+                            // Obtenemos el item específico
+                            final item = _itemsParaLaVenta[index];
+
+                            return DetailProductCart(
+                              item: item,
+                              onTap: () {
+                                // 3. Llamamos a nuestra nueva función de diálogo
+                                _mostrarDialogoEditarCantidad(context, item, (
+                                  nuevaCantidad,
+                                ) {
+                                  // Este es el callback de 'onConfirm'.
+                                  // Usamos modalSetState para redibujar el contenido
+                                  // del bottom sheet.
+                                  modalSetState(() {
+                                    // Asumo que tu 'item' tiene una propiedad 'cantidad'.
+                                    // Si tu modelo de datos es inmutable (preferible),
+                                    // harías algo como:
+                                    // _itemsParaLaVenta[index] = item.copyWith(cantidad: nuevaCantidad);
+
+                                    // Si es mutable (como en este ejemplo):
+                                    item.quantity = nuevaCantidad;
+                                  });
+                                });
+                              },
+                              onDelete: () {
+                                // También deberías usar modalSetState aquí
+                                modalSetState(() {
+                                  _itemsParaLaVenta.removeAt(index);
+                                });
+                              },
+                              trailing: Row(
+                                children: [
+                                  // ... (Iconos de añadir/quitar)
+                                  // Nota: Estos botones también deberían usar modalSetState
+                                  // si quieres que actualicen la UI en tiempo real.
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: scrollController,
-                      itemCount: _itemsParaLaVenta.length,
-                      itemBuilder: (context, index) {
-                        final product = _itemsParaLaVenta[index];
-                        return ListTile(title: Text(product.name));
-                      },
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             );
           },
+        );
+      },
+    );
+  }
+
+  /// Muestra un diálogo para editar la cantidad de un item.
+  ///
+  /// [context] El BuildContext para mostrar el diálogo.
+  /// [item] El item cuya cantidad se está modificando (asumo que tiene .cantidad).
+  /// [onConfirm] Callback que se ejecuta con la nueva cantidad si se confirma.
+  void _mostrarDialogoEditarCantidad(
+    BuildContext context,
+    Product item, // Deberías tipar esto con tu modelo (ej: ProductoVenta item)
+    Function(int) onConfirm,
+  ) {
+    // Controlador para el campo de texto
+    final TextEditingController cantidadController = TextEditingController();
+    // Asumimos que el item tiene una propiedad 'cantidad'
+    cantidadController.text = item.quantity.toString();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text("Modificar Cantidad"),
+          content: TextField(
+            controller: cantidadController,
+            keyboardType: TextInputType.number, // Teclado numérico
+            decoration: InputDecoration(
+              labelText: "Nueva cantidad",
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+            // Filtro para permitir solo dígitos
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+          actions: [
+            TextButton(
+              child: Text("Cancelar"),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Cierra solo el diálogo
+              },
+            ),
+            TextButton(
+              child: Text("Confirmar"),
+              onPressed: () {
+                final int? nuevaCantidad = int.tryParse(
+                  cantidadController.text,
+                );
+
+                // Validamos que el número sea válido
+                if (nuevaCantidad != null && nuevaCantidad >= 0) {
+                  // Ejecutamos el callback con el nuevo valor
+                  onConfirm(nuevaCantidad);
+                  // Cerramos el diálogo
+                  Navigator.of(dialogContext).pop();
+                } else {
+                  // Opcional: Mostrar un error si el valor no es válido
+                  // (ej: usando un SnackBar o moviendo la lógica a un validador)
+                }
+              },
+            ),
+          ],
         );
       },
     );

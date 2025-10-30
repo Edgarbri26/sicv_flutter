@@ -10,7 +10,8 @@ class Product {
   final String? imageUrl; // La URL de la imagen
   final int stock;
   final String? sku;
-  
+  int? quantity;
+
   // --- 2. Añade el campo 'category' ---
   // No es un String, es un objeto de tipo Category
   final ProductCategory category;
@@ -22,9 +23,12 @@ class Product {
     required this.price,
     this.imageUrl,
     required this.stock,
-    required this.category,// <-- 3. Añádelo al constructor
-    this.sku,// <-- 3. Añádelo al constructor
-  });
+    required this.category, // <-- 3. Añádelo al constructor
+    this.sku, // <-- 3. Añádelo al constructor
+    this.quantity,
+  }) {
+    quantity = 1;
+  }
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
@@ -34,7 +38,7 @@ class Product {
       price: double.parse(json['base_price'].toString()),
       imageUrl: json['image_url'],
       stock: json['stock'],
-      
+
       // --- 4. La Magia (Llama al 'fromJson' de Category) ---
       // Le pasamos el objeto JSON anidado 'category'
       // al constructor 'Category.fromJson'.

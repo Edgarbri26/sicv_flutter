@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/models/inventory_item.dart';
+import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
 
 class DetailProductCart extends StatelessWidget {
-  final InventoryItem item;
+  final Product item;
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final Widget? trailing;
@@ -21,83 +21,87 @@ class DetailProductCart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: AppSizes.spacingS),
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSizes.spacingM,
-        vertical: AppSizes.spacingM,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.secondary,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        spacing: AppSizes.spacingM,
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(top: AppSizes.spacingS),
+        padding: EdgeInsets.only(
+          left: AppSizes.spacingM,
+          right: AppSizes.spacingS,
+          top: AppSizes.spacingM,
+          bottom: AppSizes.spacingM,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.secondary,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          spacing: AppSizes.spacingM,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.inventory_2, color: AppColors.primary),
             ),
-            child: Icon(Icons.inventory_2, color: AppColors.primary),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.name, style: AppTextStyles.bodyMedium),
+                  Row(
+                    children: [
+                      InfoChip(
+                        text: '${item.quantity}Uds',
+                        color: AppColors.info,
+                      ),
+                      InfoChip(
+                        text: '\$${item.price.toStringAsFixed(2)}',
+                        color: AppColors.info,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Text((item.price * item.quantity).toStringAsFixed(2)),
+            // Container(
+            //   decoration: BoxDecoration(
+            //     borderRadius: BorderRadius.all(
+            //       Radius.circular(AppSizes.borderRadiusM),
+            //     ),
+            //     color: AppColors.background,
+            //   ),
+
+            //   child: Row(
+            //     // children: [
+            //     //   IconButton(onPressed: () {}, icon: Icon(Icons.add)),
+            //     //   Text((item.stock).toString()),
+            //     //   IconButton(onPressed: () {}, icon: Icon(Icons.remove)),
+            //     // ],
+            //   ),
+            // ),
+            Row(
+              spacing: 0,
               children: [
-                Text(item.name, style: AppTextStyles.bodyMedium),
-                Row(
-                  spacing: AppSizes.spacingXXS,
-                  children: [
-                    InfoChip(
-                      text:
-                          '\$${(item.price * item.quantity).toStringAsFixed(2)}',
-                      color: AppColors.info,
-                    ),
-                    InfoChip(
-                      text: item.price.toStringAsFixed(2),
-                      color: AppColors.info,
-                    ),
-                  ],
+                Text('\$${(item.price * item.quantity!).toStringAsFixed(2)}'),
+                // IconButton(
+                //   onPressed: onTap,
+                //   icon: Icon(Icons.edit),
+                //   color: AppColors.edit,
+                // ),
+                IconButton(
+                  onPressed: onDelete,
+                  icon: Icon(Icons.delete),
+                  color: AppColors.error,
                 ),
               ],
             ),
-          ),
-          // Text((item.price * item.quantity).toStringAsFixed(2)),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(
-                Radius.circular(AppSizes.borderRadiusM),
-              ),
-              color: AppColors.background,
-            ),
-
-            child: Row(
-              children: [
-                IconButton(onPressed: () {}, icon: Icon(Icons.add)),
-                Text((item.quantity).toString()),
-                IconButton(onPressed: () {}, icon: Icon(Icons.remove)),
-              ],
-            ),
-          ),
-          Row(
-            spacing: 0,
-            children: [
-              IconButton(
-                onPressed: onTap,
-                icon: Icon(Icons.edit),
-                color: AppColors.edit,
-              ),
-              IconButton(
-                onPressed: onDelete,
-                icon: Icon(Icons.delete),
-                color: AppColors.error,
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
