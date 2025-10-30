@@ -299,6 +299,12 @@ class _HomePageState extends State<HomePage>
     }
   }
 
+  // Asumo que tienes una lista de tus productos.
+  // Deberías pasar esta lista como parámetro a la función o tomarla de un provider.
+  // List<Product> _listaDeProductos = ...;
+
+  
+
   void _mostrarDetallesDeVenta(BuildContext context) {
     double total = _itemsParaLaVenta.fold(
       0,

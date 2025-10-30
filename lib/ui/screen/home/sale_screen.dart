@@ -178,7 +178,8 @@ class _SaleScreenState extends State<SaleScreen> {
               prefixIcon: Icon(Icons.search),
               labelStyle: TextStyle(
                 fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
-                color: AppColors.textSecondary, // (Opcional: define el color del label)
+                color: AppColors
+                    .textSecondary, // (Opcional: define el color del label)
               ),
 
               enabledBorder: OutlineInputBorder(
@@ -192,11 +193,11 @@ class _SaleScreenState extends State<SaleScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                    width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
-                    color: AppColors.textSecondary, // Color del borde al enfocar
+                  width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
+                  color: AppColors.textSecondary, // Color del borde al enfocar
                 ),
               ),
-              
+
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
             ),
           ),
@@ -233,12 +234,11 @@ class _SaleScreenState extends State<SaleScreen> {
                         borderRadius: BorderRadius.circular(
                           AppSizes.borderRadiusL,
                         ),
-                        border: Border.all(
-                          color: AppColors.border,
-                          width: 2,
-                        ),
+                        border: Border.all(color: AppColors.border, width: 2),
                       ),
                       child: InkWell(
+                        onLongPress: () =>
+                            _mostrarDialogoDetalleProducto(context, product),
                         onTap: isOutOfStock
                             ? null
                             : () => widget.onProductAdded(product),
@@ -404,6 +404,187 @@ class _SaleScreenState extends State<SaleScreen> {
                 ),
         ),
       ],
+    );
+  }
+
+  /// Muestra un diálogo de vista rápida del producto.
+  void _mostrarDialogoDetalleProducto(BuildContext context, Product product) {
+    showDialog(
+      context: context,
+      // 'barrierDismissible' permite cerrar el diálogo tocando fuera (comportamiento estándar)
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        // Usamos AlertDialog por su layout estándar, pero lo personalizamos
+        return AlertDialog(
+          // Forma redondeada, como el modal
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          // Eliminamos el padding para que la imagen se pegue a los bordes
+          contentPadding: EdgeInsets.zero,
+
+          // Usamos MainAxisSize.min para que la columna no intente
+          // ocupar toda la altura de la pantalla
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // --- Imagen como Cabecera ---
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
+                child: SizedBox(
+                  height: 200,
+                  width: double.infinity,
+                  child:
+                      (product.imageUrl != null && product.imageUrl!.isNotEmpty)
+                      ? Image.network(
+                          product.imageUrl!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) =>
+                              progress == null
+                              ? child
+                              : Center(child: CircularProgressIndicator()),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildImagePlaceholder(),
+                        )
+                      : _buildImagePlaceholder(),
+                ),
+              ),
+
+              // --- Contenido de Texto (Detalles) ---
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      // Asumo que tu producto tiene 'descripcion'
+                      product.description ??
+                          "Este producto no tiene descripción.",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      // Asumo que tiene 'precio'
+                      "S/ ${product.price.toStringAsFixed(2)}",
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // --- Acciones del Diálogo ---
+          actions: [
+            TextButton(
+              child: const Text("CERRAR"),
+              onPressed: () {
+                // Importante: usar 'dialogContext' para cerrar solo el diálogo
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text("VER MÁS"),
+              onPressed: () {
+                // 1. Cerramos el diálogo
+                Navigator.of(dialogContext).pop();
+                // 2. Cerramos el ModalBottomSheet
+                Navigator.of(context).pop();
+                // 3. (Opcional) Navegamos a la página de detalle completa
+                // Navigator.push(context, MaterialPageRoute(builder: (_) => PaginaDetalleProducto(product: product)));
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Widget modular para mostrar la vista previa de un producto en la lista horizontal.
+  /// (Necesitarás un modelo 'Product' con 'nombre' e 'imageUrl' o adaptarlo)
+  // 1. La firma de la función ahora acepta 'BuildContext'
+  Widget _buildProductPreviewCard(BuildContext context, Product product) {
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 12.0),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // 2. Usamos InkWell para el efecto 'ripple' y el onTap
+        child: InkWell(
+          onTap: () {
+            // 3. Llamamos a nuestra nueva función de diálogo
+            _mostrarDialogoDetalleProducto(context, product);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- Imagen del Producto (Sin cambios) ---
+              SizedBox(
+                height: 150,
+                width: double.infinity,
+                child:
+                    (product.imageUrl != null && product.imageUrl!.isNotEmpty)
+                    ? Image.network(
+                        product.imageUrl!,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) =>
+                            progress == null
+                            ? child
+                            : Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildImagePlaceholder(),
+                      )
+                    : _buildImagePlaceholder(),
+              ),
+
+              // --- Nombre del Producto (Sin cambios) ---
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Text(
+                  product.name,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Helper para el placeholder de imagen (lo usaremos de nuevo)
+  Widget _buildImagePlaceholder() {
+    return Container(
+      color: Colors.grey[200],
+      child: Center(
+        child: Icon(
+          Icons.image_not_supported,
+          size: 50,
+          color: Colors.grey[400],
+        ),
+      ),
     );
   }
 
