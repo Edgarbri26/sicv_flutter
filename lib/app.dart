@@ -6,6 +6,7 @@ import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'package:sicv_flutter/ui/screen/config/user_management.dart';
+import 'package:sidebarx/sidebarx.dart';
 import 'ui/screen/config/company_screen.dart';
 import 'ui/screen/config/currency_screen.dart';
 import 'ui/screen/config/units_screen.dart';
@@ -22,19 +23,22 @@ import 'core/theme/themes.dart';
 import 'ui/pages/home_page.dart';
 
 class InventoryApp extends StatelessWidget {
-  const InventoryApp({super.key});
+  InventoryApp({super.key});
+  final _controller = SidebarXController(selectedIndex: 0, extended: true);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
-      home: const LoginPage(),
+      home: HomePage(controller: _controller),
 
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case AppRoutes.home:
-            return MaterialPageRoute(builder: (context) => const HomePage());
+            return MaterialPageRoute(
+              builder: (context) => HomePage(controller: _controller),
+            );
           case AppRoutes.settings:
             return MaterialPageRoute(
               builder: (context) => const SettingsScreen(),
@@ -46,7 +50,7 @@ class InventoryApp extends StatelessWidget {
               builder: (context) => const AddEditInventoryScreen(),
             );
           case AppRoutes.movements:
-            return MaterialPageRoute(builder: (context) => MovementsPage());
+            return MaterialPageRoute(builder: (context) => MovementsPage(controller: _controller));
           case AppRoutes.company:
             return MaterialPageRoute(
               builder: (context) => const CompanyScreen(),
@@ -87,11 +91,14 @@ class InventoryApp extends StatelessWidget {
             );
           case AppRoutes.reportDashboard:
             return MaterialPageRoute(
-              builder: (context) => const ReportDashboardPage(),
+              builder: (context) =>
+                  ReportDashboardPage(controller: _controller),
             );
 
           default:
-            return MaterialPageRoute(builder: (context) => const HomePage());
+            return MaterialPageRoute(
+              builder: (context) => HomePage(controller: _controller),
+            );
         }
       },
     );

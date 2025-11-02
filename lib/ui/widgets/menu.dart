@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart'; // Mantienes tus colores
 import 'package:sicv_flutter/ui/pages/home_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
@@ -34,23 +35,28 @@ class MenuMovil extends StatelessWidget {
         children: <Widget>[
           // --- MEJORA: Usa UserAccountsDrawerHeader ---
           UserAccountsDrawerHeader(
-              accountName: Text(
-                userName,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), // Asegura texto blanco
-              ),
-              accountEmail: Text(userEmail, style: TextStyle(color: Colors.white70)), // Asegura texto blanco
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: AppColors.secondary,
-                child: Text(
-                  userInitials,
-                  style: const TextStyle(
-                    fontSize: 40.0,
-                    color: AppColors.primary,
-                  ),
+            accountName: Text(
+              userName,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.white,
+              ), // Asegura texto blanco
+            ),
+            accountEmail: Text(
+              userEmail,
+              style: TextStyle(color: Colors.white70),
+            ), // Asegura texto blanco
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: AppColors.secondary,
+              child: Text(
+                userInitials,
+                style: const TextStyle(
+                  fontSize: 40.0,
+                  color: AppColors.primary,
                 ),
               ),
-              decoration: const BoxDecoration(color: AppColors.primary),
             ),
+            decoration: const BoxDecoration(color: AppColors.primary),
+          ),
 
           // --- MEJORA: Usa _buildMenuItem helper ---
           _buildMenuItem(
@@ -72,10 +78,7 @@ class MenuMovil extends StatelessWidget {
             route: '/home',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const HomePage()),
-              );
+              Navigator.pushReplacementNamed(context, AppRoutes.home);
               // O mejor con rutas nombradas:
               // Navigator.pushReplacementNamed(context, '/reports');
             },
@@ -87,12 +90,10 @@ class MenuMovil extends StatelessWidget {
             route: '/reports',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.pushReplacementNamed(
                 context,
-                MaterialPageRoute(builder: (_) => const ReportDashboardPage()),
+                AppRoutes.reportDashboard,
               );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/reports');
             },
           ),
           /*_buildMenuItem(
@@ -102,12 +103,7 @@ class MenuMovil extends StatelessWidget {
             route: '/users',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
-              );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/users');
+              Navigator.pushReplacementNamed(context, AppRoutes.adminUserManagement);
             },
           ),*/
           _buildMenuItem(
@@ -117,12 +113,7 @@ class MenuMovil extends StatelessWidget {
             route: '/users',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => MovementsPage()),
-              );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/users');
+              Navigator.pushReplacementNamed(context, AppRoutes.movements);
             },
           ),
 
@@ -136,12 +127,7 @@ class MenuMovil extends StatelessWidget {
             route: '/settings',
             currentPageRoute: currentPageRoute,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-              // O mejor con rutas nombradas:
-              // Navigator.pushReplacementNamed(context, '/settings');
+              Navigator.pushNamed(context, AppRoutes.settings);
             },
           ),
 

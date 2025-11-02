@@ -6,7 +6,9 @@ import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
 import 'package:sicv_flutter/ui/screen/report/inventory_view.dart';
 import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
+import 'package:sidebarx/sidebarx.dart';
 
 /// ReportDashboardPage
 ///
@@ -16,7 +18,8 @@ import 'package:sicv_flutter/ui/widgets/menu.dart';
 /// Usa [LayoutBuilder] para detectar el ancho de la pantalla y decide
 /// si mostrar un [NavigationRail] (para PC) o un [BottomNavigationBar] (para móvil).
 class ReportDashboardPage extends StatefulWidget {
-  const ReportDashboardPage({super.key});
+  final SidebarXController controller;
+  const ReportDashboardPage({super.key, required this.controller});
 
   @override
   State<ReportDashboardPage> createState() => _ReportDashboardPageState();
@@ -29,7 +32,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
   /// Lista de las vistas principales que se mostrarán.
   static const List<Widget> _mainViews = [
     ResumeView(),
-    FinancesView(),     // Esta vista contendrá tu código original
+    FinancesView(), // Esta vista contendrá tu código original
     InventoryView(),
     ClientsView(),
   ];
@@ -37,8 +40,11 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Dashboard de Reportes', iconColor: AppColors.textPrimary,),
-      drawer: const MenuMovil(),
+      appBar: AppBarApp(
+        title: 'Dashboard de Reportes',
+        iconColor: AppColors.textPrimary,
+      ),
+      drawer: MySideBar(controller: widget.controller),
       // LayoutBuilder es la clave de la responsividad.
       // Nos da "constraints" (restricciones) del widget padre.
       body: LayoutBuilder(
@@ -56,9 +62,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
                 const VerticalDivider(thickness: 1, width: 1),
                 // Expanded asegura que la vista de contenido
                 // ocupe todo el espacio restante.
-                Expanded(
-                  child: _mainViews[_selectedIndex],
-                ),
+                Expanded(child: _mainViews[_selectedIndex]),
               ],
             );
           } else {

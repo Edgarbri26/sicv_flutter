@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class Destination {
   final String label;
-  final Icon icon;
+  final IconData icon;
   final String? route;
 
-  Destination({required this.label, required this.icon,  this.route});
+  Destination({required this.label, required this.icon, this.route});
 }

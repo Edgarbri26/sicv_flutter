@@ -1,219 +1,222 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
+import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
+import 'package:sicv_flutter/ui/widgets/menu_item.dart';
 
-class AppSidebar extends StatelessWidget {
-  // Propiedades requeridas para la navegación de HomePage
+class SideBarApp extends StatefulWidget {
+  const SideBarApp({
+    super.key,
+    required this.currentIndex,
+    required this.onItemSelected,
+    required this.pageMenuItems,
+    required this.currentPageRoute,
+  });
   final int currentIndex;
   final Function(int) onItemSelected;
-
+  final List<IconMenu> pageMenuItems;
   // Propiedad para resaltar rutas que no sean del PageView (Reportes, Config)
   final String currentPageRoute;
 
-  const AppSidebar({
-    super.key,
-    this.currentPageRoute = '',
-    required this.currentIndex,
-    required this.onItemSelected,
-  });
+  @override
+  _SideBarAppState createState() => _SideBarAppState();
+}
 
-  // Ítems de navegación principales (coinciden con el PageView de HomePage)
-  final List<Map<String, dynamic>> _pageMenuItems = const [
-    {'title': 'Venta', 'icon': Icons.point_of_sale, 'index': 0},
-    {'title': 'Compra', 'icon': Icons.shopping_cart, 'index': 1},
-    {'title': 'Inventario', 'icon': Icons.inventory, 'index': 2},
-  ];
+class _SideBarAppState extends State<SideBarApp> {
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     // Definición de datos de usuario simulados
     const String userName = "Usuario Real";
     const String userEmail = "usuario@ejemplo.com";
-    final String userInitials =
-        userName.isNotEmpty ? userName.substring(0, 1).toUpperCase() : '?';
+    final String userInitials = userName.isNotEmpty
+        ? userName.substring(0, 1).toUpperCase()
+        : '?';
 
     // 1. EL CAMBIO CLAVE: Usamos un Container en lugar de Drawer.
     // El tamaño (ancho) lo define el ConstrainedBox en HomePage.
     return Container(
-      decoration: BoxDecoration(  
-        color: Colors.white,  // Agrega un color para poder ver la forma
-        borderRadius: BorderRadius.circular(20.0),
+      decoration: BoxDecoration(
+        color: AppColors.background, // Agrega un color para poder ver la forma
+        // borderRadius: BorderRadius.circular(20.0),
       ),
-      width: double.infinity, // O AppColors.background si prefieres
-      child: ClipRRect(
-        borderRadius:  BorderRadius.only(topRight:Radius.circular(20)),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            // Header de Usuario
-            UserAccountsDrawerHeader(
-              accountName: Text(
-                userName,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white), // Asegura texto blanco
-              ),
-              accountEmail: Text(userEmail, style: TextStyle(color: Colors.white70)), // Asegura texto blanco
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: AppColors.secondary,
-                child: Text(
-                  userInitials,
-                  style: const TextStyle(
-                    fontSize: 40.0,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-              decoration: const BoxDecoration(color: AppColors.primary),
-            ),
-        
-            // --- ÍTEMS DE NAVEGACIÓN (Venta, Compra, Inventario) ---
-            ..._pageMenuItems.map((item) {
-              final int itemIndex = item['index'] as int;
-        
-              return _buildMenuItem(
-                context: context,
-                icon: item['icon'] as IconData,
-                title: item['title'] as String,
-                isSelected:
-                    itemIndex == currentIndex, // Resalta según el PageView
-                onTap: () {
-                  // Llama a la función de HomePage para cambiar de página
-                  onItemSelected(itemIndex);
-                },
-                // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
+      // <-- CORRECCIÓN 1: Usamos un ancho fijo en lugar de double.infinity
+      width: _isExpanded ? 250.0 : 100.0,
+      child: Column(
+        children: <Widget>[
+          // Header de Usuario
+          // Container(
+          //   // padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingXS),
+          //   height: 100,
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: _isExpanded ? AppColors.primary : AppColors.background,
+          //   ),
+          //   child: Center(
+          //     // <-- CORRECCIÓN 2: Layout del Row ajustado
+          //     child: Row(
+          //       // spacing: AppSizes.spacingXS,
+          //       // Centra el icono cuando está colapsado
+          //       mainAxisAlignment: _isExpanded
+          //           ? MainAxisAlignment.start
+          //           : MainAxisAlignment.center,
+          //       crossAxisAlignment: CrossAxisAlignment.center,
+          //       // spacing: 10, // <-- ESTE ERA EL ERROR, SE ELIMINA
+          //       children: [
+          //         // Padding izquierdo solo si está expandido
+          //         // if (_isExpanded) const SizedBox(width: 10),
+          //         CircleAvatar(
+          //           radius: _isExpanded ? 30 : 16,
+          //           backgroundColor: !_isExpanded
+          //               ? AppColors.primary
+          //               : AppColors.background,
+          //           child: Text(
+          //             userInitials,
+          //             style: TextStyle(
+          //               fontSize: _isExpanded ? 40.0 : 16.0,
+          //               color: !_isExpanded
+          //                   ? AppColors.background
+          //                   : AppColors.primary,
+          //             ),
+          //           ),
+          //         ),
+
+          //         if (_isExpanded)
+          //           // Usamos Expanded para que el texto no se desborde
+          //           Expanded(
+          //             child: Column(
+          //               mainAxisAlignment: MainAxisAlignment.center,
+          //               crossAxisAlignment: CrossAxisAlignment.start,
+          //               children: [
+          //                 Text(userName, overflow: TextOverflow.ellipsis),
+          //                 Text(userEmail, overflow: TextOverflow.ellipsis),
+          //               ],
+          //             ),
+          //           ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+          // ... (El UserAccountsDrawerHeader comentado se queda igual) ...
+
+          // --- ÍTEMS DE NAVEGACIÓN (Venta, Compra, Inventario) ---
+          ...widget.pageMenuItems.map((item) {
+            final int itemIndex = item.index;
+
+            return MenuItem(
+              isExpanded: _isExpanded,
+              context: context,
+              icon: item.icon,
+              title: _isExpanded ? item.label : null,
+              isSelected:
+                  itemIndex == widget.currentIndex, // Resalta según el PageView
+              onTap: () {
+                // Llama a la función de HomePage para cambiar de página
+                widget.onItemSelected(itemIndex);
+              },
+              // No pasamos 'route' aquí, ya que la navegación es interna (PageView)
+            );
+          }),
+          const Divider(thickness: 1),
+
+          // --- ÍTEMS DE NAVEGACIÓN DE RUTAS (Reportes, Usuarios, Configuración) ---
+
+          // Ítem: Reportes
+          MenuItem(
+            isExpanded: _isExpanded,
+            isSelected: false,
+            context: context,
+            icon: Icons.assessment_outlined,
+            title: _isExpanded ? 'Reportes' : null,
+            route: '/reports', // Usamos la ruta para resaltar
+            currentPageRoute: widget.currentPageRoute,
+            onTap: () {
+              Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.reportDashboard,
               );
-            }),
-        
-            const Divider(thickness: 1),
-        
-            // --- ÍTEMS DE NAVEGACIÓN DE RUTAS (Reportes, Usuarios, Configuración) ---
-        
-            // Ítem: Reportes
-            _buildMenuItem(
-              context: context,
-              icon: Icons.assessment_outlined,
-              title: 'Reportes',
-              route: '/reports', // Usamos la ruta para resaltar
-              currentPageRoute: currentPageRoute,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ReportDashboardPage()),
-                );
-              },
-            ),
-        
-            // Ítem: Administrar Usuarios
-            /*_buildMenuItem(
-              context: context,
-              icon: Icons.group_outlined,
-              title: 'Administrar usuarios',
-              route: '/users',
-              currentPageRoute: currentPageRoute,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => AdminUserManagementPage()),
-                );
-              },
-            ),*/
-        
-            // Ítem: Administrar Movimientos
-            _buildMenuItem(
-              context: context,
-              icon: Icons.compare_arrows,
-              title: 'Administrar movimientos',
-              route: '/movements', // Usa una ruta única
-              currentPageRoute: currentPageRoute,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => MovementsPage()),
-                );
-              },
-            ),
-        
-            const Divider(thickness: 1),
-        
-            // Ítem: Configuración
-            _buildMenuItem(
-              context: context,
-              icon: Icons.settings_outlined,
-              title: 'Configuración',
-              route: '/settings',
-              currentPageRoute: currentPageRoute,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                );
-              },
-            ),
-        
-            // Ítem: Cerrar Sesión
-            _buildMenuItem(
-              context: context,
-              icon: Icons.logout,
-              title: 'Cerrar Sesión',
-              onTap: () => _showLogoutConfirmation(context),
-            ),
-          ],
-        ),
+            },
+          ),
+
+          // ... (El ítem de 'Administrar Usuarios' comentado se queda igual) ...
+
+          // Ítem: Administrar Movimientos
+          MenuItem(
+            isExpanded: _isExpanded,
+            isSelected: false,
+            context: context,
+            icon: Icons.compare_arrows,
+            title: _isExpanded ? 'Administrar movimientos' : null,
+            route: '/movements', // Usa una ruta única
+            currentPageRoute: widget.currentPageRoute,
+            onTap: () {
+              // Navigator.pushReplacement(
+              //   context,
+              //   // MaterialPageRoute(builder: (_) => MovementsPage()),
+              // );
+            },
+          ),
+
+          const Divider(thickness: 1),
+
+          // Ítem: Configuración
+          MenuItem(
+            isExpanded: _isExpanded,
+            isSelected: false,
+            context: context,
+            icon: Icons.settings_outlined,
+            title: _isExpanded ? 'Configuración' : null,
+            route: '/settings',
+            currentPageRoute: widget.currentPageRoute,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+
+          // Ítem: Cerrar Sesión
+          MenuItem(
+            isExpanded: _isExpanded,
+            isSelected: false,
+            context: context,
+            icon: Icons.logout,
+            title: _isExpanded ? 'Cerrar Sesión' : null,
+            onTap: () => _showLogoutConfirmation(context),
+          ),
+          const Divider(thickness: 1),
+
+          // <-- CORRECCIÓN 3: Botón para expandir/colapsar
+          // Usamos Spacer para empujar el botón al fondo
+          const Spacer(),
+
+          // Ítem: Expandir/Colapsar
+          MenuItem(
+            isExpanded: _isExpanded,
+            isSelected: false,
+            context: context,
+            icon: _isExpanded
+                ? Icons.arrow_back_ios_new
+                : Icons.arrow_forward_ios,
+            title: _isExpanded ? 'Colapsar' : null,
+            onTap: _expandirMenu, // Llama a la función
+          ),
+          const SizedBox(height: 10), // Un pequeño padding inferior
+        ],
       ),
     );
   }
 
   /// Helper para construir los ListTile del menú y manejar el estado 'selected'
-  Widget _buildMenuItem({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    String route = '',
-    String currentPageRoute = '',
-    bool isSelected = false, // Lo usamos para los ítems del PageView
-  }) {
-    // Si la ruta no es PageView, usamos la comparación de rutas para resaltar
-    if (route.isNotEmpty) {
-      isSelected = route == currentPageRoute;
-    }
-
-    // Identificamos si es móvil o PC
-    // Usamos el mismo breakpoint de HomePage
-    final bool isMobile = MediaQuery.of(context).size.width < 650.0;
-
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? Theme.of(context).primaryColor : Colors.black54,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 16, // Tamaño de fuente más estándar para menú
-        ),
-      ),
-      selected: isSelected,
-      selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
-      onTap: () {
-        // --- LÓGICA CLAVE: Cierra el Drawer solo si es móvil ---
-        if (isMobile) {
-          // Si estamos en móvil, cerramos el drawer antes de navegar
-          // Comprobamos si el drawer está abierto antes de hacer pop
-          if (Scaffold.of(context).isDrawerOpen) {
-            Navigator.pop(context);
-          }
-        }
-
-        // Pequeña espera para una transición más suave (opcional)
-        Future.delayed(const Duration(milliseconds: 150), onTap);
-      },
-    );
-  }
+  /// Helper para construir los ListTile del menú y manejar el estado 'selected'
 
   // (Mantenemos tu función _showLogoutConfirmation)
   void _showLogoutConfirmation(BuildContext context) {
@@ -255,5 +258,11 @@ class AppSidebar extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _expandirMenu() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+    });
   }
 }

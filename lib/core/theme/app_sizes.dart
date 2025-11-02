@@ -95,4 +95,14 @@ class AppSizes {
 
   /// 32.0 - Tamaño de ícono grande. Para íconos de cabecera o decorativos.
   static const double iconL = 32.0;
+
+
+  /// 680.0 - breakpoint estándar para la pantalla.
+  static const double breakpoint = 680.0;
+
+  /// 800.0 - breakpoint estándar para la pantalla.
+  static const double breakpointTablet = 800.0;
+
+  /// 1200.0 - breakpoint estándar para la pantalla.
+  static const double breakpointDesktop = 1200.0;
 }

@@ -9,10 +9,13 @@ import 'package:sicv_flutter/models/movement_type.dart';
 import 'package:sicv_flutter/models/movement.dart'; // Asegúrate que este sea el nombre correcto
 import 'package:sicv_flutter/models/product.dart';
 import 'package:flutter/services.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/menu.dart';
+import 'package:sidebarx/sidebarx.dart';
 
 class MovementsPage extends StatefulWidget {
-  const MovementsPage({super.key});
+  final SidebarXController controller;
+  const MovementsPage({super.key, required this.controller});
 
   @override
   State<MovementsPage> createState() => _MovementsPageState();
@@ -311,6 +314,9 @@ class _MovementsPageState extends State<MovementsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double breakpoint = 600.0;
+    final bool isWide = MediaQuery.of(context).size.width >= breakpoint;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -433,7 +439,8 @@ class _MovementsPageState extends State<MovementsPage> {
           ),
         ],
       ),
-      drawer: const MenuMovil(),
+      drawer: MySideBar(controller: widget.controller),
+      // drawer: isWide ? null : MySideBar(controller: widget.controller),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add_circle_outline),
         label: const Text('Ajuste Manual'),

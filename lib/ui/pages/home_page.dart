@@ -2,23 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
+import 'package:sicv_flutter/main.dart';
+import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/screen/home/inventory_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 
 // Importaciones requeridas por tu widget 'Menu'
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/side_bar_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
-import 'package:sicv_flutter/ui/widgets/menu.dart';
+import 'package:sidebarx/sidebarx.dart';
 // import 'package:sicv_flutter/ui/widgets/MyDrawer.dart'; // Ya no se usa
 // import 'package:sicv_flutter/ui/widgets/my_side_nav_rail.dart'; // Ya no se usa
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final SidebarXController controller;
+  const HomePage({super.key, required this.controller});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -29,13 +34,13 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   late PageController _pageController;
   late TabController _tabController; // 2. Controlador para Tabs (escritorio)
-  final double breakpoint = 650.0;
+  final double breakpoint = 600.0;
   int _currentIndex = 0;
 
-  final List<IconMenu> bottomNavItems = [
-    IconMenu(icon: Icons.point_of_sale, label: 'Venta'),
-    IconMenu(icon: Icons.shopping_cart, label: 'Compra'),
-    IconMenu(icon: Icons.inventory, label: 'Inventario'),
+  final List<IconMenu> _pageMenuItems = [
+    IconMenu(icon: Icons.point_of_sale, label: 'Venta', index: 0),
+    IconMenu(icon: Icons.shopping_cart, label: 'Compra', index: 1),
+    IconMenu(icon: Icons.inventory, label: 'Inventario', index: 2),
   ];
 
   // ... (Tus listas de itemsSelled, _itemsParaLaVenta, etc. se mantienen igual)
@@ -144,64 +149,6 @@ class _HomePageState extends State<HomePage>
     InventoryDatatableScreen(key: _inventoryScreenKey),
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth >= breakpoint;
-
-        // 7. Quitamos el DefaultTabController
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          //appBar: AppBarApp(title:_screenTitles[_currentIndex], iconColor: AppColors.textPrimary,)
-          appBar: AppBar(
-            // 8. Pasamos el TabController y la función de Tap
-            /*bottom: isWide
-                ? null
-                : TabBar(
-                    controller: _tabController,
-                    onTap: _navigateToPage, // Usamos la nueva función
-                    tabs: bottomNavItems
-                        .map(
-                          (item) =>
-                              Tab(icon: Icon(item.icon), text: item.label),
-                        )
-                        .toList(),
-                  ),*/
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              _screenTitles[_currentIndex],
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            toolbarHeight: 64.0,
-            actions: [const SizedBox(width: 16)],
-            iconTheme: IconThemeData(color: AppColors.textPrimary),
-          ),
-
-          // 9. Lógica del Drawer: Si es angosto, usa el Menu widget
-          // 9. Lógica del Drawer: Si es angosto, usa el MyDrawer original
-          drawer: isWide ? null : const MenuMovil(),
-
-          // 10. Pasamos el TabController al layout de escritorio
-          body: isWide
-              ? _buildWideLayout(_tabController)
-              : _buildNarrowLayout(),
-
-          // 11. El BottomNavBar (móvil) usa la nueva función de navegación
-          bottomNavigationBar: isWide ? null : _buildBottomNavBar(),
-
-          floatingActionButton: _buildFloatingActionButton(),
-        );
-      },
-    );
-  }
-
   /// El layout para pantallas angostas (móviles).
   Widget _buildNarrowLayout() {
     return PageView(
@@ -217,19 +164,56 @@ class _HomePageState extends State<HomePage>
     return Row(
       children: [
         // 13. Reemplazamos MySideNavRail con tu Menu, dándole un ancho
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 280),
-          child: _buildMenuWidget(context),
-        ),
-        const VerticalDivider(thickness: 1, width: 1),
+        // ConstrainedBox(
+        //   constraints: const BoxConstraints(maxWidth: 280),
+        //   child: SideBarApp(
+        //     pageMenuItems: _pageMenuItems,
+        //     currentIndex: _currentIndex,
+        //     onItemSelected: _navigateToPage, // Pasa la función de navegación
+        //     // Asumimos que HomePage es la ruta principal.
+        //     // Ajusta esto si 'HomePage' vive en una ruta nombrada específica.
+        //     currentPageRoute: '/',
+        //   ),
+        // ),
+        // const VerticalDivider(thickness: 1, width: 1),
+        MySideBar(controller: widget.controller),
 
         // El contenido principal
         Expanded(
-          child: TabBarView(
-            controller: tabController, // Usa el controller
-            physics:
-                const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
-            children: _screens,
+          child: Row(
+            children: [
+              _buildDesktopNavigationRail(),
+              Expanded(
+                child: Column(
+                  children: [
+                    AppBarApp(title: _screenTitles[_currentIndex]),
+                    // TabBar(
+                    //   controller: tabController,
+                    //   tabs: _pageMenuItems
+                    //       .map((item) => Tab(icon: Icon(item.icon)))
+                    //       .toList(),
+                    // ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          // _buildDesktopNavigationRail(),
+
+                          // const VerticalDivider(thickness: 1, width: 1),
+                          Expanded(
+                            child: TabBarView(
+                              controller: tabController, // Usa el controller
+                              physics:
+                                  const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
+                              children: _screens,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -245,7 +229,7 @@ class _HomePageState extends State<HomePage>
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textSecondary,
       type: BottomNavigationBarType.fixed,
-      items: bottomNavItems
+      items: _pageMenuItems
           .map(
             (item) => BottomNavigationBarItem(
               icon: Icon(item.icon),
@@ -253,17 +237,6 @@ class _HomePageState extends State<HomePage>
             ),
           )
           .toList(),
-    );
-  }
-
-  /// 15. Nuevo Helper para construir tu widget Menu
-  Widget _buildMenuWidget(BuildContext context) {
-    return AppSidebar(
-      currentIndex: _currentIndex,
-      onItemSelected: _navigateToPage, // Pasa la función de navegación
-      // Asumimos que HomePage es la ruta principal.
-      // Ajusta esto si 'HomePage' vive en una ruta nombrada específica.
-      currentPageRoute: '/',
     );
   }
 
@@ -477,11 +450,81 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
-}
 
-class IconMenu {
-  final IconData icon;
-  final String label;
+  Widget _buildDesktopNavigationRail() {
+    return NavigationRail(
+      labelType: NavigationRailLabelType.all,
+      groupAlignment: 0,
+      backgroundColor: AppColors.background,
+      selectedIndex: _currentIndex,
+      onDestinationSelected: _navigateToPage,
+      destinations: [
+        ..._pageMenuItems.map(
+          (item) => NavigationRailDestination(
+            icon: Icon(item.icon),
+            selectedIcon: Icon(item.icon),
+            label: Text(item.label),
+          ),
+        ),
+      ],
+    );
+  }
 
-  IconMenu({required this.icon, required this.label});
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
+
+        // 7. Quitamos el DefaultTabController
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          //appBar: AppBarApp(title:_screenTitles[_currentIndex], iconColor: AppColors.textPrimary,)
+          appBar: !isWide
+              ? AppBar(
+                  // 8. Pasamos el TabController y la función de Tap
+                  /*bottom: isWide
+                ? null
+                : TabBar(
+                    controller: _tabController,
+                    onTap: _navigateToPage, // Usamos la nueva función
+                    tabs: bottomNavItems
+                        .map(
+                          (item) =>
+                              Tab(icon: Icon(item.icon), text: item.label),
+                        )
+                        .toList(),
+                  ),*/
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  title: Text(
+                    _screenTitles[_currentIndex],
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  toolbarHeight: 64.0,
+                  actions: [const SizedBox(width: 16)],
+                  iconTheme: IconThemeData(color: AppColors.textPrimary),
+                )
+              : null,
+
+          drawer: isWide ? null : MySideBar(controller: widget.controller),
+
+          // 10. Pasamos el TabController al layout de escritorio
+          body: isWide
+              ? _buildWideLayout(_tabController)
+              : _buildNarrowLayout(),
+
+          // 11. El BottomNavBar (móvil) usa la nueva función de navegación
+          bottomNavigationBar: isWide ? null : _buildBottomNavBar(),
+
+          floatingActionButton: _buildFloatingActionButton(),
+        );
+      },
+    );
+  }
 }
