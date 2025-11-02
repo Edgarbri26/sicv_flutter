@@ -10,7 +10,11 @@ class Permission {
   final String name;
   final String description;
 
-  Permission({required this.key, required this.name, required this.description});
+  Permission({
+    required this.key,
+    required this.name,
+    required this.description,
+  });
 }
 
 /// Define un grupo de permisos (ej. "Inventario")
@@ -46,7 +50,8 @@ final List<PermissionGroup> allPermissionGroups = [
       Permission(
         key: 'inventory_delete',
         name: 'Eliminar Productos',
-        description: 'Permiso peligroso: puede borrar productos permanentemente.',
+        description:
+            'Permiso peligroso: puede borrar productos permanentemente.',
       ),
     ],
   ),
@@ -56,7 +61,8 @@ final List<PermissionGroup> allPermissionGroups = [
       Permission(
         key: 'sales_create',
         name: 'Realizar Ventas',
-        description: 'Puede usar el punto de venta (POS) para registrar ventas.',
+        description:
+            'Puede usar el punto de venta (POS) para registrar ventas.',
       ),
       Permission(
         key: 'sales_read',
@@ -76,7 +82,8 @@ final List<PermissionGroup> allPermissionGroups = [
       Permission(
         key: 'purchases_create',
         name: 'Registrar Compras',
-        description: 'Puede registrar la entrada de mercancía (compras a proveedores).',
+        description:
+            'Puede registrar la entrada de mercancía (compras a proveedores).',
       ),
       Permission(
         key: 'purchases_read',
@@ -91,7 +98,8 @@ final List<PermissionGroup> allPermissionGroups = [
       Permission(
         key: 'reports_read',
         name: 'Ver Reportes',
-        description: 'Puede acceder a los reportes de ventas, ganancias e inventario.',
+        description:
+            'Puede acceder a los reportes de ventas, ganancias e inventario.',
       ),
     ],
   ),
@@ -117,7 +125,10 @@ final List<PermissionGroup> allPermissionGroups = [
 final Map<String, Set<String>> mockRolePermissionsData = {
   'Administrador': {
     // Todos los permisos
-    'inventory_read', 'inventory_create', 'inventory_update', 'inventory_delete',
+    'inventory_read',
+    'inventory_create',
+    'inventory_update',
+    'inventory_delete',
     'sales_create', 'sales_read', 'sales_cancel',
     'purchases_create', 'purchases_read',
     'reports_read',
@@ -167,11 +178,11 @@ class _RolesScreenState extends State<RolesScreen> {
   void _selectRole(String roleName) {
     setState(() {
       _selectedRoleName = roleName;
-      
+
       // Simula la carga desde la "base de datos"
       final Set<String> permissionsForRole =
           mockRolePermissionsData[roleName] ?? {};
-      
+
       // Resetea el mapa de permisos actual
       _currentPermissions = {};
 
@@ -198,12 +209,14 @@ class _RolesScreenState extends State<RolesScreen> {
 
     // EN UN CASO REAL: Aquí llamas a tu API/Servicio
     // "GuardarPermisosParaRol(_selectedRoleName, _currentPermissions)"
-    
+
     print('Guardando permisos para $_selectedRoleName:');
-    print(_currentPermissions.entries
-        .where((e) => e.value)
-        .map((e) => e.key)
-        .toList());
+    print(
+      _currentPermissions.entries
+          .where((e) => e.value)
+          .map((e) => e.key)
+          .toList(),
+    );
 
     // Actualiza la "BD" simulada
     mockRolePermissionsData[_selectedRoleName!] = _currentPermissions.entries
@@ -227,7 +240,10 @@ class _RolesScreenState extends State<RolesScreen> {
     const double breakpoint = 650.0;
 
     return Scaffold(
-      appBar: AppBarApp(title: 'Roles y Permisos', iconColor: AppColors.textPrimary,),
+      appBar: AppBarApp(
+        title: 'Roles y Permisos',
+        iconColor: AppColors.textPrimary,
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWide = constraints.maxWidth >= breakpoint;
@@ -241,15 +257,15 @@ class _RolesScreenState extends State<RolesScreen> {
                   width: 280,
                   // Usamos un fondo sutil para diferenciar el panel
                   child: Material(
-                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
                     child: _buildRoleList(context),
                   ),
                 ),
                 const VerticalDivider(width: 1, thickness: 1),
                 // Panel Detalle (Permisos)
-                Expanded(
-                  child: _buildPermissionPane(context),
-                ),
+                Expanded(child: _buildPermissionPane(context)),
               ],
             );
           } else {
@@ -283,7 +299,7 @@ class _RolesScreenState extends State<RolesScreen> {
       );
     }
     // Si no, Flutter usará el botón 'Atrás' o 'Menú' por defecto
-    return null; 
+    return null;
   }
 
   /// Panel Maestro: La lista de roles
@@ -298,8 +314,9 @@ class _RolesScreenState extends State<RolesScreen> {
           leading: Icon(rol['icon']),
           title: Text(rol['nombre']),
           selected: isSelected, // Resalta el rol seleccionado
-          selectedTileColor:
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          selectedTileColor: Theme.of(
+            context,
+          ).colorScheme.primary.withOpacity(0.1),
           onTap: () => _selectRole(rol['nombre']),
         );
       },
@@ -317,8 +334,9 @@ class _RolesScreenState extends State<RolesScreen> {
           padding: const EdgeInsets.all(24.0),
           child: Text(
             'Seleccione un rol de la lista para gestionar sus permisos.',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
         ),
@@ -355,7 +373,7 @@ class _RolesScreenState extends State<RolesScreen> {
                       perm,
                       _currentPermissions[perm.key] ?? false,
                     );
-                  }).toList(),
+                  }),
                 ],
               );
             },
@@ -389,7 +407,10 @@ class _RolesScreenState extends State<RolesScreen> {
   Widget _buildPermissionTile(Permission perm, bool hasPermission) {
     return CheckboxListTile(
       value: hasPermission,
-      title: Text(perm.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        perm.name,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(
         perm.description,
         style: Theme.of(context).textTheme.bodySmall,
@@ -397,7 +418,8 @@ class _RolesScreenState extends State<RolesScreen> {
       onChanged: (bool? newValue) {
         _updatePermission(perm.key, newValue);
       },
-      controlAffinity: ListTileControlAffinity.leading, // Checkbox a la izquierda
+      controlAffinity:
+          ListTileControlAffinity.leading, // Checkbox a la izquierda
       contentPadding: EdgeInsets.zero,
     );
   }

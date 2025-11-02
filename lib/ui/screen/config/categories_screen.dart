@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
 class CategoriesScreen extends StatefulWidget {
@@ -83,7 +82,9 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                 });
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Prefijo actualizado para $categoria')),
+                  SnackBar(
+                    content: Text('Prefijo actualizado para $categoria'),
+                  ),
                 );
               },
               child: const Text('Guardar'),
@@ -97,12 +98,10 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary,),
+      appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: 600,
-          ),
+          constraints: BoxConstraints(maxWidth: 600),
           child: Column(
             children: [
               Padding(
@@ -123,8 +122,11 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                     return ListTile(
                       title: Text(categoria),
                       leading: const Icon(Icons.category_outlined),
-                      subtitle: prefix != null && prefix.isNotEmpty ? Text('Prefijo: $prefix') : null,
-                      onTap: () => print('TODO: Ver subcategorías de $categoria'),
+                      subtitle: prefix != null && prefix.isNotEmpty
+                          ? Text('Prefijo: $prefix')
+                          : null,
+                      onTap: () =>
+                          print('TODO: Ver subcategorías de $categoria'),
                       trailing: IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: () => _editarCategoria(categoria),

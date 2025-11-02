@@ -10,11 +10,6 @@ import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
 
 // Importaciones requeridas por tu widget 'Menu'
-import 'package:sicv_flutter/ui/pages/login_page.dart';
-import 'package:sicv_flutter/ui/pages/movements_page.dart';
-import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
-import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/side_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
@@ -302,8 +297,6 @@ class _HomePageState extends State<HomePage>
   // Asumo que tienes una lista de tus productos.
   // Deberías pasar esta lista como parámetro a la función o tomarla de un provider.
   // List<Product> _listaDeProductos = ...;
-
-  
 
   void _mostrarDetallesDeVenta(BuildContext context) {
     double total = _itemsParaLaVenta.fold(

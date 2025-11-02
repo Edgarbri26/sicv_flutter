@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/models/destinations.dart';
 import 'menu.dart';
 
 class MyDrawer extends StatelessWidget {

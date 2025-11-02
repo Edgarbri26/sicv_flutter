@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart'; // Asumo esta ruta
 
 class TextFieldApp extends StatelessWidget {
-  
   final TextEditingController controller;
   final String labelText;
   final IconData? prefixIcon;
   final Widget? suffixIcon; // Añadido para más flexibilidad (ej. contraseñas)
   final TextInputType keyboardType;
+  final String? Function(String?)? validator;
   final List<TextInputFormatter>? inputFormatters;
   final int maxLines;
   final bool obscureText;
@@ -26,17 +26,19 @@ class TextFieldApp extends StatelessWidget {
     this.maxLines = 1,
     this.obscureText = false, // Añadido para contraseñas
     this.enabled = true,
+    this.validator,
     this.textCapitalization = TextCapitalization.sentences,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       enabled: enabled,
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       maxLines: maxLines,
+      validator: validator,
       obscureText: obscureText,
       textCapitalization: textCapitalization,
       style: const TextStyle(
@@ -54,10 +56,7 @@ class TextFieldApp extends StatelessWidget {
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18) : null,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            width: 3.0,
-            color: AppColors.border,
-          ),
+          borderSide: const BorderSide(width: 3.0, color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -66,7 +65,10 @@ class TextFieldApp extends StatelessWidget {
             color: AppColors.textSecondary,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 10,
+          horizontal: 16,
+        ),
       ),
     );
   }

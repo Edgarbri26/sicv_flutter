@@ -22,6 +22,8 @@ class _User {
 }
 
 class AdminUserManagementPage extends StatefulWidget {
+  const AdminUserManagementPage({super.key});
+
   @override
   _AdminUserManagementPageState createState() =>
       _AdminUserManagementPageState();
