@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
-import 'home_page.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -49,10 +50,8 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _loading = false);
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomePage( )),
-    );
+
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
   }
 
   @override
