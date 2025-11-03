@@ -4,7 +4,6 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/main.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';

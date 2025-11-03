@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/main.dart';
 import 'package:sicv_flutter/models/destinations.dart';
 import 'package:sidebarx/sidebarx.dart';
 

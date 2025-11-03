@@ -10,7 +10,6 @@ import 'package:sicv_flutter/models/movement.dart'; // Asegúrate que este sea e
 import 'package:sicv_flutter/models/product.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
-import 'package:sicv_flutter/ui/widgets/menu.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class MovementsPage extends StatefulWidget {
@@ -314,8 +313,8 @@ class _MovementsPageState extends State<MovementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double breakpoint = 600.0;
-    final bool isWide = MediaQuery.of(context).size.width >= breakpoint;
+    //final double breakpoint = 600.0;
+    //final bool isWide = MediaQuery.of(context).size.width >= breakpoint;
 
     return Scaffold(
       backgroundColor: AppColors.background,

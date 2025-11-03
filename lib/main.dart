@@ -2,8 +2,6 @@ import 'package:provider/provider.dart';
 import 'package:sicv_flutter/app.dart';
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/providers/report_provider.dart';
-import 'package:sicv_flutter/ui/widgets/img_product.dart';
-import 'package:sidebarx/sidebarx.dart';
 
 void main() {
   runApp(

@@ -7,7 +7,6 @@ import 'package:sicv_flutter/ui/screen/report/inventory_view.dart';
 import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
-import 'package:sicv_flutter/ui/widgets/menu.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 /// ReportDashboardPage

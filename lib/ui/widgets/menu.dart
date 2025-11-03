@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart'; // Mantienes tus colores
-import 'package:sicv_flutter/ui/pages/home_page.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
-import 'package:sicv_flutter/ui/pages/movements_page.dart';
-import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
-import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 // Asume que tienes una página de perfil
 // import 'package/sicv_flutter/ui/pages/profile_page.dart';
 
