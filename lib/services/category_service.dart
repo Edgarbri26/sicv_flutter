@@ -84,5 +84,36 @@ class CategoryService {
     }
   }
 
-  // (Aquí podrías añadir métodos para updateCategory y deleteCategory)
+  Future<CategoryModel> updateCategory(
+    int id,
+    String name,
+    String description,
+    bool status,
+  ) async {
+    final url = Uri.parse('$_baseUrl/category/$id');
+
+    final body = json.encode({
+      'name': name,
+      'description': description,
+      'status': status,
+    });
+
+    try {
+      // --- ¡CAMBIO JUSTO AQUÍ! ---
+      // Cambiamos http.put por http.patch
+      final response = await http.patch( 
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 200) { 
+        return CategoryModel.fromJson(json.decode(response.body)['data']);
+      } else {
+        throw Exception('Error al actualizar la categoría (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }

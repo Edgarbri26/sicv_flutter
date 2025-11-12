@@ -7,6 +7,7 @@ import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 import 'package:sicv_flutter/models/category_model.dart'; // Reemplaza con tu ruta real
 import 'package:sicv_flutter/services/category_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Reemplaza con tu ruta real
+import 'package:sicv_flutter/ui/widgets/atomic/checkbox_field_app.dart'; // Reemplaza con tu ruta real
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -138,48 +139,92 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   // --- FUNCIÓN DE EDITAR (ADAPTADA) ---
   // Ahora recibe un objeto CategoryModel
   void _editarCategoria(CategoryModel categoria) {
-    // La lógica de prefijo usa el nombre de la categoría como clave
-    final controller = TextEditingController(text: _prefixes[categoria.name] ?? '');
-    
+    // Controladores pre-llenados con los datos actuales
+    final nameController = TextEditingController(text: categoria.name);
+    final descriptionController = TextEditingController(text: categoria.description);
+    // Estado para manejar el 'status' (activo/inactivo)
+    bool currentStatus = categoria.status;
+
     showDialog<void>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Prefijo para ${categoria.name}'), // Usa el nombre
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(hintText: 'Ej. ELEC-'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = controller.text.trim();
-                setState(() {
-                  if (value.isEmpty) {
-                    _prefixes.remove(categoria.name); // Usa el nombre
-                  } else {
-                    _prefixes[categoria.name] = value; // Usa el nombre
-                  }
-                });
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Prefijo actualizado para ${categoria.name}'),
+        // Usamos un StatefulWidget para que el Checkbox se actualice
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text('Editar ${categoria.name}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFieldApp(controller: nameController, labelText: 'Nombre'),
+                  SizedBox(height: 10),
+                  TextFieldApp(controller: descriptionController, labelText: 'Descripción'),
+                  SizedBox(height: 10),
+                  CheckboxFieldApp(
+                    title: "Activo",
+                    value: currentStatus,
+                    onChanged: (newValue) {
+                      setDialogState(() {
+                        currentStatus = newValue ?? false;
+                      });
+                    },
                   ),
-                );
-              },
-              child: const Text('Guardar'),
-            ),
-          ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    final description = descriptionController.text.trim();
+
+                    if (name.isEmpty) return; // Validación
+
+                    try {
+                      // 1. Llama al servicio de actualización
+                      await _categoryService.updateCategory(
+                        categoria.id, // El ID de la categoría
+                        name,
+                        description,
+                        currentStatus, // El estado (activo/inactivo)
+                      );
+
+                      if (!mounted) return;
+                      Navigator.of(context).pop(); // Cierra el diálogo
+
+                      // 2. Muestra confirmación
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Categoría "${name}" actualizada'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+
+                      // 3. Recarga la lista de categorías
+                      setState(() {
+                        _categoriesFuture = _fetchCategories();
+                      });
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al actualizar: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Guardar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
