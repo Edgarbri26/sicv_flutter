@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos
-import 'package:sicv_flutter/models/category_model.dart'; // Necesario para el modelo Product
+// Necesario para el modelo Product
 import 'package:sicv_flutter/models/movement_type.dart';
 import 'package:sicv_flutter/models/movement.dart'; // Asegúrate que este sea el nombre correcto
 import 'package:sicv_flutter/models/product.dart';

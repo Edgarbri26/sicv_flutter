@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
-import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

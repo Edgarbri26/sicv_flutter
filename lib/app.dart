@@ -5,6 +5,7 @@ import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'package:sicv_flutter/ui/screen/config/client_screen.dart';
+import 'package:sicv_flutter/ui/screen/config/depot_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/user_management.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'ui/screen/config/company_screen.dart';
@@ -98,6 +99,11 @@ class InventoryApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) =>
                   ClientManagementPage(),
+            );
+          case AppRoutes.depot:
+            return MaterialPageRoute(
+              builder: (context) =>
+                  DepotScreem(),
             );
 
           default:

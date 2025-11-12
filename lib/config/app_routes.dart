@@ -22,4 +22,5 @@ class AppRoutes {
   static const String users = 'AdminUserManagement';
   static const String perfil = 'perfil';
   static const String client = 'ClientScreen';
+  static const String depot = 'DepotScreen';
 }

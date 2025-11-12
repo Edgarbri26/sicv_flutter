@@ -117,6 +117,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.warning_amber,
                       routeName: AppRoutes.stock,
                     ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Depositos y Almacenes',
+                      subtitle: 'Gestión de depósitos',
+                      icon: Icons.store,
+                      routeName: AppRoutes.depot,
+                    ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE USUARIOS'),
                     _buildConfigTile(
