@@ -4,6 +4,8 @@ import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
+import 'package:sicv_flutter/ui/screen/config/role_screem.dart';
+import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/client_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/depot_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/provider_screem.dart';
@@ -14,23 +16,24 @@ import 'ui/screen/config/currency_screen.dart';
 import 'ui/screen/config/units_screen.dart';
 import 'ui/screen/config/categories_screen.dart';
 import 'ui/screen/config/stock_screen.dart';
-import 'ui/screen/config/roles_screen.dart';
 import 'ui/screen/config/sku_screen.dart';
 import 'ui/screen/config/attributes_screen.dart';
 import 'ui/screen/config/backup_screen.dart';
 import 'ui/screen/config/theme_screen.dart';
 import 'ui/screen/config/notifications_screen.dart';
-import 'ui/screen/config/settings_screen.dart';
+// import 'ui/pages/settings_page.dart';
 import 'core/theme/themes.dart';
 import 'ui/pages/home_page.dart';
 
 class InventoryApp extends StatelessWidget {
   InventoryApp({super.key});
   final _controller = SidebarXController(selectedIndex: 0, extended: true);
+  
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
       home: HomePage(controller: _controller),
@@ -52,7 +55,9 @@ class InventoryApp extends StatelessWidget {
               builder: (context) => const AddEditInventoryScreen(),
             );
           case AppRoutes.movements:
-            return MaterialPageRoute(builder: (context) => MovementsPage(controller: _controller));
+            return MaterialPageRoute(
+              builder: (context) => MovementsPage(controller: _controller),
+            );
           case AppRoutes.company:
             return MaterialPageRoute(
               builder: (context) => const CompanyScreen(),
@@ -70,7 +75,9 @@ class InventoryApp extends StatelessWidget {
           case AppRoutes.stock:
             return MaterialPageRoute(builder: (context) => const StockScreen());
           case AppRoutes.roles:
-            return MaterialPageRoute(builder: (context) => const RolesScreen());
+            return MaterialPageRoute(
+              builder: (context) => const RoleListView(),
+            );
           case AppRoutes.users:
             return MaterialPageRoute(
               builder: (context) => AdminUserManagementPage(),
