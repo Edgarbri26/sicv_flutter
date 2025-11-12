@@ -3,6 +3,11 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
+// --- IMPORTACIONES AÑADIDAS ---
+import 'package:sicv_flutter/models/category_model.dart'; // Reemplaza con tu ruta real
+import 'package:sicv_flutter/services/category_service.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Reemplaza con tu ruta real
+
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
 
@@ -11,23 +16,37 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriasScreenState extends State<CategoriesScreen> {
-  final List<String> _categoriasOriginales = [
-    'Electrónica',
-    'Ropa',
-    'Alimentos',
-    'Hogar',
-    'Deportes',
-    'Juguetes',
-  ];
-  List<String> _categoriasFiltradas = [];
+  // --- ESTADO MANEJADO POR LA API ---
+  final CategoryService _categoryService = CategoryService();
+  late Future<List<CategoryModel>> _categoriesFuture;
+  List<CategoryModel> _categoriasOriginales = [];
+  List<CategoryModel> _categoriasFiltradas = [];
+
   final TextEditingController _searchController = TextEditingController();
-  // Mapa simple para almacenar prefijos por categoría (id o nombre -> prefijo)
+  // Tu lógica de prefijos local se mantiene
   final Map<String, String> _prefixes = {};
 
   @override
   void initState() {
     super.initState();
-    _categoriasFiltradas = _categoriasOriginales;
+    // Inicia la carga de datos desde la API
+    _categoriesFuture = _fetchCategories();
+  }
+
+  Future<List<CategoryModel>> _fetchCategories() async {
+    try {
+      // Llama al servicio
+      final categories = await _categoryService.getCategories();
+      // Guarda las listas originales y filtradas
+      setState(() {
+        _categoriasOriginales = categories;
+        _categoriasFiltradas = categories;
+      });
+      return categories;
+    } catch (e) {
+      // Propaga el error para que FutureBuilder lo maneje
+      throw Exception('Error al cargar categorías: $e');
+    }
   }
 
   @override
@@ -41,33 +60,99 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
     setState(() {
       _categoriasFiltradas = _categoriasOriginales
           .where(
-            (categoria) => categoria.toLowerCase().contains(lowerCaseQuery),
+            // Filtra por el nombre de la categoría
+            (categoria) => categoria.name.toLowerCase().contains(lowerCaseQuery),
           )
           .toList();
     });
   }
 
+  // --- FUNCIÓN DE AGREGAR (IMPLEMENTADA) ---
   void _agregarCategoria() {
-    print('TODO: Mostrar diálogo para agregar categoría');
-  }
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
 
-  void _editarCategoria(String categoria) {
-    // Mostrar diálogo para editar prefijo de la categoría
-    final controller = TextEditingController(text: _prefixes[categoria] ?? '');
     showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Prefijo para $categoria'),
+          title: const Text('Nueva Categoría'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFieldApp(controller: nameController, labelText: 'Nombre'),
+              SizedBox(height: 10),
+              TextFieldApp(controller: descriptionController, labelText: 'Descripción'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                final description = descriptionController.text.trim();
+
+                if (name.isEmpty) return; // Validación simple
+
+                try {
+                  // Llama al servicio para crear
+                  final newCategory =
+                      await _categoryService.createCategory(name, description);
+                  
+                  // Cierra el diálogo
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  // Muestra confirmación
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Categoría "${newCategory.name}" creada'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  // Recarga la lista
+                  setState(() {
+                    _categoriesFuture = _fetchCategories();
+                  });
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al crear: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // --- FUNCIÓN DE EDITAR (ADAPTADA) ---
+  // Ahora recibe un objeto CategoryModel
+  void _editarCategoria(CategoryModel categoria) {
+    // La lógica de prefijo usa el nombre de la categoría como clave
+    final controller = TextEditingController(text: _prefixes[categoria.name] ?? '');
+    
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Prefijo para ${categoria.name}'), // Usa el nombre
           content: TextField(
             controller: controller,
             decoration: const InputDecoration(hintText: 'Ej. ELEC-'),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancelar'),
             ),
             TextButton(
@@ -75,15 +160,15 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                 final value = controller.text.trim();
                 setState(() {
                   if (value.isEmpty) {
-                    _prefixes.remove(categoria);
+                    _prefixes.remove(categoria.name); // Usa el nombre
                   } else {
-                    _prefixes[categoria] = value;
+                    _prefixes[categoria.name] = value; // Usa el nombre
                   }
                 });
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Prefijo actualizado para $categoria'),
+                    content: Text('Prefijo actualizado para ${categoria.name}'),
                   ),
                 );
               },
@@ -101,41 +186,75 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
       appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 600),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SearchTextFieldApp(
-                  controller: _searchController,
-                  labelText: 'Buscar Categoría',
-                  hintText: 'Ej. Electrónica',
-                  onChanged: _filtrarCategorias,
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _categoriasFiltradas.length,
-                  itemBuilder: (context, index) {
-                    final categoria = _categoriasFiltradas[index];
-                    final prefix = _prefixes[categoria];
-                    return ListTile(
-                      title: Text(categoria),
-                      leading: const Icon(Icons.category_outlined),
-                      subtitle: prefix != null && prefix.isNotEmpty
-                          ? Text('Prefijo: $prefix')
-                          : null,
-                      onTap: () =>
-                          print('TODO: Ver subcategorías de $categoria'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _editarCategoria(categoria),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+          constraints: const BoxConstraints(maxWidth: 600),
+          // --- USA FUTUREBUILDER PARA MANEJAR ESTADOS ---
+          child: FutureBuilder<List<CategoryModel>>(
+            future: _categoriesFuture,
+            builder: (context, snapshot) {
+              // 1. ESTADO DE CARGA
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              // 2. ESTADO DE ERROR
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              }
+
+              // 3. ESTADO DE ÉXITO (PERO VACÍO)
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No se encontraron categorías.'));
+              }
+
+              // 4. ESTADO DE ÉXITO (CON DATOS)
+              // Si llegamos aquí, los datos están cargados en _categoriasFiltradas
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SearchTextFieldApp(
+                      controller: _searchController,
+                      labelText: 'Buscar Categoría',
+                      hintText: 'Ej. Electrónica',
+                      onChanged: _filtrarCategorias,
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _categoriasFiltradas.length,
+                      itemBuilder: (context, index) {
+                        // El item ahora es un objeto CategoryModel
+                        final categoria = _categoriasFiltradas[index];
+                        final prefix = _prefixes[categoria.name];
+
+                        return ListTile(
+                          title: Text(categoria.name),
+                          leading: const Icon(Icons.category_outlined),
+                          // Muestra el prefijo si existe, si no, la descripción
+                          subtitle: prefix != null && prefix.isNotEmpty
+                              ? Text('Prefijo: $prefix')
+                              : (categoria.description.isNotEmpty
+                                  ? Text(categoria.description)
+                                  : null),
+                          onTap: () =>
+                              print('TODO: Ver subcategorías de ${categoria.name}'),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            // Pasa el objeto CategoryModel completo
+                            onPressed: () => _editarCategoria(categoria),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

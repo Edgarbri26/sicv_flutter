@@ -13,8 +13,6 @@ class CategoryModel {
 
   // El factory 'fromJson' para la categoría
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    // Asumimos que el JSON de la categoría tiene 'category_id' y 'name'
-    // ¡Ajusta estas claves ('category_id') si en tu JSON se llaman diferente!
     return CategoryModel(
       id: json['category_id'], 
       name: json['name'],
@@ -22,7 +20,6 @@ class CategoryModel {
       description: json['description'],
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {

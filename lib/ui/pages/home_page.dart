@@ -7,7 +7,6 @@ import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product.dart';
-import 'package:sicv_flutter/models/user.dart';
 import 'package:sicv_flutter/ui/screen/home/inventory_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
