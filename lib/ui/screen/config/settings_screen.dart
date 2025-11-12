@@ -147,6 +147,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.people,
                       routeName: AppRoutes.client,
                     ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Proveedores del Sistema',
+                      subtitle: 'Agregar/editar/eliminar proveedores',
+                      icon: Icons.local_shipping,
+                      routeName: AppRoutes.provider,
+                    ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE PRODUCTOS'),
                     _buildConfigTile(
