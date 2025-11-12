@@ -133,6 +133,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.account_circle,
                       routeName: AppRoutes.users,
                     ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Clientes del Sistema',
+                      subtitle: 'Agregar/editar/eliminar clientes',
+                      icon: Icons.people,
+                      routeName: AppRoutes.client,
+                    ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE PRODUCTOS'),
                     _buildConfigTile(

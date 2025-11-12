@@ -4,6 +4,7 @@ import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
 import 'package:sicv_flutter/ui/pages/sale_page.dart';
+import 'package:sicv_flutter/ui/screen/config/client_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/user_management.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'ui/screen/config/company_screen.dart';
@@ -92,6 +93,11 @@ class InventoryApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) =>
                   ReportDashboardPage(controller: _controller),
+            );
+          case AppRoutes.client:
+            return MaterialPageRoute(
+              builder: (context) =>
+                  ClientManagementPage(),
             );
 
           default:
