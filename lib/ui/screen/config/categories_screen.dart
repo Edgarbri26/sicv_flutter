@@ -225,6 +225,109 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
       },
     );
   }
+
+   void _showDeactivateConfirmDialog(CategoryModel category) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Desactivar Categoría'),
+          content: Text(
+              '¿Estás seguro de que deseas Desactivar "${category.name}"? Esta acción puede afectar a los productos asociados.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () async {
+                try {
+                  await _categoryService.deactivateCategory(category.id);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Categoría "${category.name}" desactivada'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  setState(() {
+                    _categoriesFuture = _fetchCategories();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al desactivar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Desactivar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showActivateConfirmDialog(CategoryModel category) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Activar Categoría'),
+          content: Text(
+              '¿Estás seguro de que deseas Activar "${category.name}"? Esta acción puede afectar a los productos asociados.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () async {
+                try {
+                  await _categoryService.activateCategory(category.id);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Categoría "${category.name}" activada'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  setState(() {
+                    _categoriesFuture = _fetchCategories();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al activar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Activar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -274,25 +377,74 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                       itemCount: _categoriasFiltradas.length,
                       itemBuilder: (context, index) {
                         // El item ahora es un objeto CategoryModel
-                        final categoria = _categoriasFiltradas[index];
-                        final prefix = _prefixes[categoria.name];
+                        final category = _categoriasFiltradas[index];
+                        final prefix = _prefixes[category.name];
+                        final statusChip = Chip(
+                          label: Text(
+                            category.status ? 'Activo' : 'Inactivo',
+                            style: TextStyle(
+                              color: category.status
+                                  ? Colors.green.shade800
+                                  : Colors.red.shade800,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          backgroundColor: category.status
+                              ? Colors.green.withOpacity(0.15)
+                              : Colors.red.withOpacity(0.15),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 3, vertical: 0),
+                          side: BorderSide.none,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        );
 
                         return ListTile(
-                          title: Text(categoria.name),
+                          title: Row(
+                            children: [
+                              Text(category.name),
+                              const SizedBox(width: 8),
+                              statusChip,
+                            ],
+                          ),
                           leading: const Icon(Icons.category_outlined),
                           // Muestra el prefijo si existe, si no, la descripción
                           subtitle: prefix != null && prefix.isNotEmpty
                               ? Text('Prefijo: $prefix')
-                              : (categoria.description.isNotEmpty
-                                  ? Text(categoria.description)
+                              : (category.description.isNotEmpty
+                                  ? Text(category.description)
                                   : null),
                           onTap: () =>
-                              print('TODO: Ver subcategorías de ${categoria.name}'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            // Pasa el objeto CategoryModel completo
-                            onPressed: () => _editarCategoria(categoria),
+                              print('TODO: Ver subcategorías de ${category.name}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                // Pasa el objeto CategoryModel completo
+                                onPressed: () => _editarCategoria(category),
+                              ),
+                              category.status
+                                  ?
+                              IconButton(
+                                icon: const Icon(Icons.block,
+                                    color: Colors.red),
+                                tooltip: 'Desactivar',
+                                onPressed: () =>
+                                    _showDeactivateConfirmDialog(category),
+                              )
+                              : IconButton(
+                                  onPressed: () => _showActivateConfirmDialog(category),
+                                  tooltip: 'Activar',
+                                  icon: const Icon(
+                                    Icons.restore, 
+                                    color: Colors.green
+                                  )
+                                )
+                            ],
                           ),
+                          
                         );
                       },
                     ),

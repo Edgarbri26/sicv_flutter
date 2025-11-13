@@ -119,4 +119,38 @@ class CategoryService {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  Future<void> deactivateCategory(int id) async {
+    final url = Uri.parse('$_baseUrl/category/$id/deactivate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al desactivar la categoría (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+  
+  Future<void> activateCategory(int id) async {
+    final url = Uri.parse('$_baseUrl/category/$id/activate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al activar la categoría (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }
