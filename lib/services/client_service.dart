@@ -2,9 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 // Asegúrate de que la ruta sea correcta y el nombre del modelo coincida
 import '../models/client_model.dart';
+import 'package:sicv_flutter/config/api_url.dart';
+
 
 class ClientService {
-  final String _baseUrl = "http://localhost:3000/api"; // IP para emulador
+  // final String _baseUrl = "http://localhost:3000/api"; // IP para emulador
+    final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
+
 
   // --- OBTENER TODOS LOS CLIENTES ---
   Future<List<ClientModel>> getClients() async {

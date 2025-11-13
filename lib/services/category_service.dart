@@ -2,10 +2,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/category_model.dart'; // Asegúrate de importar tu modelo
+import 'package:sicv_flutter/config/api_url.dart';
 
 class CategoryService {
   // Cambia esto por la URL base de tu API
-  final String _baseUrl = "http://localhost:3000/api";
+  // final String _baseUrl = "http://localhost:3000/api";
+  final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
+
 
   // --- OBTENER TODAS LAS CATEGORÍAS ---
   Future<List<CategoryModel>> getCategories() async {

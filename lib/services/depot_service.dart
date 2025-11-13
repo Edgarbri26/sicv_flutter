@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/depot_model.dart'; // Asegúrate de que la ruta sea correcta
+import 'package:sicv_flutter/config/api_url.dart';
+
 
 class DepotService {
-  final String _baseUrl = "http://localhost:3000/api"; // IP para emulador
+  // final String _baseUrl = "http://localhost:3000/api"; // IP para emulador
+    final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
+
 
   // --- OBTENER TODOS LOS ALMACENES ---
   Future<List<DepotModel>> getDepots() async {
