@@ -21,4 +21,8 @@ class AppRoutes {
   static const String units = 'UnitsScreen';
   static const String users = 'AdminUserManagement';
   static const String perfil = 'perfil';
+  static const String client = 'ClientScreen';
+  static const String depot = 'DepotScreen';
+  static const String provider = 'ProviderScreen';
+  static const String typePayment = 'TypePaymentScreen';
 }

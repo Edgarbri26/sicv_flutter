@@ -94,6 +94,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.attach_money,
                       routeName: AppRoutes.currency,
                     ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Configuración de Los Tipos de Pago',
+                      subtitle: 'Tipo de pago, Pago Movil, Transferencia, etc.',
+                      icon: Icons.payment,
+                      routeName: AppRoutes.typePayment,
+                    ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
                     _buildConfigTile(
@@ -117,6 +124,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.warning_amber,
                       routeName: AppRoutes.stock,
                     ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Depositos y Almacenes',
+                      subtitle: 'Gestión de depósitos',
+                      icon: Icons.store,
+                      routeName: AppRoutes.depot,
+                    ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE USUARIOS'),
                     _buildConfigTile(
@@ -132,6 +146,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: 'Agregar/editar/eliminar usuarios',
                       icon: Icons.account_circle,
                       routeName: AppRoutes.users,
+                    ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Clientes del Sistema',
+                      subtitle: 'Agregar/editar/eliminar clientes',
+                      icon: Icons.people,
+                      routeName: AppRoutes.client,
+                    ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Proveedores del Sistema',
+                      subtitle: 'Agregar/editar/eliminar proveedores',
+                      icon: Icons.local_shipping,
+                      routeName: AppRoutes.provider,
                     ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE PRODUCTOS'),

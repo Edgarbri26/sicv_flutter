@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos reales
-import 'package:sicv_flutter/models/category.dart';
+import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/models/purchase_detail.dart';
 import 'package:sicv_flutter/models/supplier.dart';
@@ -74,54 +74,60 @@ class PurchaseScreenState extends State<PurchaseScreen> {
         description: '...',
         price: 1.40,
         stock: 50,
-        category: ProductCategory(id: 1, name: 'Alimentos'),
+        category: CategoryModel(id: 1, name: 'Alimentos', status: true, description: 'Alimentos'),
         sku: 'ALI-001',
+        minStock: 10,
+        perishable: true,
+        status: true,
+        stockGenerals: [],
+        stockLots: [],
+        priceBs: 1.40,
       ),
-      Product(
-        id: 2,
-        name: 'Cigarros Marlboro',
-        description: '...',
-        price: 5.99,
-        stock: 5,
-        category: ProductCategory(id: 2, name: 'Tabaco'),
-        sku: 'TAB-001',
-      ),
-      Product(
-        id: 3,
-        name: 'Café',
-        description: '...',
-        price: 10.99,
-        stock: 0,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-001',
-      ),
-      Product(
-        id: 4,
-        name: 'Gaseosa 2L',
-        description: '...',
-        price: 2.5,
-        stock: 50,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-002',
-      ),
-      Product(
-        id: 5,
-        name: 'Pan Campesino',
-        description: '...',
-        price: 2.0,
-        stock: 15,
-        category: ProductCategory(id: 1, name: 'Alimentos'),
-        sku: 'ALI-002',
-      ),
-      Product(
-        id: 6,
-        name: 'Agua Minalba 1L',
-        description: '...',
-        price: 1.0,
-        stock: 30,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-003',
-      ),
+      // Product(
+      //   id: 2,
+      //   name: 'Cigarros Marlboro',
+      //   description: '...',
+      //   price: 5.99,
+      //   stock: 5,
+      //   category: ProductCategory(id: 2, name: 'Tabaco'),
+      //   sku: 'TAB-001',
+      // ),
+      // Product(
+      //   id: 3,
+      //   name: 'Café',
+      //   description: '...',
+      //   price: 10.99,
+      //   stock: 0,
+      //   category: ProductCategory(id: 3, name: 'Bebidas'),
+      //   sku: 'BEB-001',
+      // ),
+      // Product(
+      //   id: 4,
+      //   name: 'Gaseosa 2L',
+      //   description: '...',
+      //   price: 2.5,
+      //   stock: 50,
+      //   category: ProductCategory(id: 3, name: 'Bebidas'),
+      //   sku: 'BEB-002',
+      // ),
+      // Product(
+      //   id: 5,
+      //   name: 'Pan Campesino',
+      //   description: '...',
+      //   price: 2.0,
+      //   stock: 15,
+      //   category: ProductCategory(id: 1, name: 'Alimentos'),
+      //   sku: 'ALI-002',
+      // ),
+      // Product(
+      //   id: 6,
+      //   name: 'Agua Minalba 1L',
+      //   description: '...',
+      //   price: 1.0,
+      //   stock: 30,
+      //   category: ProductCategory(id: 3, name: 'Bebidas'),
+      //   sku: 'BEB-003',
+      // ),
     ];
 
     // Inicialmente no hay nada seleccionado

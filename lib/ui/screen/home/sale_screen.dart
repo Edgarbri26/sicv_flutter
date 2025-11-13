@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/models/category.dart';
+import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
@@ -25,7 +25,7 @@ class _SaleScreenState extends State<SaleScreen> {
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
   // Lista de categorías (incluyendo "Todos")
-  late List<ProductCategory> _categories;
+  late List<CategoryModel> _categories;
   // Categoría seleccionada actualmente
   int _selectedCategoryId = 0; // 0 para "Todos"
 
@@ -48,68 +48,31 @@ class _SaleScreenState extends State<SaleScreen> {
   void _loadData() {
     // Simula la carga de productos (DEBERÍAS TRAERLOS DE TU API/BD)
     _todosLosProductos = [
-      Product(
-        id: 1,
-        name: 'Harina PAN',
-        description: '...',
-        price: 1.40,
-        stock: 50,
-        category: ProductCategory(id: 1, name: 'Alimentos'),
-        sku: 'ALI-001',
-      ),
-      Product(
-        id: 2,
-        name: 'Cigarros Marlboro',
-        description: '...',
-        price: 5.99,
-        stock: 5,
-        category: ProductCategory(id: 2, name: 'Tabaco'),
-        sku: 'TAB-001',
-      ),
-      Product(
-        id: 3,
-        name: 'Café',
-        description: '...',
-        price: 10.99,
-        stock: 0,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-001',
-      ),
+
       Product(
         id: 4,
         name: 'Gaseosa 2L',
         description: '...',
         price: 2.5,
         stock: 50,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
+        category: CategoryModel(id: 3, name: 'Bebidas', status: true, description: 'Bebidas'),
         sku: 'BEB-002',
+        minStock: 10,
+        perishable: true,
+        status: true,
+        stockGenerals: [],
+        stockLots: [],
+        priceBs: 2.5,
       ),
-      Product(
-        id: 5,
-        name: 'Pan Campesino',
-        description: '...',
-        price: 2.0,
-        stock: 15,
-        category: ProductCategory(id: 1, name: 'Alimentos'),
-        sku: 'ALI-002',
-      ),
-      Product(
-        id: 6,
-        name: 'Agua Minalba 1L',
-        description: '...',
-        price: 1.0,
-        stock: 30,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-003',
-      ),
+
     ];
 
     // Simula la carga de categorías (DEBERÍAS TRAERLAS DE TU API/BD)
     _categories = [
-      ProductCategory(id: 0, name: 'Todos'), // Categoría especial
-      ProductCategory(id: 1, name: 'Alimentos'),
-      ProductCategory(id: 2, name: 'Tabaco'),
-      ProductCategory(id: 3, name: 'Bebidas'),
+      CategoryModel(id: 0, name: 'Todos', status: true, description: 'Todos'), // Categoría especial
+      CategoryModel(id: 1, name: 'Alimentos', status: true, description: 'Alimentos'),
+      CategoryModel(id: 2, name: 'Tabaco', status: true, description: 'Tabaco'),
+      CategoryModel(id: 3, name: 'Bebidas', status: true, description: 'Bebidas'),
     ];
 
     // Al inicio, la lista filtrada es igual a la lista completa
@@ -284,10 +247,10 @@ class _SaleScreenState extends State<SaleScreen> {
                                                     '\$${product.price.toStringAsFixed(2)}',
                                                 color: AppColors.info,
                                               ),
-                                              if (product.stock > 0)
+                                              if (product.stock! > 0)
                                                 InfoChip(
                                                   text: '${product.stock} Uds.',
-                                                  color: product.stock > 5
+                                                  color: product.stock! > 5
                                                       ? AppColors.success
                                                       : AppColors.edit,
                                                 )

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/models/category.dart';
+import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product.dart';
 import 'dart:io'; // Required for File (mobile/desktop)
 import 'package:flutter/foundation.dart'; // Required for kIsWeb constant
@@ -21,17 +21,36 @@ class InventoryDatatableScreen extends StatefulWidget {
 
 class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   // --- DATOS DE EJEMPLO ---
-  final ProductCategory catBebidas = ProductCategory(id: 1, name: 'Bebidas');
-  final ProductCategory catLimpieza = ProductCategory(id: 2, name: 'Limpieza');
-  final ProductCategory catAlimentos = ProductCategory(
+  final CategoryModel catBebidas = CategoryModel(
+    id: 1,
+    name: 'Bebidas',
+    status: true,
+    description: 'Bebidas',
+  );
+  final CategoryModel catLimpieza = CategoryModel(
+    id: 2,
+    name: 'Limpieza',
+    status: true,
+    description: 'Limpieza',
+  );
+  final CategoryModel catAlimentos = CategoryModel(
     id: 3,
     name: 'Alimentos',
+    status: true,
+    description: 'Alimentos',
   );
-  final ProductCategory catPersonal = ProductCategory(
+  final CategoryModel catPersonal = CategoryModel(
     id: 4,
     name: 'Cuidado Personal',
+    status: true,
+    description: 'Cuidado Personal',
   );
-  final ProductCategory catTodas = ProductCategory(id: 0, name: 'Todas');
+  final CategoryModel catTodas = CategoryModel(
+    id: 0,
+    name: 'Todas',
+    status: true,
+    description: 'Todas las categorías',
+  );
 
   late final List<Product> _allProducts;
 
@@ -39,7 +58,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
   // Estado para los filtros
   String _searchQuery = '';
-  ProductCategory? _selectedCategory;
+  CategoryModel? _selectedCategory;
   //final List<String> _categories = ['Todas', 'Bebidas', 'Limpieza', 'Alimentos', 'Personal'];
 
   int? _sortColumnIndex; // Índice de la columna ordenada (null = ninguna)
@@ -48,7 +67,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   static const int _stockLowThreshold = 10;
 
   // ⭐️ 2. DECLARA LA LISTA AQUÍ
-  late final List<ProductCategory> _allCategories;
+  late final List<CategoryModel> _allCategories;
 
   @override
   void initState() {
@@ -68,181 +87,187 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
         name: 'Gaseosa 2L',
         description: 'Refresco sabor a cola de 2 litros.',
         price: 2.5,
+        priceBs: 2.5,
         imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
         stock: 50,
         category: catBebidas,
         sku: 'GAS-001', // <-- ¡AÑADIDO!
+        minStock: 10,
+        perishable: true,
+        status: true,
+        stockGenerals: [],
+        stockLots: [],
       ),
-      Product(
-        id: 2,
-        name: 'Jabón en Polvo 1kg',
-        description: 'Detergente en polvo para ropa blanca y de color.',
-        price: 4.0,
-        imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
-        stock: 8,
-        category: catLimpieza,
-        sku: 'LIM-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 3,
-        name: 'Arroz 1kg',
-        description: 'Arroz blanco de grano largo tipo 1.',
-        price: 1.2,
-        imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
-        stock: 120,
-        category: catAlimentos,
-        sku: 'ALI-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 4,
-        name: 'Shampoo 500ml',
-        description: 'Shampoo para cabello seco con aceite de argán.',
-        price: 5.5,
-        imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
-        stock: 0,
-        category: catPersonal,
-        sku: 'PER-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 5,
-        name: 'Agua Mineral 1.5L',
-        description: 'Agua mineral de manantial sin gas.',
-        price: 1.0,
-        imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
-        stock: 3,
-        category: catBebidas,
-        sku: 'GAS-002', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 6,
-        name: 'Lentejas 500g',
-        description: 'Lentejas secas, fuente de proteína.',
-        price: 0.9,
-        imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
-        stock: 75,
-        category: catAlimentos,
-        sku: 'ALI-002', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 1,
-        name: 'Gaseosa 2L',
-        description: 'Refresco sabor a cola de 2 litros.',
-        price: 2.5,
-        imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
-        stock: 50,
-        category: catBebidas,
-        sku: 'GAS-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 2,
-        name: 'Jabón en Polvo 1kg',
-        description: 'Detergente en polvo para ropa blanca y de color.',
-        price: 4.0,
-        imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
-        stock: 8,
-        category: catLimpieza,
-        sku: 'LIM-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 3,
-        name: 'Arroz 1kg',
-        description: 'Arroz blanco de grano largo tipo 1.',
-        price: 1.2,
-        imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
-        stock: 120,
-        category: catAlimentos,
-        sku: 'ALI-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 4,
-        name: 'Shampoo 500ml',
-        description: 'Shampoo para cabello seco con aceite de argán.',
-        price: 5.5,
-        imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
-        stock: 0,
-        category: catPersonal,
-        sku: 'PER-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 5,
-        name: 'Agua Mineral 1.5L',
-        description: 'Agua mineral de manantial sin gas.',
-        price: 1.0,
-        imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
-        stock: 3,
-        category: catBebidas,
-        sku: 'GAS-002', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 6,
-        name: 'Lentejas 500g',
-        description: 'Lentejas secas, fuente de proteína.',
-        price: 0.9,
-        imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
-        stock: 75,
-        category: catAlimentos,
-        sku: 'ALI-002', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 1,
-        name: 'Gaseosa 2L',
-        description: 'Refresco sabor a cola de 2 litros.',
-        price: 2.5,
-        imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
-        stock: 50,
-        category: catBebidas,
-        sku: 'GAS-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 2,
-        name: 'Jabón en Polvo 1kg',
-        description: 'Detergente en polvo para ropa blanca y de color.',
-        price: 4.0,
-        imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
-        stock: 8,
-        category: catLimpieza,
-        sku: 'LIM-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 3,
-        name: 'Arroz 1kg',
-        description: 'Arroz blanco de grano largo tipo 1.',
-        price: 1.2,
-        imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
-        stock: 120,
-        category: catAlimentos,
-        sku: 'ALI-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 4,
-        name: 'Shampoo 500ml',
-        description: 'Shampoo para cabello seco con aceite de argán.',
-        price: 5.5,
-        imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
-        stock: 0,
-        category: catPersonal,
-        sku: 'PER-001', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 5,
-        name: 'Agua Mineral 1.5L',
-        description: 'Agua mineral de manantial sin gas.',
-        price: 1.0,
-        imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
-        stock: 3,
-        category: catBebidas,
-        sku: 'GAS-002', // <-- ¡AÑADIDO!
-      ),
-      Product(
-        id: 6,
-        name: 'Lentejas 500g',
-        description: 'Lentejas secas, fuente de proteína.',
-        price: 0.9,
-        imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
-        stock: 75,
-        category: catAlimentos,
-        sku: 'ALI-002', // <-- ¡AÑADIDO!
-      ),
+      // Product(
+      //   id: 2,
+      //   name: 'Jabón en Polvo 1kg',
+      //   description: 'Detergente en polvo para ropa blanca y de color.',
+      //   price: 4.0,
+      //   imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
+      //   stock: 8,
+      //   category: catLimpieza,
+      //   sku: 'LIM-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 3,
+      //   name: 'Arroz 1kg',
+      //   description: 'Arroz blanco de grano largo tipo 1.',
+      //   price: 1.2,
+      //   imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
+      //   stock: 120,
+      //   category: catAlimentos,
+      //   sku: 'ALI-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 4,
+      //   name: 'Shampoo 500ml',
+      //   description: 'Shampoo para cabello seco con aceite de argán.',
+      //   price: 5.5,
+      //   imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
+      //   stock: 0,
+      //   category: catPersonal,
+      //   sku: 'PER-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 5,
+      //   name: 'Agua Mineral 1.5L',
+      //   description: 'Agua mineral de manantial sin gas.',
+      //   price: 1.0,
+      //   imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
+      //   stock: 3,
+      //   category: catBebidas,
+      //   sku: 'GAS-002', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 6,
+      //   name: 'Lentejas 500g',
+      //   description: 'Lentejas secas, fuente de proteína.',
+      //   price: 0.9,
+      //   imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
+      //   stock: 75,
+      //   category: catAlimentos,
+      //   sku: 'ALI-002', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 1,
+      //   name: 'Gaseosa 2L',
+      //   description: 'Refresco sabor a cola de 2 litros.',
+      //   price: 2.5,
+      //   imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
+      //   stock: 50,
+      //   category: catBebidas,
+      //   sku: 'GAS-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 2,
+      //   name: 'Jabón en Polvo 1kg',
+      //   description: 'Detergente en polvo para ropa blanca y de color.',
+      //   price: 4.0,
+      //   imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
+      //   stock: 8,
+      //   category: catLimpieza,
+      //   sku: 'LIM-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 3,
+      //   name: 'Arroz 1kg',
+      //   description: 'Arroz blanco de grano largo tipo 1.',
+      //   price: 1.2,
+      //   imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
+      //   stock: 120,
+      //   category: catAlimentos,
+      //   sku: 'ALI-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 4,
+      //   name: 'Shampoo 500ml',
+      //   description: 'Shampoo para cabello seco con aceite de argán.',
+      //   price: 5.5,
+      //   imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
+      //   stock: 0,
+      //   category: catPersonal,
+      //   sku: 'PER-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 5,
+      //   name: 'Agua Mineral 1.5L',
+      //   description: 'Agua mineral de manantial sin gas.',
+      //   price: 1.0,
+      //   imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
+      //   stock: 3,
+      //   category: catBebidas,
+      //   sku: 'GAS-002', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 6,
+      //   name: 'Lentejas 500g',
+      //   description: 'Lentejas secas, fuente de proteína.',
+      //   price: 0.9,
+      //   imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
+      //   stock: 75,
+      //   category: catAlimentos,
+      //   sku: 'ALI-002', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 1,
+      //   name: 'Gaseosa 2L',
+      //   description: 'Refresco sabor a cola de 2 litros.',
+      //   price: 2.5,
+      //   imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
+      //   stock: 50,
+      //   category: catBebidas,
+      //   sku: 'GAS-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 2,
+      //   name: 'Jabón en Polvo 1kg',
+      //   description: 'Detergente en polvo para ropa blanca y de color.',
+      //   price: 4.0,
+      //   imageUrl: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Jabon',
+      //   stock: 8,
+      //   category: catLimpieza,
+      //   sku: 'LIM-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 3,
+      //   name: 'Arroz 1kg',
+      //   description: 'Arroz blanco de grano largo tipo 1.',
+      //   price: 1.2,
+      //   imageUrl: 'https://via.placeholder.com/150/FFFF00/000000?text=Arroz',
+      //   stock: 120,
+      //   category: catAlimentos,
+      //   sku: 'ALI-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 4,
+      //   name: 'Shampoo 500ml',
+      //   description: 'Shampoo para cabello seco con aceite de argán.',
+      //   price: 5.5,
+      //   imageUrl: 'https://via.placeholder.com/150/00FF00/FFFFFF?text=Shampoo',
+      //   stock: 0,
+      //   category: catPersonal,
+      //   sku: 'PER-001', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 5,
+      //   name: 'Agua Mineral 1.5L',
+      //   description: 'Agua mineral de manantial sin gas.',
+      //   price: 1.0,
+      //   imageUrl: 'https://via.placeholder.com/150/00FFFF/000000?text=Agua',
+      //   stock: 3,
+      //   category: catBebidas,
+      //   sku: 'GAS-002', // <-- ¡AÑADIDO!
+      // ),
+      // Product(
+      //   id: 6,
+      //   name: 'Lentejas 500g',
+      //   description: 'Lentejas secas, fuente de proteína.',
+      //   price: 0.9,
+      //   imageUrl: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Lentejas',
+      //   stock: 75,
+      //   category: catAlimentos,
+      //   sku: 'ALI-002', // <-- ¡AÑADIDO!
+      // ),
     ];
     _filteredProducts = _allProducts;
   }
@@ -374,10 +399,10 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   Widget _buildKpiDashboard() {
     double totalValue = _allProducts.fold(
       0,
-      (sum, item) => sum + (item.price * item.stock),
+      (sum, item) => sum + (item.price * item.stock!),
     );
     int lowStockItems = _allProducts
-        .where((p) => p.stock > 0 && p.stock <= _stockLowThreshold)
+        .where((p) => p.stock! > 0 && p.stock! <= _stockLowThreshold)
         .length;
     // Añadí el contador de Agotados que tenías en el código anterior
     //int outOfStockItems = _allProducts.where((p) => p.stock == 0).length;
@@ -548,7 +573,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                         hintText: "Selecciona una categoría...",
                         initialValue: _selectedCategory,
                         items: _allCategories,
-                        itemToString: (ProductCategory categoria) {
+                        itemToString: (CategoryModel categoria) {
                           return categoria
                               .name; // <-- Cambia 'name' por la propiedad de texto de tu clase
                         },
@@ -579,7 +604,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                       hintText: "Selecciona una categoría...",
                       initialValue: _selectedCategory,
                       items: _allCategories,
-                      itemToString: (ProductCategory categoria) {
+                      itemToString: (CategoryModel categoria) {
                         return categoria
                             .name; // <-- Cambia 'name' por la propiedad de texto de tu clase
                       },
@@ -792,7 +817,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
       // Definición de las Filas
       rows: _filteredProducts.map((product) {
-        final stockColor = _getStockColor(product.stock);
+        final stockColor = _getStockColor(product.stock!);
 
         return DataRow(
           cells: [
@@ -939,7 +964,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     final skuController = TextEditingController();
 
     // --- State variables for the modal ---
-    ProductCategory? selectedCategory;
+    CategoryModel? selectedCategory;
     File? selectedImageFile; // Used for mobile/desktop
     Uint8List? selectedImageBytes; // Used for web
 
@@ -1093,7 +1118,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                               prefixIcon: Icons.category,
                               initialValue: selectedCategory,
                               items: _allCategories,
-                              itemToString: (ProductCategory categoria) {
+                              itemToString: (CategoryModel categoria) {
                                 return categoria
                                     .name; // <-- Cambia 'name' por la propiedad de texto de tu clase
                               },

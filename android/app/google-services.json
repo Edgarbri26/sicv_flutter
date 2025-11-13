@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "244100597067",
+    "project_id": "sicv-flutter",
+    "storage_bucket": "sicv-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244100597067:android:db31874ca90475005654ce",
+        "android_client_info": {
+          "package_name": "com.example.sicv_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTVloqvvXW7KRxJMUUpvCdxHryMYz1ktg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

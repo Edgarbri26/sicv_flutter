@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos
-import 'package:sicv_flutter/models/category.dart'; // Necesario para el modelo Product
+// Necesario para el modelo Product
 import 'package:sicv_flutter/models/movement_type.dart';
 import 'package:sicv_flutter/models/movement.dart'; // Asegúrate que este sea el nombre correcto
 import 'package:sicv_flutter/models/product.dart';
@@ -64,60 +64,60 @@ class _MovementsPageState extends State<MovementsPage> {
   void _loadProducts() {
     // --- SIMULACIÓN DE PRODUCTOS ---
     _allProducts = [
-      Product(
-        id: 1,
-        name: 'Harina PAN',
-        description: '...',
-        price: 1.40,
-        stock: 50,
-        category: ProductCategory(id: 1, name: 'Alimentos'),
-        sku: 'ALI-001',
-      ),
-      Product(
-        id: 2,
-        name: 'Cigarros Marlboro',
-        description: '...',
-        price: 5.99,
-        stock: 5,
-        category: ProductCategory(id: 2, name: 'Tabaco'),
-        sku: 'TAB-001',
-      ),
-      Product(
-        id: 3,
-        name: 'Café',
-        description: '...',
-        price: 10.99,
-        stock: 0,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-001',
-      ),
-      Product(
-        id: 4,
-        name: 'Gaseosa 2L',
-        description: '...',
-        price: 2.5,
-        stock: 50,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-002',
-      ),
-      Product(
-        id: 5,
-        name: 'Pan Campesino',
-        description: '...',
-        price: 2.0,
-        stock: 15,
-        category: ProductCategory(id: 1, name: 'Alimentos'),
-        sku: 'ALI-002',
-      ),
-      Product(
-        id: 6,
-        name: 'Agua Minalba 1L',
-        description: '...',
-        price: 1.0,
-        stock: 30,
-        category: ProductCategory(id: 3, name: 'Bebidas'),
-        sku: 'BEB-003',
-      ),
+      // Product(
+      //   id: 1,
+      //   name: 'Harina PAN',
+      //   description: '...',
+      //   price: 1.40,
+      //   stock: 50,
+      //   category: ProductCategory(id: 1, name: 'Alimentos'),
+      //   sku: 'ALI-001',
+      // ),
+      // Product(
+      //   id: 2,
+      //   name: 'Cigarros Marlboro',
+      //   description: '...',
+      //   price: 5.99,
+      //   stock: 5,
+      //   category: ProductCategory(id: 2, name: 'Tabaco'),
+      //   sku: 'TAB-001',
+      // ),
+      // Product(
+      //   id: 3,
+      //   name: 'Café',
+      //   description: '...',
+      //   price: 10.99,
+      //   stock: 0,
+      //   category: ProductCategory(id: 3, name: 'Bebidas'),
+      //   sku: 'BEB-001',
+      // ),
+      // Product(
+      //   id: 4,
+      //   name: 'Gaseosa 2L',
+      //   description: '...',
+      //   price: 2.5,
+      //   stock: 50,
+      //   category: ProductCategory(id: 3, name: 'Bebidas'),
+      //   sku: 'BEB-002',
+      // ),
+      // Product(
+      //   id: 5,
+      //   name: 'Pan Campesino',
+      //   description: '...',
+      //   price: 2.0,
+      //   stock: 15,
+      //   category: ProductCategory(id: 1, name: 'Alimentos'),
+      //   sku: 'ALI-002',
+      // ),
+      // Product(
+      //   id: 6,
+      //   name: 'Agua Minalba 1L',
+      //   description: '...',
+      //   price: 1.0,
+      //   stock: 30,
+      //   category: ProductCategory(id: 3, name: 'Bebidas'),
+      //   sku: 'BEB-003',
+      // ),
     ];
     // --- FIN SIMULACIÓN ---
 
@@ -1243,7 +1243,7 @@ class _MovementsPageState extends State<MovementsPage> {
       (p) => p.id == product.id,
       orElse: () => product,
     );
-    final int currentStock = currentProductData.stock;
+    final int currentStock = currentProductData.stock!;
     final int stockAfter = currentStock + signedQuantity;
 
     if (stockAfter < 0) {
@@ -1281,6 +1281,12 @@ class _MovementsPageState extends State<MovementsPage> {
       if (productIndex != -1) {
         // Usa copyWith (idealmente) o crea un nuevo objeto para actualizar la lista
         _allProducts[productIndex] = Product(
+          stockGenerals: _allProducts[productIndex].stockGenerals,
+          stockLots: _allProducts[productIndex].stockLots,
+          priceBs: _allProducts[productIndex].priceBs,
+          minStock: _allProducts[productIndex].minStock,
+          perishable: _allProducts[productIndex].perishable,
+          status: _allProducts[productIndex].status,
           id: _allProducts[productIndex].id,
           name: _allProducts[productIndex].name,
           description: _allProducts[productIndex].description,

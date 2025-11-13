@@ -386,7 +386,7 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
-
+  
   /// Muestra un diálogo para editar la cantidad de un item.
   ///
   /// [context] El BuildContext para mostrar el diálogo.
