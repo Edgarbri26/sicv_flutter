@@ -94,6 +94,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.attach_money,
                       routeName: AppRoutes.currency,
                     ),
+                    _buildConfigTile(
+                      context: context,
+                      title: 'Configuración de Los Tipos de Pago',
+                      subtitle: 'Tipo de pago, Pago Movil, Transferencia, etc.',
+                      icon: Icons.payment,
+                      routeName: AppRoutes.typePayment,
+                    ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
                     _buildConfigTile(

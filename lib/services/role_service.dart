@@ -6,7 +6,7 @@ import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/role_mode.dart'; // Asegúrate que la ruta sea correcta
 
 class RoleService {
-  final String _baseUrl = ApiUrl.url; // <-- ¡Cambia esto!
+  final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
   final http.Client _client;
 
   RoleService({http.Client? client}) : _client = client ?? http.Client();
@@ -76,7 +76,7 @@ class RoleService {
   }
 
   /// Crea un nuevo rol.
-  Future<Role> createRole(String name, List<int> permissionIds) async {
+  Future<void> createRole(String name, List<int> permissionIds) async {
     final uri = Uri.parse('$_baseUrl/rol');
     try {
       final response = await _client.post(
@@ -85,18 +85,16 @@ class RoleService {
           'Content-Type': 'application/json',
           // 'Authorization': 'Bearer TU_TOKEN_JWT',
         },
-        body: json.encode({'name': name, 'permissions': permissionIds}),
+        body: json.encode({'name': name, 'permission_ids': permissionIds}),
       );
 
       if (response.statusCode == 201) {
         // 201 Created
         // ACTUALIZACIÓN: Asumimos que la respuesta también está envuelta
-        final Map<String, dynamic> responseData =
-            json.decode(response.body) as Map<String, dynamic>;
-        final Map<String, dynamic> roleData =
-            responseData['data'] as Map<String, dynamic>;
+        // final Map<String, dynamic> responseData =
+        //     json.decode(response.body) as Map<String, dynamic>;
 
-        return Role.fromJson(roleData);
+        // return Role.fromJson(roleData);
       } else {
         throw Exception(
           'Error al crear el rol (Código: ${response.statusCode})',
@@ -109,12 +107,12 @@ class RoleService {
   }
 
   /// Actualiza un rol existente.
-  Future<Role> updateRole(
+  Future<void> updateRole(
     int roleId,
     String name,
     List<int> permissionIds,
   ) async {
-    final uri = Uri.parse('$_baseUrl/rol/$roleId');
+    final uri = Uri.parse('$_baseUrl/rol/$roleId/assign_permissions');
     try {
       final response = await _client.patch(
         uri,
@@ -122,18 +120,19 @@ class RoleService {
           'Content-Type': 'application/json',
           // 'Authorization': 'Bearer TU_TOKEN_JWT',
         },
-        body: json.encode({'name': name, 'permissions': permissionIds}),
+        body: json.encode({'name': name, 'permission_ids': permissionIds}),
       );
 
+      print(response.body);
       if (response.statusCode == 200) {
         // 200 OK
-        // ACTUALIZACIÓN: Asumimos que la respuesta también está envuelta
-        final Map<String, dynamic> responseData =
-            json.decode(response.body) as Map<String, dynamic>;
-        final Map<String, dynamic> roleData =
-            responseData['data'] as Map<String, dynamic>;
+        // // ACTUALIZACIÓN: Asumimos que la respuesta también está envuelta
+        // final Map<String, dynamic> responseData =
+        //     json.decode(response.body) as Map<String, dynamic>;
+        // final Map<String, dynamic> roleData =
+        //     responseData['data'] as Map<String, dynamic>;
 
-        return Role.fromJson(roleData);
+        // return Role.fromJson(roleData);
       } else {
         throw Exception(
           'Error al actualizar el rol (Código: ${response.statusCode})',
@@ -149,7 +148,7 @@ class RoleService {
   Future<void> deleteRole(int roleId) async {
     final uri = Uri.parse('$_baseUrl/rol/$roleId');
     try {
-      final response = await _client.delete(
+      final response = await _client.put(
         uri,
         headers: {
           'Content-Type': 'application/json',

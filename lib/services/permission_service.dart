@@ -6,7 +6,7 @@ import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/permission_model.dart';
 
 class PermissionService {
-  final String _baseUrl = ApiUrl.url; // <-- Usa tu URL base
+  final String _baseUrl = ApiUrl().url; // <-- Usa tu URL base
   final http.Client _client;
 
   PermissionService({http.Client? client}) : _client = client ?? http.Client();
@@ -37,9 +37,7 @@ class PermissionService {
 
         // 3. Mapeamos la lista, y aquí es donde se usa tu modelo
         return permissionListJson
-            .map(
-              (json) => Permission.fromJson(json as Map<String, dynamic>),
-            ) 
+            .map((json) => Permission.fromJson(json as Map<String, dynamic>))
             .toList();
       } else {
         throw Exception(

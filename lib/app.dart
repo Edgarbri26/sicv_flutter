@@ -9,6 +9,7 @@ import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/client_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/depot_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/provider_screem.dart';
+import 'package:sicv_flutter/ui/screen/config/type_payment_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/user_management.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'ui/screen/config/company_screen.dart';
@@ -28,7 +29,6 @@ import 'ui/pages/home_page.dart';
 class InventoryApp extends StatelessWidget {
   InventoryApp({super.key});
   final _controller = SidebarXController(selectedIndex: 0, extended: true);
-  
 
   @override
   Widget build(BuildContext context) {
@@ -105,18 +105,16 @@ class InventoryApp extends StatelessWidget {
             );
           case AppRoutes.client:
             return MaterialPageRoute(
-              builder: (context) =>
-                  ClientManagementPage(),
+              builder: (context) => ClientManagementPage(),
             );
           case AppRoutes.depot:
-            return MaterialPageRoute(
-              builder: (context) =>
-                  DepotScreem(),
-            );
+            return MaterialPageRoute(builder: (context) => DepotScreem());
           case AppRoutes.provider:
+            return MaterialPageRoute(builder: (context) => ProviderScreem());
+
+          case AppRoutes.typePayment:
             return MaterialPageRoute(
-              builder: (context) =>
-                  ProviderScreem(),
+              builder: (context) => const TypePaymentScreen(),
             );
 
           default:

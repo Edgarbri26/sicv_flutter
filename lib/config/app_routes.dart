@@ -24,4 +24,5 @@ class AppRoutes {
   static const String client = 'ClientScreen';
   static const String depot = 'DepotScreen';
   static const String provider = 'ProviderScreen';
+  static const String typePayment = 'TypePaymentScreen';
 }

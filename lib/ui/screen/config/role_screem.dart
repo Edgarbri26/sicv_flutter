@@ -17,6 +17,7 @@ class RoleListView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Observamos el estado del FutureProvider
     final asyncRoles = ref.watch(allRolesProvider);
+
     String iconName = 'shield_outlined';
 
     return Scaffold(
@@ -59,6 +60,7 @@ class RoleListView extends ConsumerWidget {
                 subtitle: Text('${role.permissions.length} permisos'),
                 leading: const Icon(Symbols.person_shield_rounded),
                 trailing: const Icon(Icons.chevron_right),
+                onLongPress: () {},
                 onTap: () {
                   // Navegar a la pantalla de edición (Modo "Actualizar")
                   Navigator.push(

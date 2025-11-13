@@ -57,7 +57,7 @@ class RoleEditViewState extends ConsumerState<RoleEditView> {
 
     final roleService = ref.read(roleServiceProvider);
     final roleName = _nameController.text;
-    final permissionIds = [1]; //_selectedPermissionIds.toList();
+    final permissionIds = _selectedPermissionIds.toList();
 
     try {
       if (widget.role == null) {
