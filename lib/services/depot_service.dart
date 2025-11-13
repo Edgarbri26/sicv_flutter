@@ -125,4 +125,38 @@ class DepotService {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  Future<void> deactivateDepot(int id) async {
+    final url = Uri.parse('$_baseUrl/depot/$id/deactivate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al desactivar el almacén (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+  
+  Future<void> activateDepot(int id) async {
+    final url = Uri.parse('$_baseUrl/depot/$id/activate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al activar el almacén (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }

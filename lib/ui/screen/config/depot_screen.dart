@@ -225,14 +225,14 @@ class _DepotScreemState extends State<DepotScreem> {
   }
 
   // --- 🔥 NUEVA FUNCIÓN DE ELIMINAR 🔥 ---
-  void _showDeleteConfirmDialog(DepotModel depot) {
+  void _showDeactivateConfirmDialog(DepotModel depot) {
     showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Eliminar Almacén'),
+          title: const Text('Desactivar Almacén'),
           content: Text(
-              '¿Estás seguro de que deseas eliminar "${depot.name}"? Esta acción no se puede deshacer.'),
+              '¿Estás seguro de que deseas desactivar "${depot.name}"?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -242,8 +242,8 @@ class _DepotScreemState extends State<DepotScreem> {
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () async {
                 try {
-                  // 1. Llama al servicio de eliminación
-                  await _depotService.deleteDepot(depot.depotId);
+                  // 1. Llama al servicio de desactivación
+                  await _depotService.deactivateDepot(depot.depotId);
 
                   if (!mounted) return;
                   Navigator.of(context).pop(); // Cierra el diálogo
@@ -251,7 +251,7 @@ class _DepotScreemState extends State<DepotScreem> {
                   // 2. Muestra confirmación
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Almacén "${depot.name}" eliminado'),
+                      content: Text('Almacén "${depot.name}" desactivado'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -265,13 +265,64 @@ class _DepotScreemState extends State<DepotScreem> {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Error al eliminar: $e'),
+                      content: Text('Error al desactivar: $e'),
                       backgroundColor: Colors.red,
                     ),
                   );
                 }
               },
-              child: const Text('Eliminar'),
+              child: const Text('Desactivar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showActivateConfirmDialog(DepotModel depot) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Activar Almacén'),
+          content: Text(
+              '¿Estás seguro de que deseas Activar "${depot.name}"? Esta acción puede afectar a los productos asociados.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () async {
+                try {
+                  await _depotService.activateDepot(depot.depotId);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Almacén "${depot.name}" activado'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  setState(() {
+                    _depotsFuture = _fetchDepots();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al activar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Activar'),
             ),
           ],
         );
@@ -369,13 +420,23 @@ class _DepotScreemState extends State<DepotScreem> {
                                 tooltip: 'Editar',
                                 onPressed: () => _editarDepot(depot),
                               ),
+                              depot.status
+                                  ?
                               IconButton(
-                                icon: const Icon(Icons.delete,
+                                icon: const Icon(Icons.block,
                                     color: Colors.red),
-                                tooltip: 'Eliminar',
+                                tooltip: 'Desactivar',
                                 onPressed: () =>
-                                    _showDeleteConfirmDialog(depot),
-                              ),
+                                    _showDeactivateConfirmDialog(depot),
+                              )
+                              : IconButton(
+                                  onPressed: () => _showActivateConfirmDialog(depot),
+                                  tooltip: 'Activar',
+                                  icon: const Icon(
+                                    Icons.restore, 
+                                    color: Colors.green
+                                  )
+                                )
                             ],
                           ),
                         );
