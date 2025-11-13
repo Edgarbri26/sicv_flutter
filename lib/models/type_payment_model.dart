@@ -1,7 +1,5 @@
 // file: /models/type_payment_model.dart
 
-import 'dart:convert';
-
 class TypePaymentModel {
     // Usamos 'final' para promover la inmutabilidad del estado.
     final int? typePaymentId;

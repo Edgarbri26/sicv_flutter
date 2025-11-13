@@ -18,7 +18,7 @@ class RoleListView extends ConsumerWidget {
     // Observamos el estado del FutureProvider
     final asyncRoles = ref.watch(allRolesProvider);
 
-    String iconName = 'shield_outlined';
+    //String iconName = 'shield_outlined';
 
     return Scaffold(
       appBar: AppBarApp(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math; // Para la rotación del icono
 
 /// Un widget de menú FAB expandible.
 /// Muestra un FAB principal que, al tocarlo, revela

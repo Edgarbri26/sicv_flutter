@@ -423,18 +423,20 @@ class _MovementsPageState extends State<MovementsPage> {
           //const Divider(height: 24),
 
           // Lista/Tabla
-          Expanded(
-            // Empieza directamente comprobando si está vacía
-            child: _filteredMovements.isEmpty
-                ? const Center(child: Text('No se encontraron movimientos.'))
-                : LayoutBuilder(
-                    builder: (context, constraints) {
-                      bool isDesktop = constraints.maxWidth > 700;
-                      return isDesktop
-                          ? _buildMovementsDataTable()
-                          : _buildMovementsListView();
-                    },
-                  ),
+          Center(
+            child: Expanded(
+              // Empieza directamente comprobando si está vacía
+              child: _filteredMovements.isEmpty
+                  ? const Center(child: Text('No se encontraron movimientos.'))
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        bool isDesktop = constraints.maxWidth > 700;
+                        return isDesktop
+                            ? _buildMovementsDataTable()
+                            : _buildMovementsListView();
+                      },
+                    ),
+            ),
           ),
         ],
       ),

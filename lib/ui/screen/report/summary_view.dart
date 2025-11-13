@@ -435,7 +435,7 @@ Widget _buildNetProfitChart(BuildContext context, ReportProvider provider) {
 }
 
 /// EJEMPLO: Gráfico de Ventas por Usuario
-Widget _buildSalesByUserChart(BuildContext context, ReportProvider provider) {
+/*Widget _buildSalesByUserChart(BuildContext context, ReportProvider provider) {
   return Card(
     elevation: 2,
     child: Container(
@@ -453,7 +453,7 @@ Widget _buildSalesByUserChart(BuildContext context, ReportProvider provider) {
       // child: PieChart(...),
     ),
   );
-}
+}*/
 
 /// Widget privado para mostrar una tarjeta de KPI individual.
 /// REESTRUCTURADO: Se eliminó ConstrainedBox.

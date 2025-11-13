@@ -29,11 +29,11 @@ class _SideBarAppState extends State<SideBarApp> {
   @override
   Widget build(BuildContext context) {
     // Definición de datos de usuario simulados
-    const String userName = "Usuario Real";
+    /*const String userName = "Usuario Real";
     const String userEmail = "usuario@ejemplo.com";
     final String userInitials = userName.isNotEmpty
         ? userName.substring(0, 1).toUpperCase()
-        : '?';
+        : '?';*/
 
     // 1. EL CAMBIO CLAVE: Usamos un Container en lugar de Drawer.
     // El tamaño (ancho) lo define el ConstrainedBox en HomePage.

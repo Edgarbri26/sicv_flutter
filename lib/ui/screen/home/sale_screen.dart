@@ -479,7 +479,7 @@ class _SaleScreenState extends State<SaleScreen> {
   /// Widget modular para mostrar la vista previa de un producto en la lista horizontal.
   /// (Necesitarás un modelo 'Product' con 'nombre' e 'imageUrl' o adaptarlo)
   // 1. La firma de la función ahora acepta 'BuildContext'
-  Widget _buildProductPreviewCard(BuildContext context, Product product) {
+  /*Widget _buildProductPreviewCard(BuildContext context, Product product) {
     return Container(
       width: 160,
       margin: const EdgeInsets.only(right: 12.0),
@@ -536,10 +536,10 @@ class _SaleScreenState extends State<SaleScreen> {
         ),
       ),
     );
-  }
+  }*/
 
   /// Helper para el placeholder de imagen (lo usaremos de nuevo)
-  Widget _buildImagePlaceholder() {
+  /*Widget _buildImagePlaceholder() {
     return Container(
       color: Colors.grey[200],
       child: Center(
@@ -550,7 +550,7 @@ class _SaleScreenState extends State<SaleScreen> {
         ),
       ),
     );
-  }
+  }*/
 
   // Widget para la barra horizontal de categorías
   Widget _buildCategoryFilter() {

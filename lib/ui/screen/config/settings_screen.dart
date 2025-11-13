@@ -80,13 +80,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     // --- Secciones de Configuración ---
                     _buildSectionTitle('CONFIGURACIÓN GENERAL'),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Información de la Empresa',
                       subtitle: 'Nombre, logo, dirección, datos fiscales',
                       icon: Icons.business,
                       routeName: AppRoutes.company,
-                    ),
+                    ),*/
                     _buildConfigTile(
                       context: context,
                       title: 'Configuración de Moneda',
@@ -103,13 +103,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Unidades de Medida',
                       subtitle: 'Pieza, kg, litro, etc.',
                       icon: Icons.square_foot,
                       routeName: AppRoutes.units,
-                    ),
+                    ),*/
                     _buildConfigTile(
                       context: context,
                       title: 'Categorías y Subcategorías',
@@ -117,13 +117,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.category,
                       routeName: AppRoutes.categories,
                     ),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Niveles de Stock',
                       subtitle: 'Stock mínimo/máximo, alertas',
                       icon: Icons.warning_amber,
                       routeName: AppRoutes.stock,
-                    ),
+                    ),*/
                     _buildConfigTile(
                       context: context,
                       title: 'Depositos y Almacenes',
@@ -170,13 +170,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.qr_code,
                       routeName: AppRoutes.sku,
                     ),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Atributos de Productos',
                       subtitle: 'Colores, tallas, modelos',
                       icon: Icons.style,
                       routeName: AppRoutes.atributes,
-                    ),
+                    ),*/
                     const SizedBox(height: 16),
                     _buildSectionTitle('REPORTES Y BACKUP'),
                     _buildConfigTile(
@@ -186,13 +186,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.picture_as_pdf,
                       routeName: AppRoutes.reportDashboard,
                     ),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Backup Automático',
                       subtitle: 'Frecuencia y destino de respaldos',
                       icon: Icons.cloud_upload,
                       routeName: AppRoutes.backup,
-                    ),
+                    ),*/
                     const SizedBox(height: 16),
                     _buildSectionTitle('PREFERENCIAS DEL SISTEMA'),
                     _buildSwitchTile(
@@ -209,13 +209,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() => _notificationsEnabled = value),
                       icon: Icons.notifications,
                     ),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Interfaz y Tema',
                       subtitle: 'Modo claro/oscuro, idioma',
                       icon: Icons.palette,
                       routeName: AppRoutes.theme,
-                    ),
+                    ),*/
                     const SizedBox(height: 30), // Padding final
                   ],
                 ),

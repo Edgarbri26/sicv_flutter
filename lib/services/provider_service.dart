@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/provider_model.dart'; // Asegúrate de que la ruta sea correcta
+import '../config/api_url.dart';
 
 class ProviderService {
-  final String _baseUrl = "http://localhost:3000/api"; // IP para emulador
+  final String _baseUrl = ApiUrl().url; // IP para emulador
 
   // --- OBTENER TODOS LOS PROVEEDORES ---
   Future<List<ProviderModel>> getProviders() async {
