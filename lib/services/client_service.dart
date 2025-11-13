@@ -132,4 +132,38 @@ class ClientService {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  Future<void> deactivateClient(String ci) async {
+    final url = Uri.parse('$_baseUrl/client/$ci/deactivate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al desactivar el cliente (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+  
+  Future<void> activateClient(String ci) async {
+    final url = Uri.parse('$_baseUrl/client/$ci/activate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al activar el cliente (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }

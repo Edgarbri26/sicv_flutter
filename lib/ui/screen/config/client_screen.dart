@@ -260,6 +260,112 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
     );
   }
 
+  void _showDeactivateConfirmDialog(ClientModel client) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Desactivar Cliente'),
+          content: Text(
+              '¿Estás seguro de que deseas desactivar "${client.name}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () async {
+                try {
+                  // 1. Llama al servicio de desactivación
+                  await _clientService.deactivateClient(client.clientCi);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // Cierra el diálogo
+
+                  // 2. Muestra confirmación
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Cliente "${client.name}" desactivado'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  // 3. Recarga la lista
+                  setState(() {
+                    _clientsFuture = _fetchClients();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al desactivar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Desactivar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showActivateConfirmDialog(ClientModel client) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Activar Cliente'),
+          content: Text(
+              '¿Estás seguro de que deseas Activar "${client.name}"? Esta acción puede afectar a los productos asociados.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () async {
+                try {
+                  await _clientService.activateClient(client.clientCi);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Cliente "${client.name}" activado'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  setState(() {
+                    _clientsFuture = _fetchClients();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al activar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Activar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   Widget _buildDataTable() {
     return DataTable(
       horizontalMargin: 12.0,
@@ -276,6 +382,10 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
             onSort: _onSort),
         DataColumn(
             label: const Text('Teléfono', // Actualizado
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            onSort: _onSort),
+        DataColumn(
+            label: const Text('Dirección', // Actualizado
                 style: TextStyle(fontWeight: FontWeight.bold)),
             onSort: _onSort),
         DataColumn(
@@ -309,13 +419,18 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                   ),
                   const SizedBox(width: 10),
                   Text(client.name,
-                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                      style: const TextStyle(fontSize: 15,fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
             // CELDA 2: TELÉFONO
             DataCell(
               Text(client.phone,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w500)),
+            ),
+            DataCell(
+              Text(client.address,
                   style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.w500)),
             ),
@@ -349,12 +464,29 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                     tooltip: 'Editar Cliente',
                     onPressed: () => _showEditClientDialog(context, client),
                   ),
-                  IconButton(
+                  client.status
+                    ?
+                IconButton(
+                  icon: const Icon(Icons.block,
+                      color: Colors.red),
+                  tooltip: 'Desactivar',
+                  onPressed: () =>
+                      _showDeactivateConfirmDialog(client),
+                )
+                : IconButton(
+                    onPressed: () => _showActivateConfirmDialog(client),
+                    tooltip: 'Activar',
+                    icon: const Icon(
+                      Icons.restore, 
+                      color: Colors.green
+                    )
+                  )
+                  /*IconButton(
                     icon:
                         const Icon(Icons.delete, size: 20, color: Colors.red),
                     tooltip: 'Eliminar Cliente',
                     onPressed: () => _showDeleteConfirmDialog(context, client),
-                  ),
+                  ),*/
                 ],
               ),
             ),
@@ -806,16 +938,6 @@ class _EditClientFormState extends State<_EditClientForm> {
               labelText: 'Dirección (Opcional)',
               prefixIcon: Icons.location_on,
               maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            CheckboxFieldApp(
-              title: "Cliente Activo",
-              value: _currentStatus,
-              onChanged: (newValue) {
-                setState(() {
-                  _currentStatus = newValue ?? false;
-                });
-              },
             ),
             const SizedBox(height: 32),
             Row(
