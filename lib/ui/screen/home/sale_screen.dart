@@ -9,7 +9,7 @@ import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
 
 class SaleScreen extends StatefulWidget {
-  final Function(Product) onProductAdded;
+  final Function(ProductModel) onProductAdded;
   const SaleScreen({super.key, required this.onProductAdded});
 
   @override
@@ -19,9 +19,9 @@ class SaleScreen extends StatefulWidget {
 class _SaleScreenState extends State<SaleScreen> {
   // --- MEJORA DE ESTADO ---
   // Lista "maestra" que nunca cambia
-  late List<Product> _todosLosProductos;
+  late List<ProductModel> _todosLosProductos;
   // Lista que se muestra en la UI y cambia con los filtros
-  late List<Product> _productosFiltrados;
+  late List<ProductModel> _productosFiltrados;
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
   // Lista de categorías (incluyendo "Todos")
@@ -48,14 +48,18 @@ class _SaleScreenState extends State<SaleScreen> {
   void _loadData() {
     // Simula la carga de productos (DEBERÍAS TRAERLOS DE TU API/BD)
     _todosLosProductos = [
-
-      Product(
+      ProductModel(
         id: 4,
         name: 'Gaseosa 2L',
         description: '...',
         price: 2.5,
         stock: 50,
-        category: CategoryModel(id: 3, name: 'Bebidas', status: true, description: 'Bebidas'),
+        category: CategoryModel(
+          id: 3,
+          name: 'Bebidas',
+          status: true,
+          description: 'Bebidas',
+        ),
         sku: 'BEB-002',
         minStock: 10,
         perishable: true,
@@ -64,15 +68,29 @@ class _SaleScreenState extends State<SaleScreen> {
         stockLots: [],
         priceBs: 2.5,
       ),
-
     ];
 
     // Simula la carga de categorías (DEBERÍAS TRAERLAS DE TU API/BD)
     _categories = [
-      CategoryModel(id: 0, name: 'Todos', status: true, description: 'Todos'), // Categoría especial
-      CategoryModel(id: 1, name: 'Alimentos', status: true, description: 'Alimentos'),
+      CategoryModel(
+        id: 0,
+        name: 'Todos',
+        status: true,
+        description: 'Todos',
+      ), // Categoría especial
+      CategoryModel(
+        id: 1,
+        name: 'Alimentos',
+        status: true,
+        description: 'Alimentos',
+      ),
       CategoryModel(id: 2, name: 'Tabaco', status: true, description: 'Tabaco'),
-      CategoryModel(id: 3, name: 'Bebidas', status: true, description: 'Bebidas'),
+      CategoryModel(
+        id: 3,
+        name: 'Bebidas',
+        status: true,
+        description: 'Bebidas',
+      ),
     ];
 
     // Al inicio, la lista filtrada es igual a la lista completa
@@ -81,7 +99,7 @@ class _SaleScreenState extends State<SaleScreen> {
 
   // --- LÓGICA DE FILTRADO ---
   void _runFilter() {
-    List<Product> results = _todosLosProductos;
+    List<ProductModel> results = _todosLosProductos;
     String searchText = _searchController.text.toLowerCase();
 
     // 1. Filtrar por categoría (si no es "Todos")
@@ -371,7 +389,10 @@ class _SaleScreenState extends State<SaleScreen> {
   }
 
   /// Muestra un diálogo de vista rápida del producto.
-  void _mostrarDialogoDetalleProducto(BuildContext context, Product product) {
+  void _mostrarDialogoDetalleProducto(
+    BuildContext context,
+    ProductModel product,
+  ) {
     showDialog(
       context: context,
       // 'barrierDismissible' permite cerrar el diálogo tocando fuera (comportamiento estándar)

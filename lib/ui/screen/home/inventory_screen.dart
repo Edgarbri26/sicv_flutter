@@ -52,9 +52,9 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     description: 'Todas las categorías',
   );
 
-  late final List<Product> _allProducts;
+  late final List<ProductModel> _allProducts;
 
-  List<Product> _filteredProducts = [];
+  List<ProductModel> _filteredProducts = [];
 
   // Estado para los filtros
   String _searchQuery = '';
@@ -82,7 +82,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     ];
 
     _allProducts = [
-      Product(
+      ProductModel(
         id: 1,
         name: 'Gaseosa 2L',
         description: 'Refresco sabor a cola de 2 litros.',
@@ -277,7 +277,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   /// Filtra Y ORDENA la lista de productos
   void _filterProducts() {
     // 1. Haz TODO el trabajo pesado AFUERA
-    List<Product> tempProducts = _allProducts;
+    List<ProductModel> tempProducts = _allProducts;
 
     if (_selectedCategory != null && _selectedCategory!.name != 'Todas') {
       tempProducts = tempProducts
@@ -913,13 +913,13 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     }
   }
 
-  void _editProduct(Product product) {
+  void _editProduct(ProductModel product) {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Editando ${product.name}...')));
   }
 
-  void _adjustStock(Product product) {
+  void _adjustStock(ProductModel product) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -929,7 +929,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     );
   }
 
-  void _deleteProduct(Product product) {
+  void _deleteProduct(ProductModel product) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

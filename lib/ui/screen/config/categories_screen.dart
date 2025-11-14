@@ -62,7 +62,8 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
       _categoriasFiltradas = _categoriasOriginales
           .where(
             // Filtra por el nombre de la categoría
-            (categoria) => categoria.name.toLowerCase().contains(lowerCaseQuery),
+            (categoria) =>
+                categoria.name.toLowerCase().contains(lowerCaseQuery),
           )
           .toList();
     });
@@ -83,7 +84,10 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
             children: [
               TextFieldApp(controller: nameController, labelText: 'Nombre'),
               SizedBox(height: 10),
-              TextFieldApp(controller: descriptionController, labelText: 'Descripción'),
+              TextFieldApp(
+                controller: descriptionController,
+                labelText: 'Descripción',
+              ),
             ],
           ),
           actions: [
@@ -100,9 +104,11 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
 
                 try {
                   // Llama al servicio para crear
-                  final newCategory =
-                      await _categoryService.createCategory(name, description);
-                  
+                  final newCategory = await _categoryService.createCategory(
+                    name,
+                    description,
+                  );
+
                   // Cierra el diálogo
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -141,7 +147,9 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   void _editarCategoria(CategoryModel categoria) {
     // Controladores pre-llenados con los datos actuales
     final nameController = TextEditingController(text: categoria.name);
-    final descriptionController = TextEditingController(text: categoria.description);
+    final descriptionController = TextEditingController(
+      text: categoria.description,
+    );
     // Estado para manejar el 'status' (activo/inactivo)
     bool currentStatus = categoria.status;
 
@@ -158,7 +166,10 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                 children: [
                   TextFieldApp(controller: nameController, labelText: 'Nombre'),
                   SizedBox(height: 10),
-                  TextFieldApp(controller: descriptionController, labelText: 'Descripción'),
+                  TextFieldApp(
+                    controller: descriptionController,
+                    labelText: 'Descripción',
+                  ),
                   SizedBox(height: 10),
                   CheckboxFieldApp(
                     title: "Activo",
@@ -226,14 +237,15 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
     );
   }
 
-   void _showDeactivateConfirmDialog(CategoryModel category) {
+  void _showDeactivateConfirmDialog(CategoryModel category) {
     showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Desactivar Categoría'),
           content: Text(
-              '¿Estás seguro de que deseas Desactivar "${category.name}"? Esta acción puede afectar a los productos asociados.'),
+            '¿Estás seguro de que deseas Desactivar "${category.name}"? Esta acción puede afectar a los productos asociados.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -284,7 +296,8 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
         return AlertDialog(
           title: const Text('Activar Categoría'),
           content: Text(
-              '¿Estás seguro de que deseas Activar "${category.name}"? Esta acción puede afectar a los productos asociados.'),
+            '¿Estás seguro de que deseas Activar "${category.name}"? Esta acción puede afectar a los productos asociados.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -356,7 +369,9 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
 
               // 3. ESTADO DE ÉXITO (PERO VACÍO)
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No se encontraron categorías.'));
+                return const Center(
+                  child: Text('No se encontraron categorías.'),
+                );
               }
 
               // 4. ESTADO DE ÉXITO (CON DATOS)
@@ -394,7 +409,9 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                               ? Colors.green.withOpacity(0.15)
                               : Colors.red.withOpacity(0.15),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 3, vertical: 0),
+                            horizontal: 3,
+                            vertical: 0,
+                          ),
                           side: BorderSide.none,
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
@@ -413,38 +430,16 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                           subtitle: prefix != null && prefix.isNotEmpty
                               ? Text('Prefijo: $prefix')
                               : (category.description.isNotEmpty
-                                  ? Text(category.description)
-                                  : null),
-                          onTap: () =>
-                              print('TODO: Ver subcategorías de ${category.name}'),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                // Pasa el objeto CategoryModel completo
-                                onPressed: () => _editarCategoria(category),
-                              ),
-                              category.status
-                                  ?
-                              IconButton(
-                                icon: const Icon(Icons.block,
-                                    color: Colors.red),
-                                tooltip: 'Desactivar',
-                                onPressed: () =>
-                                    _showDeactivateConfirmDialog(category),
-                              )
-                              : IconButton(
-                                  onPressed: () => _showActivateConfirmDialog(category),
-                                  tooltip: 'Activar',
-                                  icon: const Icon(
-                                    Icons.restore, 
-                                    color: Colors.green
-                                  )
-                                )
-                            ],
+                                    ? Text(category.description)
+                                    : null),
+                          onTap: () => print(
+                            'TODO: Ver subcategorías de ${category.name}',
                           ),
-                          
+                          trailing: IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            // Pasa el objeto CategoryModel completo
+                            onPressed: () => _editarCategoria(category),
+                          ),
                         );
                       },
                     ),

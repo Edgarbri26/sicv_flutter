@@ -1,9 +1,8 @@
-
 import 'package:flutter/widgets.dart';
 import 'package:sicv_flutter/models/product.dart';
 
 class PurchaseDetail {
-  final Product product;
+  final ProductModel product;
   final TextEditingController quantityController;
   final TextEditingController costController;
 

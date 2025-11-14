@@ -91,4 +91,42 @@ class TypePaymentService {
     }
     // No se retorna contenido.
   }
+
+  Future<void> deactivateTypePayment(int id) async {
+    final url = Uri.parse('$_baseUrl/type_payment/$id/deactivate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Error al desactivar el tipo de pago (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  Future<void> activateTypePayment(int id) async {
+    final url = Uri.parse('$_baseUrl/type_payment/$id/activate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Error al activar el tipo de pago (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }

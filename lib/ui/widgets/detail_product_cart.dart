@@ -6,7 +6,7 @@ import 'package:sicv_flutter/models/product.dart';
 import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
 
 class DetailProductCart extends StatelessWidget {
-  final Product item;
+  final ProductModel item;
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final Widget? trailing;

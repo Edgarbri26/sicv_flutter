@@ -22,4 +22,6 @@ class StockMovement {
     required this.userName,
     this.referenceId,
   });
+
+  
 }

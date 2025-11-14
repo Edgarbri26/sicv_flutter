@@ -2,7 +2,7 @@
 
 import 'category_model.dart';
 
-class Product {
+class ProductModel {
   final int id;
   final String name;
   final String description;
@@ -18,8 +18,8 @@ class Product {
   final List<dynamic> stockLots;
   final String? sku;
   int? quantity;
-  
-  Product({
+
+  ProductModel({
     required this.priceBs,
     required this.id,
     required this.name,
@@ -31,7 +31,7 @@ class Product {
     this.imageUrl,
     required this.stock,
     required this.stockGenerals,
-    required this.stockLots,    
+    required this.stockLots,
     required this.category, // <-- 3. Añádelo al constructor
     this.sku, // <-- 3. Añádelo al constructor
     this.quantity,
@@ -39,8 +39,8 @@ class Product {
     quantity = 1;
   }
 
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    return ProductModel(
       stockGenerals: json['stock_generals'],
       stockLots: json['stock_lots'],
       priceBs: double.parse(json['price_bs'].toString()),
@@ -60,7 +60,6 @@ class Product {
       category: CategoryModel.fromJson(json['category']),
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {

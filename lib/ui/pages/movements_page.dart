@@ -42,7 +42,7 @@ class _MovementsPageState extends State<MovementsPage> {
   // --- ¡IMPORTANTE! Mueve la lista de productos aquí ---
   // Esta lista (_allProducts) debe estar disponible para el diálogo
   // Asegúrate de que esta lista se cargue/actualice correctamente desde tu API
-  late List<Product> _allProducts;
+  late List<ProductModel> _allProducts;
 
   @override
   void initState() {
@@ -858,10 +858,10 @@ class _MovementsPageState extends State<MovementsPage> {
     // Se inicializa con el primer tipo de ajuste para evitar nulls.
     // Es importante que este valor se mantenga a lo largo del modal.
     MovementType selectedAdjustmentType = MovementType.ajustePositivo;
-    Product? selectedProduct;
+    ProductModel? selectedProduct;
 
     // Lista de productos para el Dropdown (aseguramos que no sea null)
-    final List<Product> productsForSelection = _allProducts;
+    final List<ProductModel> productsForSelection = _allProducts;
 
     showModalBottomSheet(
       context: context,
@@ -898,7 +898,7 @@ class _MovementsPageState extends State<MovementsPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             // 1. Selector de Producto (Dropdown)
-                            DropdownButtonFormField<Product>(
+                            DropdownButtonFormField<ProductModel>(
                               initialValue: selectedProduct,
                               hint: const Text('Selecciona Producto...'),
                               isExpanded: true,
@@ -923,7 +923,7 @@ class _MovementsPageState extends State<MovementsPage> {
                                     }).toList(),
                               onChanged: productsForSelection.isEmpty
                                   ? null
-                                  : (Product? newValue) {
+                                  : (ProductModel? newValue) {
                                       setStateDialog(() {
                                         selectedProduct = newValue;
                                       });
@@ -1215,7 +1215,7 @@ class _MovementsPageState extends State<MovementsPage> {
   void _handleSaveAdjustment(
     BuildContext pageContext, // Contexto de la página (para ScaffoldMessenger)
     BuildContext dialogContext, // Contexto del modal (para pop)
-    Product product,
+    ProductModel product,
     MovementType selectedAdjustmentType,
     TextEditingController quantityController,
     TextEditingController reasonController,
@@ -1282,7 +1282,7 @@ class _MovementsPageState extends State<MovementsPage> {
       final productIndex = _allProducts.indexWhere((p) => p.id == product.id);
       if (productIndex != -1) {
         // Usa copyWith (idealmente) o crea un nuevo objeto para actualizar la lista
-        _allProducts[productIndex] = Product(
+        _allProducts[productIndex] = ProductModel(
           stockGenerals: _allProducts[productIndex].stockGenerals,
           stockLots: _allProducts[productIndex].stockLots,
           priceBs: _allProducts[productIndex].priceBs,

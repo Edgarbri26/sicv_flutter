@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/services/type_payment_service.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_card.dart';
 // Importa el servicio
 
 class TypePaymentScreen extends StatefulWidget {
@@ -13,7 +16,6 @@ class TypePaymentScreen extends StatefulWidget {
 class _TypePaymentScreenState extends State<TypePaymentScreen> {
   // Instancia del servicio. (En una app de escala Google, esto sería inyectado).
   final TypePaymentService _service = TypePaymentService();
-
   // El Future que alimenta al FutureBuilder.
   late Future<List<TypePaymentModel>> _paymentTypesFuture;
 
@@ -29,6 +31,120 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
     setState(() {
       _paymentTypesFuture = _service.getPaymentTypes();
     });
+  }
+
+  void _showActivateConfirmDialog(TypePaymentModel typePayment) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Activar Tipo de Pago'),
+          content: Text(
+            '¿Estás seguro de que deseas Activar "${typePayment.name}"? Esta acción puede afectar a los productos asociados.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () async {
+                try {
+                  await _service.activateTypePayment(typePayment.typePaymentId);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Tipo de Pago "${typePayment.name}" activado',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  setState(() {
+                    _paymentTypesFuture = _service.getPaymentTypes();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al activar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Activar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // --- 🔥 NUEVA FUNCIÓN DE ELIMINAR 🔥 ---
+  void _showDeactivateConfirmDialog(TypePaymentModel typePayment) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Desactivar Tipo de Pago'),
+          content: Text(
+            '¿Estás seguro de que deseas desactivar "${typePayment.name}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () async {
+                try {
+                  // 1. Llama al servicio de desactivación
+                  await _service.deactivateTypePayment(
+                    typePayment.typePaymentId,
+                  );
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // Cierra el diálogo
+
+                  // 2. Muestra confirmación
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Tipo de Pago "${typePayment.name}" desactivado',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  // 3. Recarga la lista
+                  setState(() {
+                    _paymentTypesFuture = _service.getPaymentTypes();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al desactivar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Desactivar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -76,9 +192,9 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
             itemCount: paymentTypes.length,
             itemBuilder: (context, index) {
               final type = paymentTypes[index];
-              return ListTile(
-                title: Text(type.name),
-                subtitle: Text('ID: ${type.typePaymentId}'),
+              return AppCard(
+                title: type.name,
+                subTitle: 'ID: ${type.typePaymentId}',
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -88,11 +204,26 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                       onPressed: () => _showFormDialog(context, type: type),
                     ),
                     // Botón BORRAR (Delete)
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.redAccent),
-                      onPressed: () => _showDeleteConfirmation(context, type),
-                    ),
+                    type.status
+                        ? IconButton(
+                            icon: const Icon(Icons.block, color: Colors.red),
+                            tooltip: 'Desactivar',
+                            onPressed: () => _showDeactivateConfirmDialog(type),
+                          )
+                        : IconButton(
+                            onPressed: () => _showActivateConfirmDialog(type),
+                            tooltip: 'Activar',
+                            icon: const Icon(
+                              Icons.restore,
+                              color: Colors.green,
+                            ),
+                          ),
                   ],
+                ),
+                leading: Icon(
+                  Icons.payment,
+                  color: AppColors.primary,
+                  size: AppSizes.iconL,
                 ),
               );
             },
@@ -101,9 +232,9 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
       ),
       // Botón para CREAR
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
         tooltip: 'Nuevo Tipo de Pago',
         onPressed: () => _showFormDialog(context),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -163,32 +294,6 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
     );
   }
 
-  /// Muestra confirmación antes de BORRAR.
-  void _showDeleteConfirmation(BuildContext context, TypePaymentModel type) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar Borrado'),
-        content: Text('¿Estás seguro de que quieres eliminar "${type.name}"?'),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(context).pop(); // Cerrar diálogo
-              _performDelete(context, type.typePaymentId!);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Métodos Helper para ejecutar acciones del servicio y refrescar la UI ---
-
   // Muestra un SnackBar genérico para feedback.
   void _showFeedback(
     BuildContext context,
@@ -220,16 +325,6 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
       _loadPaymentTypes(); // Recargar la lista
     } catch (e) {
       _showFeedback(context, 'Error al actualizar: $e', isError: true);
-    }
-  }
-
-  Future<void> _performDelete(BuildContext context, int id) async {
-    try {
-      await _service.deletePaymentType(id);
-      _showFeedback(context, 'Eliminado exitosamente.');
-      _loadPaymentTypes(); // Recargar la lista
-    } catch (e) {
-      _showFeedback(context, 'Error al eliminar: $e', isError: true);
     }
   }
 }

@@ -6,6 +6,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos reales
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product.dart';
+
 import 'package:sicv_flutter/models/purchase_detail.dart';
 import 'package:sicv_flutter/models/supplier.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
@@ -25,7 +26,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   // Listas "maestras" (vendrían de tu API)
   List<Supplier> _allSuppliers = [];
-  List<Product> _allProducts = [];
+  List<ProductModel> _allProducts = [];
   bool _isRegistering = false;
 
   // El "carrito" de la compra. Usamos la helper class.
@@ -68,13 +69,18 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     // SIMULACIÓN DE PRODUCTOS
     _allProducts = [
       // --- CAMBIO AQUÍ ---
-      Product(
+      ProductModel(
         id: 1,
         name: 'Harina PAN',
         description: '...',
         price: 1.40,
         stock: 50,
-        category: CategoryModel(id: 1, name: 'Alimentos', status: true, description: 'Alimentos'),
+        category: CategoryModel(
+          id: 1,
+          name: 'Alimentos',
+          status: true,
+          description: 'Alimentos',
+        ),
         sku: 'ALI-001',
         minStock: 10,
         perishable: true,
@@ -148,7 +154,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   }
 
   /// Añade un producto a la lista de compra
-  void _addProductToPurchase(Product product) {
+  void _addProductToPurchase(ProductModel product) {
     // Evita añadir duplicados
     if (_purchaseItems.any((item) => item.product.id == product.id)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -246,10 +252,10 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   void showProductSearchModal() {
     // Filtra los productos que pertenecen al proveedor seleccionado
     // OJO: Si _selectedSupplier es null, la lista estará vacía (¡bien!)
-    List<Product> supplierProducts = _allProducts;
+    List<ProductModel> supplierProducts = _allProducts;
 
     // Lista filtrada para la búsqueda dentro del modal
-    List<Product> filteredProducts = supplierProducts;
+    List<ProductModel> filteredProducts = supplierProducts;
 
     showModalBottomSheet(
       context: context,

@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage>
       lastUpdated: DateTime.now(),
     ),
   ];
-  final List<Product> _itemsParaLaVenta = [];
+  final List<ProductModel> _itemsParaLaVenta = [];
   final List<String> _screenTitles = [
     'Registro de Ventas',
     'Registro de Compras',
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  void _onProductAddedToSale(Product product) {
+  void _onProductAddedToSale(ProductModel product) {
     // ... (tu lógica de añadir producto se mantiene igual)
     setState(() {
       final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
@@ -386,7 +386,7 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
-  
+
   /// Muestra un diálogo para editar la cantidad de un item.
   ///
   /// [context] El BuildContext para mostrar el diálogo.
@@ -394,7 +394,8 @@ class _HomePageState extends State<HomePage>
   /// [onConfirm] Callback que se ejecuta con la nueva cantidad si se confirma.
   void _mostrarDialogoEditarCantidad(
     BuildContext context,
-    Product item, // Deberías tipar esto con tu modelo (ej: ProductoVenta item)
+    ProductModel
+    item, // Deberías tipar esto con tu modelo (ej: ProductoVenta item)
     Function(int) onConfirm,
   ) {
     // Controlador para el campo de texto

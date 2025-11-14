@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/models/product.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product; // Ahora recibe un Product
+  final ProductModel product; // Ahora recibe un Product
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
@@ -11,7 +11,7 @@ class ProductCard extends StatelessWidget {
     required this.product,
     required this.onTap,
     required this.onDelete,
-    super.key, 
+    super.key,
   });
 
   @override
@@ -27,12 +27,15 @@ class ProductCard extends StatelessWidget {
               ? Image.network(
                   product.imageUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.broken_image),
                 )
               : const Icon(Icons.inventory_2_outlined, size: 40),
         ),
         title: Text(product.name),
-        subtitle: Text('Stock: ${product.stock} | Precio: \$${product.price.toStringAsFixed(2)}'),
+        subtitle: Text(
+          'Stock: ${product.stock} | Precio: \$${product.price.toStringAsFixed(2)}',
+        ),
         onTap: onTap,
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline, color: Colors.red),
