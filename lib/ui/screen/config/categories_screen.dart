@@ -209,7 +209,7 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                       // 2. Muestra confirmación
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Categoría "${name}" actualizada'),
+                          content: Text('Categoría "$name" actualizada'),
                           backgroundColor: Colors.green,
                         ),
                       );

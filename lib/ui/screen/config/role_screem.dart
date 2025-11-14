@@ -76,7 +76,6 @@ class RoleListView extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
         tooltip: 'Crear Rol',
         onPressed: () {
           // Navegar a la pantalla de edición (Modo "Crear")
@@ -87,6 +86,7 @@ class RoleListView extends ConsumerWidget {
             ),
           );
         },
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -5,9 +5,8 @@ import 'package:sicv_flutter/models/destinations.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class MySideBar extends StatelessWidget {
-  const MySideBar({Key? key, required SidebarXController controller})
-    : _controller = controller,
-      super(key: key);
+  const MySideBar({super.key, required SidebarXController controller})
+    : _controller = controller;
 
   final SidebarXController _controller;
 

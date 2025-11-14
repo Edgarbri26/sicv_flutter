@@ -89,7 +89,9 @@ class _ProviderScreemState extends State<ProviderScreem> {
               TextFieldApp(controller: nameController, labelText: 'Nombre'),
               const SizedBox(height: 10),
               TextFieldApp(
-                  controller: locatedController, labelText: 'Ubicación'),
+                controller: locatedController,
+                labelText: 'Ubicación',
+              ),
             ],
           ),
           actions: [
@@ -143,8 +145,9 @@ class _ProviderScreemState extends State<ProviderScreem> {
   // --- FUNCIÓN DE EDITAR ---
   void _editarProvider(ProviderModel provider) {
     final nameController = TextEditingController(text: provider.name);
-    final locatedController =
-        TextEditingController(text: provider.located); // 'located'
+    final locatedController = TextEditingController(
+      text: provider.located,
+    ); // 'located'
     // Se elimina 'currentStatus' porque el modelo no lo tiene
 
     showDialog<void>(
@@ -159,7 +162,9 @@ class _ProviderScreemState extends State<ProviderScreem> {
               TextFieldApp(controller: nameController, labelText: 'Nombre'),
               const SizedBox(height: 10),
               TextFieldApp(
-                  controller: locatedController, labelText: 'Ubicación'),
+                controller: locatedController,
+                labelText: 'Ubicación',
+              ),
               // --- SE ELIMINÓ EL CHECKBOX DE ESTADO ---
             ],
           ),
@@ -188,7 +193,7 @@ class _ProviderScreemState extends State<ProviderScreem> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Proveedor "${name}" actualizado'),
+                      content: Text('Proveedor "$name" actualizado'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -214,7 +219,7 @@ class _ProviderScreemState extends State<ProviderScreem> {
   }
 
   // --- FUNCIÓN DE ELIMINAR ---
- /* void _showDeleteConfirmDialog(ProviderModel provider) {
+  /* void _showDeleteConfirmDialog(ProviderModel provider) {
     showDialog<void>(
       context: context,
       builder: (context) {
@@ -272,7 +277,8 @@ class _ProviderScreemState extends State<ProviderScreem> {
         return AlertDialog(
           title: const Text('Desactivar Proveedor'),
           content: Text(
-              '¿Estás seguro de que deseas desactivar "${provider.name}"?'),
+            '¿Estás seguro de que deseas desactivar "${provider.name}"?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -283,7 +289,9 @@ class _ProviderScreemState extends State<ProviderScreem> {
               onPressed: () async {
                 try {
                   // 1. Llama al servicio de desactivación
-                  await _providerService.deactivateProvider(provider.providerId);
+                  await _providerService.deactivateProvider(
+                    provider.providerId,
+                  );
 
                   if (!mounted) return;
                   Navigator.of(context).pop(); // Cierra el diálogo
@@ -326,7 +334,8 @@ class _ProviderScreemState extends State<ProviderScreem> {
         return AlertDialog(
           title: const Text('Activar Proveedor'),
           content: Text(
-              '¿Estás seguro de que deseas Activar "${provider.name}"? Esta acción puede afectar a los productos asociados.'),
+            '¿Estás seguro de que deseas Activar "${provider.name}"? Esta acción puede afectar a los productos asociados.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -373,8 +382,7 @@ class _ProviderScreemState extends State<ProviderScreem> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          AppBarApp(title: 'Proveedores', iconColor: AppColors.textPrimary),
+      appBar: AppBarApp(title: 'Proveedores', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
@@ -394,7 +402,8 @@ class _ProviderScreemState extends State<ProviderScreem> {
               }
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(
-                    child: Text('No se encontraron proveedores.'));
+                  child: Text('No se encontraron proveedores.'),
+                );
               }
 
               return Column(
@@ -413,11 +422,13 @@ class _ProviderScreemState extends State<ProviderScreem> {
                       itemCount: _providersFiltrados.length,
                       itemBuilder: (context, index) {
                         final provider = _providersFiltrados[index];
-                        
+
                         // --- LISTTILE ACTUALIZADO (Sin Chip de Estado) ---
                         return ListTile(
                           title: Text(provider.name), // Título simple
-                          leading: const Icon(Icons.store_mall_directory_outlined), // Icono cambiado
+                          leading: const Icon(
+                            Icons.store_mall_directory_outlined,
+                          ), // Icono cambiado
                           subtitle: provider.located.isNotEmpty
                               ? Text(provider.located) // 'located'
                               : null,
@@ -425,28 +436,34 @@ class _ProviderScreemState extends State<ProviderScreem> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit,
-                                    color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.blue,
+                                ),
                                 tooltip: 'Editar',
                                 onPressed: () => _editarProvider(provider),
                               ),
                               provider.status
-                                  ?
-                              IconButton(
-                                icon: const Icon(Icons.block,
-                                    color: Colors.red),
-                                tooltip: 'Desactivar',
-                                onPressed: () =>
-                                    _showDeactivateConfirmDialog(provider),
-                              )
-                              : IconButton(
-                                  onPressed: () => _showActivateConfirmDialog(provider),
-                                  tooltip: 'Activar',
-                                  icon: const Icon(
-                                    Icons.restore, 
-                                    color: Colors.green
-                                  )
-                                ),
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.block,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Desactivar',
+                                      onPressed: () =>
+                                          _showDeactivateConfirmDialog(
+                                            provider,
+                                          ),
+                                    )
+                                  : IconButton(
+                                      onPressed: () =>
+                                          _showActivateConfirmDialog(provider),
+                                      tooltip: 'Activar',
+                                      icon: const Icon(
+                                        Icons.restore,
+                                        color: Colors.green,
+                                      ),
+                                    ),
                               /*IconButton(
                                 icon: const Icon(Icons.delete,
                                     color: Colors.red),

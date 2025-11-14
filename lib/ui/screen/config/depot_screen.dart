@@ -88,7 +88,9 @@ class _DepotScreemState extends State<DepotScreem> {
               TextFieldApp(controller: nameController, labelText: 'Nombre'),
               const SizedBox(height: 10),
               TextFieldApp(
-                  controller: locationController, labelText: 'Ubicación'),
+                controller: locationController,
+                labelText: 'Ubicación',
+              ),
             ],
           ),
           actions: [
@@ -142,8 +144,7 @@ class _DepotScreemState extends State<DepotScreem> {
   // --- FUNCIÓN DE EDITAR (Sin cambios) ---
   void _editarDepot(DepotModel depot) {
     final nameController = TextEditingController(text: depot.name);
-    final locationController =
-        TextEditingController(text: depot.location);
+    final locationController = TextEditingController(text: depot.location);
     bool currentStatus = depot.status;
 
     showDialog<void>(
@@ -159,7 +160,9 @@ class _DepotScreemState extends State<DepotScreem> {
                   TextFieldApp(controller: nameController, labelText: 'Nombre'),
                   const SizedBox(height: 10),
                   TextFieldApp(
-                      controller: locationController, labelText: 'Ubicación'),
+                    controller: locationController,
+                    labelText: 'Ubicación',
+                  ),
                   const SizedBox(height: 10),
                   CheckboxFieldApp(
                     title: "Activo",
@@ -197,7 +200,7 @@ class _DepotScreemState extends State<DepotScreem> {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Almacén "${name}" actualizado'),
+                          content: Text('Almacén "$name" actualizado'),
                           backgroundColor: Colors.green,
                         ),
                       );
@@ -232,7 +235,8 @@ class _DepotScreemState extends State<DepotScreem> {
         return AlertDialog(
           title: const Text('Desactivar Almacén'),
           content: Text(
-              '¿Estás seguro de que deseas desactivar "${depot.name}"?'),
+            '¿Estás seguro de que deseas desactivar "${depot.name}"?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -286,7 +290,8 @@ class _DepotScreemState extends State<DepotScreem> {
         return AlertDialog(
           title: const Text('Activar Almacén'),
           content: Text(
-              '¿Estás seguro de que deseas Activar "${depot.name}"? Esta acción puede afectar a los productos asociados.'),
+            '¿Estás seguro de que deseas Activar "${depot.name}"? Esta acción puede afectar a los productos asociados.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -333,8 +338,7 @@ class _DepotScreemState extends State<DepotScreem> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          AppBarApp(title: 'Almacenes', iconColor: AppColors.textPrimary),
+      appBar: AppBarApp(title: 'Almacenes', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
@@ -354,9 +358,10 @@ class _DepotScreemState extends State<DepotScreem> {
               }
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(
-                    child: Text('No se encontraron almacenes.'));
+                  child: Text('No se encontraron almacenes.'),
+                );
               }
-              
+
               // --- USAMOS _depotsFiltrados QUE YA TIENE LOS DATOS ---
               return Column(
                 children: [
@@ -391,7 +396,9 @@ class _DepotScreemState extends State<DepotScreem> {
                               ? Colors.green.withOpacity(0.15)
                               : Colors.red.withOpacity(0.15),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 0),
+                            horizontal: 4,
+                            vertical: 0,
+                          ),
                           side: BorderSide.none,
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
@@ -415,28 +422,32 @@ class _DepotScreemState extends State<DepotScreem> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit,
-                                    color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.blue,
+                                ),
                                 tooltip: 'Editar',
                                 onPressed: () => _editarDepot(depot),
                               ),
                               depot.status
-                                  ?
-                              IconButton(
-                                icon: const Icon(Icons.block,
-                                    color: Colors.red),
-                                tooltip: 'Desactivar',
-                                onPressed: () =>
-                                    _showDeactivateConfirmDialog(depot),
-                              )
-                              : IconButton(
-                                  onPressed: () => _showActivateConfirmDialog(depot),
-                                  tooltip: 'Activar',
-                                  icon: const Icon(
-                                    Icons.restore, 
-                                    color: Colors.green
-                                  )
-                                )
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.block,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Desactivar',
+                                      onPressed: () =>
+                                          _showDeactivateConfirmDialog(depot),
+                                    )
+                                  : IconButton(
+                                      onPressed: () =>
+                                          _showActivateConfirmDialog(depot),
+                                      tooltip: 'Activar',
+                                      icon: const Icon(
+                                        Icons.restore,
+                                        color: Colors.green,
+                                      ),
+                                    ),
                             ],
                           ),
                         );

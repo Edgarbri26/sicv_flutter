@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 // --- Asegúrate de que estas rutas de importación sean correctas ---
 import 'package:sicv_flutter/core/theme/app_colors.dart';
@@ -8,7 +7,6 @@ import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/checkbox_field_app.dart';
 
 // --- IMPORTACIONES DEL SERVICIO Y MODELO ---
 import 'package:sicv_flutter/services/client_service.dart';
@@ -75,9 +73,13 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
     // Filtrar por Búsqueda (Nombre o Teléfono)
     if (_searchQuery.isNotEmpty) {
       tempClients = tempClients
-          .where((client) =>
-              client.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              client.phone.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where(
+            (client) =>
+                client.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                client.phone.toLowerCase().contains(_searchQuery.toLowerCase()),
+          )
           .toList();
     }
 
@@ -134,7 +136,10 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
       ),
       body: Column(
         children: [
-          Container(margin: const EdgeInsets.symmetric(horizontal: 25.0), child: _buildFiltersAndSearch()),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 25.0),
+            child: _buildFiltersAndSearch(),
+          ),
           Expanded(
             child: SizedBox(
               width: double.infinity,
@@ -170,7 +175,8 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                     }
                     if (!snapshot.hasData || _filteredClients.isEmpty) {
                       return const Center(
-                          child: Text('No se encontraron clientes.'));
+                        child: Text('No se encontraron clientes.'),
+                      );
                     }
                     return LayoutBuilder(
                       builder: (context, constraints) {
@@ -267,7 +273,8 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
         return AlertDialog(
           title: const Text('Desactivar Cliente'),
           content: Text(
-              '¿Estás seguro de que deseas desactivar "${client.name}"?'),
+            '¿Estás seguro de que deseas desactivar "${client.name}"?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -321,7 +328,8 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
         return AlertDialog(
           title: const Text('Activar Cliente'),
           content: Text(
-              '¿Estás seguro de que deseas Activar "${client.name}"? Esta acción puede afectar a los productos asociados.'),
+            '¿Estás seguro de que deseas Activar "${client.name}"? Esta acción puede afectar a los productos asociados.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -365,7 +373,6 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
     );
   }
 
-
   Widget _buildDataTable() {
     return DataTable(
       horizontalMargin: 12.0,
@@ -377,24 +384,39 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
       headingRowHeight: 48.0,
       columns: [
         DataColumn(
-            label: const Text('Cliente',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            onSort: _onSort),
+          label: const Text(
+            'Cliente',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onSort: _onSort,
+        ),
         DataColumn(
-            label: const Text('Teléfono', // Actualizado
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            onSort: _onSort),
+          label: const Text(
+            'Teléfono', // Actualizado
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onSort: _onSort,
+        ),
         DataColumn(
-            label: const Text('Dirección', // Actualizado
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            onSort: _onSort),
+          label: const Text(
+            'Dirección', // Actualizado
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onSort: _onSort,
+        ),
         DataColumn(
-            label: const Text('Estado',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            onSort: _onSort),
+          label: const Text(
+            'Estado',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onSort: _onSort,
+        ),
         const DataColumn(
-            label: Text('Acciones',
-                style: TextStyle(fontWeight: FontWeight.bold))),
+          label: Text(
+            'Acciones',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
       rows: _filteredClients.map((client) {
         return DataRow(
@@ -407,32 +429,46 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.1),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Icon(Icons.person,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.primary),
+                    child: Icon(
+                      Icons.person,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(width: 10),
-                  Text(client.name,
-                      style: const TextStyle(fontSize: 15,fontWeight: FontWeight.w500)),
+                  Text(
+                    client.name,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
             // CELDA 2: TELÉFONO
             DataCell(
-              Text(client.phone,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w500)),
+              Text(
+                client.phone,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
             DataCell(
-              Text(client.address,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w500)),
+              Text(
+                client.address,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
             // CELDA 3: ESTADO
             DataCell(
@@ -447,8 +483,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                       : Colors.red.shade800,
                   fontWeight: FontWeight.w500,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 side: BorderSide.none,
               ),
             ),
@@ -458,29 +493,25 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary),
+                    icon: Icon(
+                      Icons.edit,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     tooltip: 'Editar Cliente',
                     onPressed: () => _showEditClientDialog(context, client),
                   ),
                   client.status
-                    ?
-                IconButton(
-                  icon: const Icon(Icons.block,
-                      color: Colors.red),
-                  tooltip: 'Desactivar',
-                  onPressed: () =>
-                      _showDeactivateConfirmDialog(client),
-                )
-                : IconButton(
-                    onPressed: () => _showActivateConfirmDialog(client),
-                    tooltip: 'Activar',
-                    icon: const Icon(
-                      Icons.restore, 
-                      color: Colors.green
-                    )
-                  )
+                      ? IconButton(
+                          icon: const Icon(Icons.block, color: Colors.red),
+                          tooltip: 'Desactivar',
+                          onPressed: () => _showDeactivateConfirmDialog(client),
+                        )
+                      : IconButton(
+                          onPressed: () => _showActivateConfirmDialog(client),
+                          tooltip: 'Activar',
+                          icon: const Icon(Icons.restore, color: Colors.green),
+                        ),
                   /*IconButton(
                     icon:
                         const Icon(Icons.delete, size: 20, color: Colors.red),
@@ -502,8 +533,9 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Eliminar Cliente'),
-          content:
-              Text('¿Estás seguro de que deseas eliminar a ${client.name}?'),
+          content: Text(
+            '¿Estás seguro de que deseas eliminar a ${client.name}?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -521,7 +553,8 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                       backgroundColor: Colors.green,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   );
                   setState(() {
@@ -536,13 +569,16 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   );
                 }
               },
-              child:
-                  const Text('Eliminar', style: TextStyle(color: Colors.red)),
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -556,10 +592,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext modalContext) {
-        return _EditClientForm(
-          client: client,
-          clientService: _clientService,
-        );
+        return _EditClientForm(client: client, clientService: _clientService);
       },
     );
 
@@ -569,8 +602,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
           content: const Text('Cliente actualizado correctamente'),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.green,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
       setState(() {
@@ -594,8 +626,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
         SnackBar(
           content: const Text('Cliente agregado correctamente'),
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           backgroundColor: Colors.green,
         ),
       );
@@ -717,14 +748,17 @@ class _AddClientFormState extends State<_AddClientForm> {
               children: [
                 Icon(Icons.person_add, color: AppColors.primary, size: 24),
                 SizedBox(width: 8),
-                Text('Registrar Nuevo Cliente',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  'Registrar Nuevo Cliente',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text('Completa los datos del nuevo cliente',
-                style: TextStyle(fontSize: 14, color: Colors.grey)),
+            const Text(
+              'Completa los datos del nuevo cliente',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
             const SizedBox(height: 24),
             TextFieldApp(
               controller: _ciController,
@@ -764,13 +798,17 @@ class _AddClientFormState extends State<_AddClientForm> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       side: const BorderSide(color: AppColors.primary),
                     ),
-                    child: const Text('Cancelar',
-                        style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -906,9 +944,10 @@ class _EditClientFormState extends State<_EditClientForm> {
               children: [
                 Icon(Icons.edit_note, color: AppColors.primary, size: 24),
                 SizedBox(width: 8),
-                Text('Editar Cliente',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  'Editar Cliente',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -950,13 +989,17 @@ class _EditClientFormState extends State<_EditClientForm> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       side: const BorderSide(color: AppColors.primary),
                     ),
-                    child: const Text('Cancelar',
-                        style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

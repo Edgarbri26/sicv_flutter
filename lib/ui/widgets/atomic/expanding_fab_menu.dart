@@ -9,11 +9,11 @@ class ExpandingFabMenu extends StatefulWidget {
   final IconData mainIcon;
 
   const ExpandingFabMenu({
-    Key? key,
+    super.key,
     required this.children,
     this.distance = 100.0, // Distancia vertical entre botones
     this.mainIcon = Icons.add,
-  }) : super(key: key);
+  });
 
   @override
   _ExpandingFabMenuState createState() => _ExpandingFabMenuState();

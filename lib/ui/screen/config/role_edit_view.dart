@@ -217,8 +217,8 @@ class RoleEditViewState extends ConsumerState<RoleEditView> {
         onPressed: () {
           _showAddPermissionDialog(asyncAllPermissions);
         },
-        child: const Icon(Icons.add),
         tooltip: 'Agregar Permiso',
+        child: const Icon(Icons.add),
       ),
     );
   }

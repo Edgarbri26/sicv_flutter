@@ -7,7 +7,7 @@ import 'package:sicv_flutter/ui/widgets/atomic/app_card.dart';
 // Importa el servicio
 
 class TypePaymentScreen extends StatefulWidget {
-  const TypePaymentScreen({Key? key}) : super(key: key);
+  const TypePaymentScreen({super.key});
 
   @override
   _TypePaymentScreenState createState() => _TypePaymentScreenState();
@@ -281,7 +281,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                   final newName = nameController.text.trim();
 
                   if (isUpdating) {
-                    _performUpdate(context, type.typePaymentId!, newName);
+                    _performUpdate(context, type.typePaymentId, newName);
                   } else {
                     _performCreate(context, newName);
                   }
