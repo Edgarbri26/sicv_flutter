@@ -134,12 +134,12 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
       ),
       body: Column(
         children: [
-          _buildFiltersAndSearch(),
+          Container(margin: const EdgeInsets.symmetric(horizontal: 25.0), child: _buildFiltersAndSearch()),
           Expanded(
             child: SizedBox(
               width: double.infinity,
               child: Container(
-                margin: const EdgeInsets.all(16.0),
+                margin: const EdgeInsets.all(25.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),

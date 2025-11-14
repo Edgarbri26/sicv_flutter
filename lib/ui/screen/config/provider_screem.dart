@@ -214,7 +214,7 @@ class _ProviderScreemState extends State<ProviderScreem> {
   }
 
   // --- FUNCIÓN DE ELIMINAR ---
-  void _showDeleteConfirmDialog(ProviderModel provider) {
+ /* void _showDeleteConfirmDialog(ProviderModel provider) {
     showDialog<void>(
       context: context,
       builder: (context) {
@@ -258,6 +258,111 @@ class _ProviderScreemState extends State<ProviderScreem> {
                 }
               },
               child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+*/
+  void _showDeactivateConfirmDialog(ProviderModel provider) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Desactivar Proveedor'),
+          content: Text(
+              '¿Estás seguro de que deseas desactivar "${provider.name}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () async {
+                try {
+                  // 1. Llama al servicio de desactivación
+                  await _providerService.deactivateProvider(provider.providerId);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // Cierra el diálogo
+
+                  // 2. Muestra confirmación
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Proveedor "${provider.name}" desactivado'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  // 3. Recarga la lista
+                  setState(() {
+                    _providersFuture = _fetchProviders();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al desactivar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Desactivar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showActivateConfirmDialog(ProviderModel provider) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Activar Proveedor'),
+          content: Text(
+              '¿Estás seguro de que deseas Activar "${provider.name}"? Esta acción puede afectar a los productos asociados.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () async {
+                try {
+                  await _providerService.activateProvider(provider.providerId);
+
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Proveedor "${provider.name}" activado'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  setState(() {
+                    _providersFuture = _fetchProviders();
+                  });
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al activar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Activar'),
             ),
           ],
         );
@@ -325,13 +430,30 @@ class _ProviderScreemState extends State<ProviderScreem> {
                                 tooltip: 'Editar',
                                 onPressed: () => _editarProvider(provider),
                               ),
+                              provider.status
+                                  ?
                               IconButton(
+                                icon: const Icon(Icons.block,
+                                    color: Colors.red),
+                                tooltip: 'Desactivar',
+                                onPressed: () =>
+                                    _showDeactivateConfirmDialog(provider),
+                              )
+                              : IconButton(
+                                  onPressed: () => _showActivateConfirmDialog(provider),
+                                  tooltip: 'Activar',
+                                  icon: const Icon(
+                                    Icons.restore, 
+                                    color: Colors.green
+                                  )
+                                ),
+                              /*IconButton(
                                 icon: const Icon(Icons.delete,
                                     color: Colors.red),
                                 tooltip: 'Eliminar',
                                 onPressed: () =>
                                     _showDeleteConfirmDialog(provider),
-                              ),
+                              ),*/
                             ],
                           ),
                         );

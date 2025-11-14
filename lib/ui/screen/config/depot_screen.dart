@@ -337,7 +337,7 @@ class _DepotScreemState extends State<DepotScreem> {
           AppBarApp(title: 'Almacenes', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 900),
           child: FutureBuilder<List<DepotModel>>(
             future: _depotsFuture,
             builder: (context, snapshot) {

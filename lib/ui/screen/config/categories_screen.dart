@@ -334,7 +334,7 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
       appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 900),
           // --- USA FUTUREBUILDER PARA MANEJAR ESTADOS ---
           child: FutureBuilder<List<CategoryModel>>(
             future: _categoriesFuture,

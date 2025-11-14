@@ -120,4 +120,38 @@ class ProviderService {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  Future<void> deactivateProvider(int id) async {
+    final url = Uri.parse('$_baseUrl/provider/$id/deactivate'); // o /providers/$id
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception(
+            'Error al desactivar el proveedor (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  Future<void> activateProvider(int id) async {
+    final url = Uri.parse('$_baseUrl/provider/$id/activate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al activar el proveedor (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 }
