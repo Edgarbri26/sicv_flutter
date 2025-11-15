@@ -1,5 +1,6 @@
 // --- 1. Importa el nuevo modelo que acabas de crear ---
-
+import 'package:sicv_flutter/models/stock_general_model.dart';
+import 'package:sicv_flutter/models/stock_lots_model.dart';
 import 'category_model.dart';
 
 class ProductModel {
@@ -13,11 +14,10 @@ class ProductModel {
   final bool perishable;
   final bool status;
   final String? imageUrl; // La URL de la imagen
-  final int? stock;
-  final List<dynamic> stockGenerals;
-  final List<dynamic> stockLots;
+  final int totalStock;
+  final List<StockGeneralModel> stockGenerals;
+  final List<StockLotsModel> stockLots;
   final String? sku;
-  int? quantity;
 
   ProductModel({
     required this.priceBs,
@@ -26,23 +26,20 @@ class ProductModel {
     required this.description,
     required this.price,
     required this.minStock,
+    required this.totalStock,
     required this.perishable,
     required this.status,
     this.imageUrl,
-    required this.stock,
     required this.stockGenerals,
     required this.stockLots,
-    required this.category, // <-- 3. Añádelo al constructor
-    this.sku, // <-- 3. Añádelo al constructor
-    this.quantity,
-  }) {
-    quantity = 1;
-  }
+    required this.category, 
+    this.sku,
+  });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      stockGenerals: json['stock_generals'],
-      stockLots: json['stock_lots'],
+      stockGenerals: StockGeneralModel.fromJsonList(json['stock_generals']),
+      stockLots: StockLotsModel.fromJsonList(json['stock_lots']),
       priceBs: double.parse(json['price_bs'].toString()),
       minStock: json['min_stock'],
       perishable: json['perishable'],
@@ -52,11 +49,7 @@ class ProductModel {
       description: json['description'],
       price: double.parse(json['base_price'].toString()),
       imageUrl: json['image_url'],
-      stock: json['stock'],
-      quantity: json['quantity'],
-      // --- 4. La Magia (Llama al 'fromJson' de Category) ---
-      // Le pasamos el objeto JSON anidado 'category'
-      // al constructor 'Category.fromJson'.
+      totalStock: json['total_stock'],
       category: CategoryModel.fromJson(json['category']),
     );
   }
@@ -67,16 +60,22 @@ class ProductModel {
       'name': name,
       'description': description,
       'base_price': price,
+      'price_bs': priceBs,
       'image_url': imageUrl,
-      'stock': stock,
-      'quantity': quantity,
+      'min_stock': minStock,
+      'perishable': perishable,
+      'status': status,
+      'total_stock': totalStock,
+      'stock_generals': stockGenerals,
+      'stock_lots': stockLots,
+      'sku': sku,
       'category': category.toJson(),
     };
   }
 }
 
 
-// "product_id": 9,
+//             "product_id": 9,
 //             "name": "Baterías AAA (Paquete 4)",
 //             "description": "Baterías alcalinas AAA, paquete de 4.",
 //             "base_price": "3.50",
@@ -102,28 +101,6 @@ class ProductModel {
 //                     "cost_lot": "2.80",
 //                     "status": true,
 //                 },
-//                 {
-//                     "stock_lot_id": 2,
-//                     "product_id": 9,
-//                     "depot_id": 1,
-//                     "expiration_date": "2028-03-01T00:00:00.000Z",
-//                     "amount": 100,
-//                     "cost_lot": "2.90",
-//                     "status": true,
-//                     "createdAt": "2025-11-11T04:16:58.571Z",
-//                     "updatedAt": "2025-11-11T04:16:58.571Z"
-//                 },
-//                 {
-//                     "stock_lot_id": 3,
-//                     "product_id": 9,
-//                     "depot_id": 3,
-//                     "expiration_date": "2027-10-01T00:00:00.000Z",
-//                     "amount": 80,
-//                     "cost_lot": "2.80",
-//                     "status": true,
-//                     "createdAt": "2025-11-11T04:16:58.571Z",
-//                     "updatedAt": "2025-11-11T04:16:58.571Z"
-//                 }
 //             ],
 //             "price_bs": 815.66
 //         },

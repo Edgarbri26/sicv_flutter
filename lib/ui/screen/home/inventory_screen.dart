@@ -89,7 +89,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
         price: 2.5,
         priceBs: 2.5,
         imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
-        stock: 50,
+        totalStock: 50,
         category: catBebidas,
         sku: 'GAS-001', // <-- ¡AÑADIDO!
         minStock: 10,
@@ -317,8 +317,8 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
             bValue = b.category.name.toLowerCase();
             break;
           case 4: // Stock
-            aValue = a.stock;
-            bValue = b.stock;
+            aValue = a.totalStock;
+            bValue = b.totalStock;
             break;
           case 5: // Precio
             aValue = a.price;
@@ -399,10 +399,10 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   Widget _buildKpiDashboard() {
     double totalValue = _allProducts.fold(
       0,
-      (sum, item) => sum + (item.price * item.stock!),
+      (sum, item) => sum + (item.price * item.totalStock),
     );
     int lowStockItems = _allProducts
-        .where((p) => p.stock! > 0 && p.stock! <= _stockLowThreshold)
+        .where((p) => p.totalStock > 0 && p.totalStock <= _stockLowThreshold)
         .length;
     // Añadí el contador de Agotados que tenías en el código anterior
     //int outOfStockItems = _allProducts.where((p) => p.stock == 0).length;
@@ -817,7 +817,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
       // Definición de las Filas
       rows: _filteredProducts.map((product) {
-        final stockColor = _getStockColor(product.stock!);
+        final stockColor = _getStockColor(product.totalStock);
 
         return DataRow(
           cells: [
@@ -854,7 +854,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
             DataCell(Text(product.category.name)),
             DataCell(
               Text(
-                product.stock.toString(),
+                product.totalStock.toString(),
                 style: TextStyle(
                   color: stockColor,
                   fontWeight: FontWeight.bold,
