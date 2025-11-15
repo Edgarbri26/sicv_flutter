@@ -3,6 +3,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/services/type_payment_service.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_card.dart';
 // Importa el servicio
 
@@ -150,85 +151,91 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gestión de Tipos de Pago'),
-        actions: [
-          // Botón para refrescar la lista manualmente
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadPaymentTypes,
-          ),
+      appBar: AppBarApp(title: 'Gestión de Tipos de Pago', actions: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadPaymentTypes,
+            ),
+        ),
         ],
       ),
-      body: FutureBuilder<List<TypePaymentModel>>(
-        future: _paymentTypesFuture,
-        builder: (context, snapshot) {
-          // 1. Estado de Carga
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // 2. Estado de Error
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text('Error al cargar datos: ${snapshot.error}'),
-              ),
-            );
-          }
-
-          // 3. Estado de Éxito (pero sin datos)
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text('No se encontraron tipos de pago.'),
-            );
-          }
-
-          // 4. Estado de Éxito (con datos)
-          final paymentTypes = snapshot.data!;
-
-          return ListView.builder(
-            itemCount: paymentTypes.length,
-            itemBuilder: (context, index) {
-              final type = paymentTypes[index];
-              return AppCard(
-                title: type.name,
-                subTitle: 'ID: ${type.typePaymentId}',
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Botón EDITAR (Update)
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                      onPressed: () => _showFormDialog(context, type: type),
+      body: Center(
+        
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: FutureBuilder<List<TypePaymentModel>>(
+            future: _paymentTypesFuture,
+            builder: (context, snapshot) {
+              // 1. Estado de Carga
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+          
+              // 2. Estado de Error
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text('Error al cargar datos: ${snapshot.error}'),
+                  ),
+                );
+              }
+          
+              // 3. Estado de Éxito (pero sin datos)
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('No se encontraron tipos de pago.'),
+                );
+              }
+          
+              // 4. Estado de Éxito (con datos)
+              final paymentTypes = snapshot.data!;
+          
+              return ListView.builder(
+                itemCount: paymentTypes.length,
+                itemBuilder: (context, index) {
+                  final type = paymentTypes[index];
+                  return AppCard(
+                    title: (type.name),
+                    subTitle: 'ID: ${type.typePaymentId}',
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Botón EDITAR (Update)
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                          onPressed: () => _showFormDialog(context, type: type),
+                        ),
+                        // Botón BORRAR (Delete)
+                        type.status
+                            ? IconButton(
+                                icon: const Icon(Icons.block, color: Colors.red),
+                                tooltip: 'Desactivar',
+                                onPressed: () => _showDeactivateConfirmDialog(type),
+                              )
+                            : IconButton(
+                                onPressed: () => _showActivateConfirmDialog(type),
+                                tooltip: 'Activar',
+                                icon: const Icon(
+                                  Icons.restore,
+                                  color: Colors.green,
+                                ),
+                              ),
+                      ],
                     ),
-                    // Botón BORRAR (Delete)
-                    type.status
-                        ? IconButton(
-                            icon: const Icon(Icons.block, color: Colors.red),
-                            tooltip: 'Desactivar',
-                            onPressed: () => _showDeactivateConfirmDialog(type),
-                          )
-                        : IconButton(
-                            onPressed: () => _showActivateConfirmDialog(type),
-                            tooltip: 'Activar',
-                            icon: const Icon(
-                              Icons.restore,
-                              color: Colors.green,
-                            ),
-                          ),
-                  ],
-                ),
-                leading: Icon(
-                  Icons.payment,
-                  color: AppColors.primary,
-                  size: AppSizes.iconL,
-                ),
+                    leading: Icon(
+                      Icons.payment,
+                      color: AppColors.primary,
+                      size: AppSizes.iconL,
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
+          ),
+        ),
       ),
       // Botón para CREAR
       floatingActionButton: FloatingActionButton(

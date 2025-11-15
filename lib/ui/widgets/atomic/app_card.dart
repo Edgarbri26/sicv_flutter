@@ -36,7 +36,6 @@ class AppCard extends StatelessWidget {
         title: Text(
           title,
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
             fontSize: AppSizes.bodyM,
           ),
         ),
