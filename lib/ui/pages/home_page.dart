@@ -5,7 +5,6 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
-import 'package:sicv_flutter/models/inventory_item.dart';
 import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/ui/screen/home/inventory_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
@@ -43,17 +42,6 @@ class _HomePageState extends State<HomePage>
   ];
 
   // ... (Tus listas de itemsSelled, _itemsParaLaVenta, etc. se mantienen igual)
-  List<InventoryItem> itemsSelled = [
-    InventoryItem(
-      id: '1',
-      name: 'Harina PAN',
-      description: 'Harina de maíz precocida',
-      quantity: 50,
-      price: 1.40,
-      category: 'Alimentos',
-      lastUpdated: DateTime.now(),
-    ),
-  ];
   final List<ProductModel> _itemsParaLaVenta = [];
   final List<String> _screenTitles = [
     'Registro de Ventas',
