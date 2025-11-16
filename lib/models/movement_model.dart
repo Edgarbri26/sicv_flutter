@@ -1,7 +1,7 @@
  import 'package:sicv_flutter/models/depot_model.dart';
  import 'package:sicv_flutter/models/product_model.dart';
 
-class MovimentModel {
+class MovementModel {
   int movementId;
   int depotId;
   int productId;
@@ -13,7 +13,7 @@ class MovimentModel {
   ProductModel product;
   DepotModel depot;
 
-  MovimentModel({
+  MovementModel.MovementModel({
     required this.movementId,
     required this.depotId,
     required this.productId,
@@ -26,8 +26,8 @@ class MovimentModel {
     required this.depot,
   });
 
-  factory MovimentModel.fromJson(Map<String, dynamic> json) {
-    return MovimentModel(
+  factory MovementModel.fromJson(Map<String, dynamic> json) {
+    return MovementModel.MovementModel(
       movementId: json['movement_id'],
       depotId: json['depot_id'],
       productId: json['product_id'],
