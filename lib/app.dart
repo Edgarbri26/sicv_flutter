@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
-import 'package:sicv_flutter/ui/pages/add_edit_inventory_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 import 'package:sicv_flutter/ui/pages/movements_page.dart';
 import 'package:sicv_flutter/ui/pages/report_dashboard_page.dart';
-import 'package:sicv_flutter/ui/pages/sale_page.dart';
 import 'package:sicv_flutter/ui/screen/config/role_screem.dart';
-import 'package:sicv_flutter/ui/screen/config/settings_screen.dart';
+import 'package:sicv_flutter/ui/pages/settings_page.dart';
 import 'package:sicv_flutter/ui/screen/config/client_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/depot_screen.dart';
 import 'package:sicv_flutter/ui/screen/config/provider_screem.dart';
@@ -50,12 +48,6 @@ class InventoryApp extends StatelessWidget {
           case AppRoutes.settings:
             return MaterialPageRoute(
               builder: (context) => const SettingsScreen(),
-            );
-          case AppRoutes.sale:
-            return MaterialPageRoute(builder: (context) => const SalePage());
-          case AppRoutes.addEditInventory:
-            return MaterialPageRoute(
-              builder: (context) => const AddEditInventoryScreen(),
             );
           case AppRoutes.movements:
             return MaterialPageRoute(

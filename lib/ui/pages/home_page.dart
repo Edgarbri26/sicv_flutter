@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage>
       final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
       if (index != -1) {
         _itemsParaLaVenta[index].quantity =
-            _itemsParaLaVenta[index].quantity! + 1;
+            _itemsParaLaVenta[index].quantity + 1;
         // final existingProduct = _itemsParaLaVenta[index];
         // _itemsParaLaVenta[index] = existingProduct.copyWith(
         //   quantity: existingProduct.quantity! + 1,
@@ -162,19 +162,6 @@ class _HomePageState extends State<HomePage>
   Widget _buildWideLayout(TabController tabController) {
     return Row(
       children: [
-        // 13. Reemplazamos MySideNavRail con tu Menu, dándole un ancho
-        // ConstrainedBox(
-        //   constraints: const BoxConstraints(maxWidth: 280),
-        //   child: SideBarApp(
-        //     pageMenuItems: _pageMenuItems,
-        //     currentIndex: _currentIndex,
-        //     onItemSelected: _navigateToPage, // Pasa la función de navegación
-        //     // Asumimos que HomePage es la ruta principal.
-        //     // Ajusta esto si 'HomePage' vive en una ruta nombrada específica.
-        //     currentPageRoute: '/',
-        //   ),
-        // ),
-        // const VerticalDivider(thickness: 1, width: 1),
         MySideBar(controller: widget.controller),
 
         // El contenido principal
@@ -274,7 +261,7 @@ class _HomePageState extends State<HomePage>
     double total = _itemsParaLaVenta.fold(
       0,
       (previousValue, element) =>
-          previousValue + (element.quantity! * element.price),
+          previousValue + (element.quantity * element.price),
     );
     showModalBottomSheet(
       context: context,

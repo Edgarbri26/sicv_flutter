@@ -435,10 +435,36 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                           onTap: () => print(
                             'TODO: Ver subcategorías de ${category.name}',
                           ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            // Pasa el objeto CategoryModel completo
-                            onPressed: () => _editarCategoria(category),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                // Pasa el objeto CategoryModel completo
+                                onPressed: () => _editarCategoria(category),
+                              ),
+                              category.status
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.block,
+                                      color: Colors.red,
+                                    ),
+                                    tooltip: 'Desactivar',
+                                    onPressed: () =>
+                                        _showDeactivateConfirmDialog(
+                                          category,
+                                        ),
+                                  )
+                                : IconButton(
+                                    onPressed: () =>
+                                        _showActivateConfirmDialog(category),
+                                    tooltip: 'Activar',
+                                    icon: const Icon(
+                                      Icons.restore,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                            ],
                           ),
                         );
                       },

@@ -25,8 +25,8 @@ class ImgProduct extends StatelessWidget {
           ? Image.network(
               imageUrl,
               fit: BoxFit.cover,
-              width: width,
-              height: height,
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.broken_image),
             )
           : Icon(Icons.inventory_2, size: 40, color: Theme.of(context).colorScheme.primary),
     );

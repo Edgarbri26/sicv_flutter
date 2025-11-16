@@ -48,7 +48,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
   // ⭐️ 2. DECLARA LA LISTA AQUÍ
   // List<CategoryModel> _allCategories = [];
-  bool _isLoadingCategories = true;
+  //bool _isLoadingCategories = true;
 
   @override
   void initState() {
@@ -110,7 +110,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     categoriesFilter = [CategoryModel(id: 0, name: 'Todas', status: true, description: 'Todas las categorías'), ..._allCategories];
 
     setState(() {
-      _isLoadingCategories = false;
+      //_isLoadingCategories = false;
     });
   }
 

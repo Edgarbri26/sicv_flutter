@@ -527,7 +527,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
     );
   }
 
-  void _showDeleteConfirmDialog(BuildContext context, ClientModel client) {
+  /*void _showDeleteConfirmDialog(BuildContext context, ClientModel client) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -584,7 +584,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
         );
       },
     );
-  }
+  }*/
 
   void _showEditClientDialog(BuildContext context, ClientModel client) async {
     final bool? clientWasUpdated = await showModalBottomSheet<bool>(

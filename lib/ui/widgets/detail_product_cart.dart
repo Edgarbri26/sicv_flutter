@@ -87,7 +87,7 @@ class DetailProductCart extends StatelessWidget {
             Row(
               spacing: 0,
               children: [
-                Text('\$${(item.price * item.quantity!).toStringAsFixed(2)}'),
+                Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
                 // IconButton(
                 //   onPressed: onTap,
                 //   icon: Icon(Icons.edit),

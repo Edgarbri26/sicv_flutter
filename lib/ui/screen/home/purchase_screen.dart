@@ -1,16 +1,10 @@
-// lib/ui/screen/purchase_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-// Importa tus modelos reales
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/models/provider_model.dart';
-
 import 'package:sicv_flutter/models/purchase_detail.dart';
-import 'package:sicv_flutter/models/supplier.dart';
 import 'package:sicv_flutter/services/provider_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
@@ -27,8 +21,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   ProviderModel? _selectedProvider;
 
-  // Listas "maestras" (vendrían de tu API)
-  List<Supplier> _allSuppliers = [];
   List<ProductModel> _allProducts = [];
   bool _isRegistering = false;
 
@@ -66,14 +58,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   /// Carga los datos maestros (simulación de API)
   void _loadData() {
-    // SIMULACIÓN DE PROVEEDORES
-    _allSuppliers = [
-      Supplier(id: 1, name: 'Coca-Cola FEMSA'),
-      Supplier(id: 2, name: 'Alimentos PAN'),
-      Supplier(id: 3, name: 'Cigarrera Bigott'),
-      Supplier(id: 4, name: 'Proveedor General'), // Añadido
-    ];
-
     // SIMULACIÓN DE PRODUCTOS
     _allProducts = [
       // --- CAMBIO AQUÍ ---
@@ -97,51 +81,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
         stockLots: [],
         priceBs: 1.40,
       ),
-      // Product(
-      //   id: 2,
-      //   name: 'Cigarros Marlboro',
-      //   description: '...',
-      //   price: 5.99,
-      //   stock: 5,
-      //   category: ProductCategory(id: 2, name: 'Tabaco'),
-      //   sku: 'TAB-001',
-      // ),
-      // Product(
-      //   id: 3,
-      //   name: 'Café',
-      //   description: '...',
-      //   price: 10.99,
-      //   stock: 0,
-      //   category: ProductCategory(id: 3, name: 'Bebidas'),
-      //   sku: 'BEB-001',
-      // ),
-      // Product(
-      //   id: 4,
-      //   name: 'Gaseosa 2L',
-      //   description: '...',
-      //   price: 2.5,
-      //   stock: 50,
-      //   category: ProductCategory(id: 3, name: 'Bebidas'),
-      //   sku: 'BEB-002',
-      // ),
-      // Product(
-      //   id: 5,
-      //   name: 'Pan Campesino',
-      //   description: '...',
-      //   price: 2.0,
-      //   stock: 15,
-      //   category: ProductCategory(id: 1, name: 'Alimentos'),
-      //   sku: 'ALI-002',
-      // ),
-      // Product(
-      //   id: 6,
-      //   name: 'Agua Minalba 1L',
-      //   description: '...',
-      //   price: 1.0,
-      //   stock: 30,
-      //   category: ProductCategory(id: 3, name: 'Bebidas'),
-      //   sku: 'BEB-003',
-      // ),
     ];
 
     // Inicialmente no hay nada seleccionado
