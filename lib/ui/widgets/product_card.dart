@@ -1,6 +1,6 @@
 // lib/widgets/product_card.dart
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product; // Ahora recibe un Product

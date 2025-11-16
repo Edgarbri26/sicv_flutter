@@ -1,4 +1,3 @@
-
 class StockLotsModel { 
   final int stockLotId;
   final int productId;

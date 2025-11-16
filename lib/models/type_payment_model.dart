@@ -23,7 +23,6 @@ class TypePaymentModel {
       name: json['name'] as String,
       typePaymentId: json['type_payment_id'] as int,
       status: json['status'] as bool,
-      // Parseamos las fechas ISO 8601 String a objetos DateTime.
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : null,

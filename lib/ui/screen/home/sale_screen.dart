@@ -1,11 +1,10 @@
 // lib/ui/pages/screen/sale_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/category_model.dart';
-import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/services/category_service.dart';
 import 'package:sicv_flutter/services/product_service.dart';
 import 'package:sicv_flutter/ui/widgets/Info_chip.dart';

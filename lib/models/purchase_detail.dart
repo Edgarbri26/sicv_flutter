@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/models/product_model.dart';
 
 class PurchaseDetail {
   final ProductModel product;

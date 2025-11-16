@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/permission_model.dart';
-import 'package:sicv_flutter/models/role_mode.dart';
+import 'package:sicv_flutter/models/role_model.dart';
 import 'package:sicv_flutter/providers/role_provider.dart';
 
 class RoleEditView extends ConsumerStatefulWidget {

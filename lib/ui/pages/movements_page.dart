@@ -7,7 +7,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Necesario para el modelo Product
 import 'package:sicv_flutter/models/movement_type.dart';
 import 'package:sicv_flutter/models/movement.dart'; // Asegúrate que este sea el nombre correcto
-import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/models/product_model.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sidebarx/sidebarx.dart';

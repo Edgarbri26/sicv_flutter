@@ -2,7 +2,7 @@
 // (Este es un nuevo archivo para organizar tus providers)
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/models/role_mode.dart';
+import 'package:sicv_flutter/models/role_model.dart';
 import 'package:sicv_flutter/models/permission_model.dart';
 import 'package:sicv_flutter/services/role_service.dart';
 import 'package:sicv_flutter/services/permission_service.dart';

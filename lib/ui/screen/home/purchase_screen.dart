@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos reales
 import 'package:sicv_flutter/models/category_model.dart';
-import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/models/provider_model.dart';
 
 import 'package:sicv_flutter/models/purchase_detail.dart';
