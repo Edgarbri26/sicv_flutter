@@ -34,7 +34,7 @@ class _ProviderScreemState extends State<ProviderScreem> {
 
   Future<List<ProviderModel>> _fetchProviders() async {
     try {
-      final providers = await _providerService.getProviders();
+      final providers = await _providerService.getAllProviders();
       setState(() {
         _providersOriginales = providers;
         _providersFiltrados = providers;

@@ -2,13 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa tus modelos reales
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/models/provider_model.dart';
 
 import 'package:sicv_flutter/models/purchase_detail.dart';
 import 'package:sicv_flutter/models/supplier.dart';
+import 'package:sicv_flutter/services/provider_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
 class PurchaseScreen extends StatefulWidget {
@@ -19,10 +22,10 @@ class PurchaseScreen extends StatefulWidget {
 }
 
 class PurchaseScreenState extends State<PurchaseScreen> {
-  // --- ESTADO DE LA ORDEN DE COMPRA ---
+  final ProviderService _providerService = ProviderService();
+  late List<ProviderModel> _allProviders = [];
 
-  // Proveedor seleccionado
-  Supplier? _selectedSupplier;
+  ProviderModel? _selectedProvider;
 
   // Listas "maestras" (vendrían de tu API)
   List<Supplier> _allSuppliers = [];
@@ -43,6 +46,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   void initState() {
     super.initState();
     _loadData();
+    startServices();
   }
 
   @override
@@ -54,6 +58,10 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       item.costController.dispose();
     }
     super.dispose();
+  }
+
+  void startServices() async {
+    _allProviders = await _providerService.getAllProviders();
   }
 
   /// Carga los datos maestros (simulación de API)
@@ -204,7 +212,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   /// Guarda la compra (lógica final)
   void _registerPurchase() {
     setState(() => _isRegistering = true);
-    if (_selectedSupplier == null) {
+    if (_selectedProvider == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecciona un proveedor.')),
       );
@@ -229,7 +237,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     // 4. Envía esto a tu backend Node.js
     // 5. Si tiene éxito, limpia la pantalla y muestra un mensaje.
 
-    print('Registrando compra del proveedor: ${_selectedSupplier!.name}');
+    print('Registrando compra del proveedor: ${_selectedProvider!.name}');
     print('Total: \$$_totalCost');
     print('Items: ${_purchaseItems.length}');
 
@@ -243,7 +251,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     // Limpia la pantalla para una nueva orden
     setState(() {
       _purchaseItems.clear();
-      _selectedSupplier = null;
+      _selectedProvider = null;
       _totalCost = 0.0;
     });
   }
@@ -381,48 +389,10 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     ); // Limpia el buscador al cerrar el modal
   }
 
-  // --- CONSTRUCCIÓN DE LA UI ---
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      // Centra el contenido horizontalmente
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 800.0), // Limita el ancho
-        child: Column(
-          // Usamos Column para darle espacio al SingleChildScrollView
-          children: [
-            Expanded(
-              // Expanded hace que el SingleChildScrollView tome todo el alto restante
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  // Alinea el contenido interno a la izquierda
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize
-                      .min, // Deja que el contenido defina la altura
-                  children: [
-                    _buildSupplierSelector(),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    _buildProductList(), // Esta función debe ser modificada (ver punto 2)
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-            // La barra de resumen queda fija en la parte inferior
-            _buildSummaryAndSave(),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// El Dropdown para seleccionar el proveedor
   Widget _buildSupplierSelector() {
-    return DropdownButtonFormField<Supplier>(
-      initialValue: _selectedSupplier,
+    return DropdownButtonFormField<ProviderModel>(
+      initialValue: _selectedProvider,
 
       decoration: InputDecoration(
         labelStyle: TextStyle(
@@ -452,16 +422,19 @@ class PurchaseScreenState extends State<PurchaseScreen> {
           ),
         ),
       ),
-      items: _allSuppliers.map((supplier) {
-        return DropdownMenuItem(value: supplier, child: Text(supplier.name));
+      items: _allProviders.map((supplier) {
+        return DropdownMenuItem<ProviderModel>(
+          value: supplier,
+          child: Text(supplier.name),
+        );
       }).toList(),
-      onChanged: (Supplier? newValue) {
+
+      onChanged: (ProviderModel? newValue) {
         setState(() {
           // Si el proveedor cambia, limpiamos la orden
-          setState(() {
-            _selectedSupplier = newValue;
-          });
-          _selectedSupplier = newValue;
+          _selectedProvider = newValue;
+          _purchaseItems.clear();
+          _totalCost = 0.0;
         });
       },
     );
@@ -657,127 +630,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     );
   }
 
-  /// La tarjeta individual para cada item en la lista
-  /* Widget _buildPurchaseItemTile(PurchaseDetail item, int index) {
-    return Card(
-      elevation: 0.0,
-      color: AppColors.background,
-      // 2. Define el borde exterior usando 'shape'
-      shape: RoundedRectangleBorder(
-        // Define el radio de las esquinas
-        borderRadius: BorderRadius.circular(8.0), 
-        
-        // Define el borde (grosor y color)
-        side: BorderSide(
-          color: AppColors.border, // El color del borde
-          width: 2.0,                // El grosor del borde
-        ),
-      ),
-
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            ListTile(
-              title: Text(item.product.name),
-              subtitle: Text(item.product.sku ?? 'Sin SKU'),
-              trailing: IconButton(
-                icon: Icon(Icons.delete_outline, color: Colors.red[700]),
-                onPressed: () => _removeItem(index),
-              ),
-            ),
-            // Fila para Cantidad y Costo
-            Row(
-              children: [
-                // Campo de Cantidad
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: item.quantityController,
-                     style: const TextStyle(
-                        fontSize: 14.0, // <-- Reduce este valor (ej. de 16.0 a 14.0)
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Cantidad',
-                      prefixIcon: Icon(Icons.inventory_2_outlined, size: 20),
-                      border: OutlineInputBorder(),
-
-                      labelStyle: TextStyle(
-                        fontSize: 16.0, // <-- Cambia el tamaño de la fuente del label
-                        color: AppColors.textSecondary, // (Opcional: define el color del label)
-                      ),
-
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          width: 2.0, // <-- Tu grosor deseado
-                          color: AppColors.border, // Color del borde
-                        ),
-                      ),
-
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
-                            color: AppColors.textSecondary, // Color del borde al enfocar
-                        ),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // Campo de Costo
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: item.costController,
-                    style: const TextStyle(
-                        fontSize: 14.0, // <-- Reduce este valor (ej. de 16.0 a 14.0)
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Costo por Unidad',
-                      prefixIcon: Icon(Icons.attach_money, size: 20),
-                      border: OutlineInputBorder(),
-                      labelStyle: TextStyle(
-                        fontSize: 16.0, // <-- Cambia el tamaño de la fuente del label
-                        color: AppColors.textSecondary, // (Opcional: define el color del label)
-                      ),
-                      
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          width: 2.0, // <-- Tu grosor deseado
-                          color: AppColors.border, // Color del borde
-                        ),
-                      ),
-
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
-                            color: AppColors.textSecondary, // Color del borde al enfocar
-                        ),
-                      ),
-
-                    ),
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
-                  ),
-                ),
-
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-*/
   /// La barra inferior que muestra el total y el botón de Guardar
   Widget _buildSummaryAndSave() {
     return Card(
@@ -834,6 +686,44 @@ class PurchaseScreenState extends State<PurchaseScreen> {
               onPressed: _registerPurchase, // Conectas tu función
             ),
             const SizedBox(height: 16), // Espacio al final
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- CONSTRUCCIÓN DE LA UI ---
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      // Centra el contenido horizontalmente
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800.0), // Limita el ancho
+        child: Column(
+          // Usamos Column para darle espacio al SingleChildScrollView
+          children: [
+            Expanded(
+              // Expanded hace que el SingleChildScrollView tome todo el alto restante
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  // Alinea el contenido interno a la izquierda
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize
+                      .min, // Deja que el contenido defina la altura
+                  children: [
+                    _buildSupplierSelector(),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    _buildProductList(), // Esta función debe ser modificada (ver punto 2)
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+            // La barra de resumen queda fija en la parte inferior
+            _buildSummaryAndSave(),
           ],
         ),
       ),

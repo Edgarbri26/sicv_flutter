@@ -7,12 +7,13 @@ class ProviderService {
   final String _baseUrl = ApiUrl().url; // IP para emulador
 
   // --- OBTENER TODOS LOS PROVEEDORES ---
-  Future<List<ProviderModel>> getProviders() async {
+  Future<List<ProviderModel>> getAllProviders() async {
     final url = Uri.parse('$_baseUrl/provider'); // o /providers
     try {
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
@@ -20,7 +21,8 @@ class ProviderService {
         return jsonList.map((json) => ProviderModel.fromJson(json)).toList();
       } else {
         throw Exception(
-            'Error al cargar los proveedores (Código: ${response.statusCode})');
+          'Error al cargar los proveedores (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -37,7 +39,8 @@ class ProviderService {
         return ProviderModel.fromJson(responseBody['data']);
       } else {
         throw Exception(
-            'Error al cargar el proveedor (Código: ${response.statusCode})');
+          'Error al cargar el proveedor (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -50,10 +53,7 @@ class ProviderService {
     required String located,
   }) async {
     final url = Uri.parse('$_baseUrl/provider'); // o /providers
-    final body = json.encode({
-      'name': name,
-      'located': located,
-    });
+    final body = json.encode({'name': name, 'located': located});
 
     try {
       final response = await http.post(
@@ -66,7 +66,8 @@ class ProviderService {
         return ProviderModel.fromJson(json.decode(response.body)['data']);
       } else {
         throw Exception(
-            'Error al crear el proveedor (Código: ${response.statusCode})');
+          'Error al crear el proveedor (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -80,10 +81,7 @@ class ProviderService {
     required String located,
   }) async {
     final url = Uri.parse('$_baseUrl/provider/$id'); // o /providers/$id
-    final body = json.encode({
-      'name': name,
-      'located': located,
-    });
+    final body = json.encode({'name': name, 'located': located});
 
     try {
       final response = await http.patch(
@@ -96,7 +94,8 @@ class ProviderService {
         return ProviderModel.fromJson(json.decode(response.body)['data']);
       } else {
         throw Exception(
-            'Error al actualizar el proveedor (Código: ${response.statusCode})');
+          'Error al actualizar el proveedor (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -114,7 +113,8 @@ class ProviderService {
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw Exception(
-            'Error al eliminar el proveedor (Código: ${response.statusCode})');
+          'Error al eliminar el proveedor (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -122,7 +122,9 @@ class ProviderService {
   }
 
   Future<void> deactivateProvider(int id) async {
-    final url = Uri.parse('$_baseUrl/provider/$id/deactivate'); // o /providers/$id
+    final url = Uri.parse(
+      '$_baseUrl/provider/$id/deactivate',
+    ); // o /providers/$id
     try {
       final response = await http.patch(
         url,
@@ -131,7 +133,8 @@ class ProviderService {
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw Exception(
-            'Error al desactivar el proveedor (Código: ${response.statusCode})');
+          'Error al desactivar el proveedor (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -148,7 +151,9 @@ class ProviderService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Error al activar el proveedor (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al activar el proveedor (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');

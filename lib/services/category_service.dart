@@ -9,18 +9,17 @@ class CategoryService {
   // final String _baseUrl = "http://localhost:3000/api";
   final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
 
-
   // --- OBTENER TODAS LAS CATEGORÍAS ---
-  Future<List<CategoryModel>> getCategories() async {
+  Future<List<CategoryModel>> getAllCategories() async {
     final url = Uri.parse('$_baseUrl/category');
 
     try {
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
-        
         // 1. Decodifica el OBJETO completo
         final Map<String, dynamic> responseBody = json.decode(response.body);
 
@@ -30,7 +29,9 @@ class CategoryService {
         // 3. Mapea la lista
         return jsonList.map((json) => CategoryModel.fromJson(json)).toList();
       } else {
-        throw Exception('Error al cargar las categorías (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al cargar las categorías (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -49,10 +50,12 @@ class CategoryService {
         // como en tu ejemplo de la compra
         final Map<String, dynamic> responseBody = json.decode(response.body);
         final Map<String, dynamic> categoryJson = responseBody['data'];
-        
+
         return CategoryModel.fromJson(categoryJson);
       } else {
-        throw Exception('Error al cargar la categoría (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al cargar la categoría (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -64,10 +67,7 @@ class CategoryService {
     final url = Uri.parse('$_baseUrl/category');
 
     // Crea el cuerpo de la petición
-    final body = json.encode({
-      'name': name,
-      'description': description,
-    });
+    final body = json.encode({'name': name, 'description': description});
 
     try {
       final response = await http.post(
@@ -76,11 +76,14 @@ class CategoryService {
         body: body,
       );
 
-      if (response.statusCode == 201) { // 201 = Creado
+      if (response.statusCode == 201) {
+        // 201 = Creado
         // Asumiendo que la API devuelve la nueva categoría creada
         return CategoryModel.fromJson(json.decode(response.body)['data']);
       } else {
-        throw Exception('Error al crear la categoría (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al crear la categoría (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -104,16 +107,18 @@ class CategoryService {
     try {
       // --- ¡CAMBIO JUSTO AQUÍ! ---
       // Cambiamos http.put por http.patch
-      final response = await http.patch( 
+      final response = await http.patch(
         url,
         headers: {'Content-Type': 'application/json'},
         body: body,
       );
 
-      if (response.statusCode == 200) { 
+      if (response.statusCode == 200) {
         return CategoryModel.fromJson(json.decode(response.body)['data']);
       } else {
-        throw Exception('Error al actualizar la categoría (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al actualizar la categoría (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -130,13 +135,15 @@ class CategoryService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Error al desactivar la categoría (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al desactivar la categoría (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
     }
   }
-  
+
   Future<void> activateCategory(int id) async {
     final url = Uri.parse('$_baseUrl/category/$id/activate');
 
@@ -147,31 +154,36 @@ class CategoryService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Error al activar la categoría (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al activar la categoría (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
     }
   }
 
-  Future<List<CategoryModel>> getAllCategories() async {
-    final url = Uri.parse('$_baseUrl/category');
+  // Future<List<CategoryModel>> getAllCategories() async {
+  //   final url = Uri.parse('$_baseUrl/category');
 
-    try {
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+  //   try {
+  //     final response = await http.get(
+  //       url,
+  //       headers: {'Content-Type': 'application/json'},
+  //     );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseBody = json.decode(response.body);
-        final List<dynamic> jsonList = responseBody['data'];
+  //     if (response.statusCode == 200) {
+  //       final Map<String, dynamic> responseBody = json.decode(response.body);
+  //       final List<dynamic> jsonList = responseBody['data'];
 
-        return jsonList.map((json) => CategoryModel.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load categories (Código: ${response.statusCode})');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
-    }
-  }
+  //       return jsonList.map((json) => CategoryModel.fromJson(json)).toList();
+  //     } else {
+  //       throw Exception(
+  //         'Failed to load categories (Código: ${response.statusCode})',
+  //       );
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Error de conexión: $e');
+  //   }
+  // }
 }

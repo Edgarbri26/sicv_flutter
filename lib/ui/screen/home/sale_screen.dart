@@ -1,6 +1,7 @@
 // lib/ui/pages/screen/sale_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/category_model.dart';
@@ -24,7 +25,6 @@ class _SaleScreenState extends State<SaleScreen> {
   final ProductService _productService = ProductService();
   late List<ProductModel> _allProducts;
 
-  
   // Lista que se muestra en la UI y cambia con los filtros
   List<ProductModel> _filteredProducts = [];
   // Controlador para el campo de búsqueda
@@ -51,30 +51,28 @@ class _SaleScreenState extends State<SaleScreen> {
 
   // Carga y prepara los datos
   Future<void> _loadData() async {
-
     final loadedProducts = await _fetchProducts();
 
-    final loadedCategories = await _fetchCategories(); 
+    final loadedCategories = await _fetchCategories();
 
     // 2. Usar setState para actualizar la interfaz con los datos cargados
     if (mounted) {
-        setState(() {
-            _allProducts = loadedProducts;
-            _filteredProducts = _allProducts; // Inicializa el filtro
+      setState(() {
+        _allProducts = loadedProducts;
+        _filteredProducts = _allProducts; // Inicializa el filtro
 
-            // 💡 SOLUCIÓN: Inicializa la variable 'late' aquí
-            _categories = loadedCategories; 
-        });
+        // 💡 SOLUCIÓN: Inicializa la variable 'late' aquí
+        _categories = loadedCategories;
+      });
     }
   }
 
   Future<List<ProductModel>> _fetchProducts() async {
     // Desde aquí cargamos los productos usando tu ProductService desde la api
     try {
-      final products = await _productService.getAll();  
-      
+      final products = await _productService.getAll();
+
       return products;
-      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -91,7 +89,7 @@ class _SaleScreenState extends State<SaleScreen> {
   Future<List<CategoryModel>> _fetchCategories() async {
     // 💡 ASUME que tienes un CategoryService con un método getAll()
     // Si no lo tienes, debes crearlo.
-    return await CategoryService().getCategories(); 
+    return await CategoryService().getAllCategories();
   }
 
   // --- LÓGICA DE FILTRADO ---
@@ -198,8 +196,7 @@ class _SaleScreenState extends State<SaleScreen> {
                     childAspectRatio: 0.7, // Ajusta la altura (Ancho / Alto)
                   ),
                   // --- FIN DE MEJORA ---
-                  itemCount:
-                      _filteredProducts.length, // Usa la lista filtrada
+                  itemCount: _filteredProducts.length, // Usa la lista filtrada
                   itemBuilder: (context, index) {
                     final product =
                         _filteredProducts[index]; // Usa la lista filtrada
@@ -264,7 +261,8 @@ class _SaleScreenState extends State<SaleScreen> {
                                               ),
                                               if (product.totalStock > 0)
                                                 InfoChip(
-                                                  text: '${product.totalStock} Uds.',
+                                                  text:
+                                                      '${product.totalStock} Uds.',
                                                   color: product.totalStock > 5
                                                       ? AppColors.success
                                                       : AppColors.edit,

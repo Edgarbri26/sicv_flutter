@@ -37,7 +37,7 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   Future<List<CategoryModel>> _fetchCategories() async {
     try {
       // Llama al servicio
-      final categories = await _categoryService.getCategories();
+      final categories = await _categoryService.getAllCategories();
       // Guarda las listas originales y filtradas
       setState(() {
         _categoriasOriginales = categories;

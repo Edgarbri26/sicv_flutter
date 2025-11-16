@@ -8,7 +8,6 @@ import 'dart:io'; // Required for File (mobile/desktop)
 import 'package:flutter/foundation.dart'; // Required for kIsWeb constant
 import 'package:image_picker/image_picker.dart';
 import 'package:sicv_flutter/services/category_service.dart';
-import 'package:sicv_flutter/services/product_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Required for image picking
@@ -22,41 +21,42 @@ class InventoryDatatableScreen extends StatefulWidget {
 }
 
 class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
-  // --- DATOS DE EJEMPLO ---
-  final CategoryModel catBebidas = CategoryModel(
-    id: 1,
-    name: 'Bebidas',
-    status: true,
-    description: 'Bebidas',
-  );
-  final CategoryModel catLimpieza = CategoryModel(
-    id: 2,
-    name: 'Limpieza',
-    status: true,
-    description: 'Limpieza',
-  );
-  final CategoryModel catAlimentos = CategoryModel(
-    id: 3,
-    name: 'Alimentos',
-    status: true,
-    description: 'Alimentos',
-  );
-  final CategoryModel catPersonal = CategoryModel(
-    id: 4,
-    name: 'Cuidado Personal',
-    status: true,
-    description: 'Cuidado Personal',
-  );
-  final CategoryModel catTodas = CategoryModel(
-    id: 0,
-    name: 'Todas',
-    status: true,
-    description: 'Todas las categorías',
-  );
-
+  late List<CategoryModel> _allCategories = [];
   late final List<ProductModel> _allProducts;
-
   List<ProductModel> _filteredProducts = [];
+
+  CategoryService categoryService = CategoryService();
+  // --- DATOS DE EJEMPLO ---
+  // final CategoryModel catBebidas = CategoryModel(
+  //   id: 1,
+  //   name: 'Bebidas',
+  //   status: true,
+  //   description: 'Bebidas',
+  // );
+  // final CategoryModel catLimpieza = CategoryModel(
+  //   id: 2,
+  //   name: 'Limpieza',
+  //   status: true,
+  //   description: 'Limpieza',
+  // );
+  // final CategoryModel catAlimentos = CategoryModel(
+  //   id: 3,
+  //   name: 'Alimentos',
+  //   status: true,
+  //   description: 'Alimentos',
+  // );
+  // final CategoryModel catPersonal = CategoryModel(
+  //   id: 4,
+  //   name: 'Cuidado Personal',
+  //   status: true,
+  //   description: 'Cuidado Personal',
+  // );
+  // final CategoryModel catTodas = CategoryModel(
+  //   id: 0,
+  //   name: 'Todas',
+  //   status: true,
+  //   description: 'Todas las categorías',
+  // );
 
   // Estado para los filtros
   String _searchQuery = '';
@@ -69,7 +69,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   static const int _stockLowThreshold = 10;
 
   // ⭐️ 2. DECLARA LA LISTA AQUÍ
-  List<CategoryModel> _allCategories = [];
+  // List<CategoryModel> _allCategories = [];
   bool _isLoadingCategories = true;
 
   @override
@@ -85,8 +85,13 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
         price: 2.5,
         priceBs: 2.5,
         imageUrl: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Gaseosa',
+        category: CategoryModel(
+          id: 11,
+          name: 'hola',
+          status: true,
+          description: 'description',
+        ),
         totalStock: 50,
-        category: catBebidas,
         sku: 'GAS-001', // <-- ¡AÑADIDO!
         minStock: 10,
         perishable: true,
@@ -266,14 +271,18 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       // ),
     ];
     _filteredProducts = _allProducts;
+    startServices();
   }
 
+  void startServices() async {
+    _allCategories = await categoryService.getAllCategories();
+  }
 
   Future<void> _fetchCategories() async {
     // Reemplaza esto con tu llamada real a la API/Servicio
     // Por ejemplo: _allCategories = await CategoryService.getAllCategories();
     _allCategories = await CategoryService().getAllCategories();
-    
+
     setState(() {
       _isLoadingCategories = false;
     });
@@ -322,8 +331,8 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
             bValue = b.category.name.toLowerCase();
             break;
           case 4: // Stock
-            aValue = a.totalStock;
-            bValue = b.totalStock;
+            // aValue = a.stock;
+            // bValue = b.stock;
             break;
           case 5: // Precio
             aValue = a.price;
@@ -404,10 +413,14 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
   Widget _buildKpiDashboard() {
     double totalValue = _allProducts.fold(
       0,
-      (sum, item) => sum + (item.price * item.totalStock),
+      (sum, item) => sum + (item.price * item.stockGenerals.length),
     );
     int lowStockItems = _allProducts
-        .where((p) => p.totalStock > 0 && p.totalStock <= _stockLowThreshold)
+        .where(
+          (p) =>
+              p.stockGenerals.length > 0 &&
+              p.stockGenerals.length <= _stockLowThreshold,
+        )
         .length;
     // Añadí el contador de Agotados que tenías en el código anterior
     //int outOfStockItems = _allProducts.where((p) => p.stock == 0).length;
@@ -822,7 +835,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
 
       // Definición de las Filas
       rows: _filteredProducts.map((product) {
-        final stockColor = _getStockColor(product.totalStock);
+        final stockColor = _getStockColor(product.stockGenerals.length);
 
         return DataRow(
           cells: [
@@ -859,7 +872,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
             DataCell(Text(product.category.name)),
             DataCell(
               Text(
-                product.totalStock.toString(),
+                product.stockGenerals.length.toString(),
                 style: TextStyle(
                   color: stockColor,
                   fontWeight: FontWeight.bold,
@@ -960,7 +973,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     );
   }
 
-  void addNewProduct() {
+  void addNewProduct() async {
     // --- Controllers ---
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -971,17 +984,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
     // --- State variables for the modal ---
     CategoryModel? selectedCategory;
     File? selectedImageFile; // Used for mobile/desktop
-    bool isPerishable = false;
     Uint8List? selectedImageBytes; // Used for web
-
-    if (_isLoadingCategories || _allCategories.isEmpty) {
-      // Muestra un error o un indicador de carga si las categorías no están listas
-      // Opcional: muestra un diálogo simple de error y retorna.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cargando categorías... intente de nuevo.')),
-      );
-      return; 
-    }
 
     showModalBottomSheet(
       context: context,
@@ -989,6 +992,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+
       builder: (BuildContext modalContext) {
         return Padding(
           padding: MediaQuery.of(modalContext).viewInsets,
@@ -1133,12 +1137,13 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                               prefixIcon: Icons.category,
                               initialValue: selectedCategory,
                               items: _allCategories,
-                              itemToString: (CategoryModel category) {
-                                return category.name; // <-- Cambia 'name' por la propiedad de texto de tu clase
+                              itemToString: (CategoryModel categoria) {
+                                return categoria
+                                    .name; // <-- Cambia 'name' por la propiedad de texto de tu clase
                               },
                               onChanged: (newValue) {
-                                setStateModal(() {
-                                  selectedCategory = newValue!;
+                                setState(() {
+                                  _selectedCategory = newValue!;
                                 });
                               },
                             ),
@@ -1173,15 +1178,6 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                               labelText: 'Descripción (Opcional)',
                               maxLines: 3,
                             ),
-                            SwitchListTile(
-                              title: const Text('¿Es un producto perecedero?'),
-                              value: isPerishable,
-                              onChanged: (bool value) {
-                                setStateModal(() {
-                                  isPerishable = value;
-                                });
-                              },
-                            ),
                             const SizedBox(height: 24),
                           ],
                         ),
@@ -1215,10 +1211,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                             // Disable button if required fields are empty
                             onPressed:
                                 (nameController.text.isEmpty ||
-                                    skuController.text.isEmpty ||
-                                    selectedCategory == null ||
-                                    priceController.text.isEmpty ||
-                                    stockController.text.isEmpty)
+                                    skuController.text.isEmpty)
                                 ? null
                                 : () async {
                                     // Make onPressed async
@@ -1231,41 +1224,49 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                                       imageBytesToSend = await selectedImageFile!
                                           .readAsBytes(); // Read bytes from File
                                     }
+                                    // --- End of Image Preparation ---
 
-                                     final productService = ProductService();
-                                     bool success = await productService.createProduct(
-                                       name: nameController.text,
-                                       sku: skuController.text,
-                                       categoryId: selectedCategory!.id,
-                                       price: double.tryParse(priceController.text) ?? 0.0,
-                                       minStock: int.tryParse(stockController.text) ?? 0,
-                                       description: descriptionController.text,
-                                       imageUrl: imageBytesToSend, // Pass the prepared bytes
-                                      isPerishable: isPerishable
-                                     );
-                                     if (success && mounted) {
-                                        // ignore: use_build_context_synchronously
-                                        Navigator.of(modalContext).pop(); 
+                                    // --- Placeholder for your save logic ---
+                                    print('--- Saving Product ---');
+                                    print('Name: ${nameController.text}');
+                                    print('SKU: ${skuController.text}');
+                                    print(
+                                      'Category: ${selectedCategory!.name}',
+                                    );
+                                    print('Price: ${priceController.text}');
+                                    print('Stock: ${stockController.text}');
+                                    print(
+                                      'Description: ${descriptionController.text}',
+                                    );
+                                    print(
+                                      'Image Bytes length: ${imageBytesToSend?.length ?? 'No Image Selected'}',
+                                    );
 
-                                        // Luego, muestra el SnackBar (usando el context del widget principal)
-                                        // ignore: use_build_context_synchronously
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                                content: Text('Producto creado exitosamente')
-                                            )
-                                        );
-                                        // Opcionalmente refresca la lista de productos aquí
-                                        
-                                        // **IMPORTANTE: Finaliza la ejecución para evitar el bloque de error**
-                                        return; 
-                                    } else if (mounted) {
-                                        // Si falló, muestra el error y no cierres el modal automáticamente
-                                        // ignore: use_build_context_synchronously
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                                content: Text('Error al crear el producto')
-                                            )
-                                        );
+                                    // 🚨 Replace the print statements above with your actual API call
+                                    // Example:
+                                    // bool success = await ApiService.saveProduct(
+                                    //   name: nameController.text,
+                                    //   sku: skuController.text,
+                                    //   categoryId: selectedCategory!.id,
+                                    //   price: double.tryParse(priceController.text) ?? 0.0,
+                                    //   stock: int.tryParse(stockController.text) ?? 0,
+                                    //   description: descriptionController.text,
+                                    //   imageBytes: imageBytesToSend, // Pass the prepared bytes
+                                    // );
+                                    // if (success && mounted) { // Check mounted before interacting with context
+                                    //    Navigator.of(modalContext).pop();
+                                    //    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Producto guardado!')));
+                                    //    // Optionally refresh the product list here
+                                    // } else {
+                                    //   // Show error message
+                                    // }
+                                    // --- End of Placeholder ---
+
+                                    if (mounted) {
+                                      // Check if widget is still in the tree
+                                      Navigator.of(
+                                        modalContext,
+                                      ).pop(); // Close modal after saving attempt
                                     }
                                   },
                             child: Row(
@@ -1274,7 +1275,7 @@ class InventoryDatatableScreenState extends State<InventoryDatatableScreen> {
                                 Icon(Icons.check, size: 20),
                                 SizedBox(width: 8),
                                 Text(
-                                  'CREAR PRODUCTO',
+                                  'GUARDAR PRODUCTO',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.5,
