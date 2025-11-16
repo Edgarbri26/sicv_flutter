@@ -34,7 +34,7 @@ class ProductCard extends StatelessWidget {
         ),
         title: Text(product.name),
         subtitle: Text(
-          'Stock: ${product.stock} | Precio: \$${product.price.toStringAsFixed(2)}',
+          'Stock: ${product.totalStock} | Precio: \$${product.price.toStringAsFixed(2)}',
         ),
         onTap: onTap,
         trailing: IconButton(

@@ -25,7 +25,7 @@ class StockLotsModel {
       depotId: json['depot_id'], 
       expirationDate: DateTime.parse(json['expiration_date']), 
       amount: json['amount'], 
-      costLot: json['cost_lot'], 
+      costLot: double.parse(json['cost_lot'].toString()), 
       status: json['status']);
   }
 

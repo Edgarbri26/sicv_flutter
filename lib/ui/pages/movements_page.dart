@@ -916,7 +916,7 @@ class _MovementsPageState extends State<MovementsPage> {
                                       return DropdownMenuItem(
                                         value: product,
                                         child: Text(
-                                          '${product.name} (Stock: ${product.stock})',
+                                          '${product.name} (Stock: ${product.totalStock})',
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       );
@@ -1245,7 +1245,7 @@ class _MovementsPageState extends State<MovementsPage> {
       (p) => p.id == product.id,
       orElse: () => product,
     );
-    final int currentStock = currentProductData.stock!;
+    final int currentStock = currentProductData.totalStock;
     final int stockAfter = currentStock + signedQuantity;
 
     if (stockAfter < 0) {
@@ -1293,7 +1293,7 @@ class _MovementsPageState extends State<MovementsPage> {
           name: _allProducts[productIndex].name,
           description: _allProducts[productIndex].description,
           price: _allProducts[productIndex].price,
-          stock: stockAfter, // Stock actualizado
+          totalStock: stockAfter, // Stock actualizado
           category: _allProducts[productIndex].category,
           sku: _allProducts[productIndex].sku,
           imageUrl: _allProducts[productIndex].imageUrl,

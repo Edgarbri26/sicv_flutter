@@ -74,7 +74,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
         name: 'Harina PAN',
         description: '...',
         price: 1.40,
-        stock: 50,
+        totalStock: 50,
         category: CategoryModel(
           id: 1,
           name: 'Alimentos',
@@ -358,7 +358,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                           color: isAlreadyAdded ? Colors.grey[300] : null,
                           child: ListTile(
                             title: Text(product.name),
-                            subtitle: Text('Stock actual: ${product.stock}'),
+                            subtitle: Text('Stock actual: ${product.totalStock}'),
                             trailing: isAlreadyAdded
                                 ? Icon(Icons.check, color: Colors.green)
                                 : Icon(Icons.add),

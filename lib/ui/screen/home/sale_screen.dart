@@ -5,6 +5,8 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product.dart';
+import 'package:sicv_flutter/services/category_service.dart';
+import 'package:sicv_flutter/services/product_service.dart';
 import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
 
@@ -19,13 +21,16 @@ class SaleScreen extends StatefulWidget {
 class _SaleScreenState extends State<SaleScreen> {
   // --- MEJORA DE ESTADO ---
   // Lista "maestra" que nunca cambia
-  late List<ProductModel> _todosLosProductos;
+  final ProductService _productService = ProductService();
+  late List<ProductModel> _allProducts;
+
+  
   // Lista que se muestra en la UI y cambia con los filtros
-  late List<ProductModel> _productosFiltrados;
+  List<ProductModel> _filteredProducts = [];
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
   // Lista de categorías (incluyendo "Todos")
-  late List<CategoryModel> _categories;
+  List<CategoryModel> _categories = [];
   // Categoría seleccionada actualmente
   int _selectedCategoryId = 0; // 0 para "Todos"
 
@@ -45,61 +50,53 @@ class _SaleScreenState extends State<SaleScreen> {
   }
 
   // Carga y prepara los datos
-  void _loadData() {
-    // Simula la carga de productos (DEBERÍAS TRAERLOS DE TU API/BD)
-    _todosLosProductos = [
-      ProductModel(
-        id: 4,
-        name: 'Gaseosa 2L',
-        description: '...',
-        price: 2.5,
-        stock: 50,
-        category: CategoryModel(
-          id: 3,
-          name: 'Bebidas',
-          status: true,
-          description: 'Bebidas',
-        ),
-        sku: 'BEB-002',
-        minStock: 10,
-        perishable: true,
-        status: true,
-        stockGenerals: [],
-        stockLots: [],
-        priceBs: 2.5,
-      ),
-    ];
+  Future<void> _loadData() async {
 
-    // Simula la carga de categorías (DEBERÍAS TRAERLAS DE TU API/BD)
-    _categories = [
-      CategoryModel(
-        id: 0,
-        name: 'Todos',
-        status: true,
-        description: 'Todos',
-      ), // Categoría especial
-      CategoryModel(
-        id: 1,
-        name: 'Alimentos',
-        status: true,
-        description: 'Alimentos',
-      ),
-      CategoryModel(id: 2, name: 'Tabaco', status: true, description: 'Tabaco'),
-      CategoryModel(
-        id: 3,
-        name: 'Bebidas',
-        status: true,
-        description: 'Bebidas',
-      ),
-    ];
+    final loadedProducts = await _fetchProducts();
 
-    // Al inicio, la lista filtrada es igual a la lista completa
-    _productosFiltrados = _todosLosProductos;
+    final loadedCategories = await _fetchCategories(); 
+
+    // 2. Usar setState para actualizar la interfaz con los datos cargados
+    if (mounted) {
+        setState(() {
+            _allProducts = loadedProducts;
+            _filteredProducts = _allProducts; // Inicializa el filtro
+
+            // 💡 SOLUCIÓN: Inicializa la variable 'late' aquí
+            _categories = loadedCategories; 
+        });
+    }
+  }
+
+  Future<List<ProductModel>> _fetchProducts() async {
+    // Desde aquí cargamos los productos usando tu ProductService desde la api
+    try {
+      final products = await _productService.getAll();  
+      
+      return products;
+      
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar productos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      throw Exception('Error al cargar productos: $e');
+    }
+  }
+
+  Future<List<CategoryModel>> _fetchCategories() async {
+    // 💡 ASUME que tienes un CategoryService con un método getAll()
+    // Si no lo tienes, debes crearlo.
+    return await CategoryService().getCategories(); 
   }
 
   // --- LÓGICA DE FILTRADO ---
   void _runFilter() {
-    List<ProductModel> results = _todosLosProductos;
+    List<ProductModel> results = _allProducts;
     String searchText = _searchController.text.toLowerCase();
 
     // 1. Filtrar por categoría (si no es "Todos")
@@ -122,7 +119,7 @@ class _SaleScreenState extends State<SaleScreen> {
 
     // 3. Actualizar la UI
     setState(() {
-      _productosFiltrados = results;
+      _filteredProducts = results;
     });
   }
 
@@ -189,7 +186,7 @@ class _SaleScreenState extends State<SaleScreen> {
 
         // --- 3. CUADRÍCULA DE PRODUCTOS (AHORA EXPANDIDA) ---
         Expanded(
-          child: _productosFiltrados.isEmpty
+          child: _filteredProducts.isEmpty
               ? Center(child: Text('No se encontraron productos.'))
               : GridView.builder(
                   padding: const EdgeInsets.all(16.0),
@@ -202,11 +199,11 @@ class _SaleScreenState extends State<SaleScreen> {
                   ),
                   // --- FIN DE MEJORA ---
                   itemCount:
-                      _productosFiltrados.length, // Usa la lista filtrada
+                      _filteredProducts.length, // Usa la lista filtrada
                   itemBuilder: (context, index) {
                     final product =
-                        _productosFiltrados[index]; // Usa la lista filtrada
-                    bool isOutOfStock = product.stock == 0;
+                        _filteredProducts[index]; // Usa la lista filtrada
+                    bool isOutOfStock = product.totalStock == 0;
 
                     return Container(
                       clipBehavior: Clip.antiAlias,
@@ -265,10 +262,10 @@ class _SaleScreenState extends State<SaleScreen> {
                                                     '\$${product.price.toStringAsFixed(2)}',
                                                 color: AppColors.info,
                                               ),
-                                              if (product.stock! > 0)
+                                              if (product.totalStock > 0)
                                                 InfoChip(
-                                                  text: '${product.stock} Uds.',
-                                                  color: product.stock! > 5
+                                                  text: '${product.totalStock} Uds.',
+                                                  color: product.totalStock > 5
                                                       ? AppColors.success
                                                       : AppColors.edit,
                                                 )

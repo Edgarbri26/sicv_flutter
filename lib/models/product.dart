@@ -18,6 +18,7 @@ class ProductModel {
   final List<StockGeneralModel> stockGenerals;
   final List<StockLotsModel> stockLots;
   final String? sku;
+  int quantity;
 
   ProductModel({
     required this.priceBs,
@@ -34,6 +35,7 @@ class ProductModel {
     required this.stockLots,
     required this.category, 
     this.sku,
+    this.quantity = 0,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
