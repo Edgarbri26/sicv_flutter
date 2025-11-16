@@ -9,36 +9,33 @@ import 'permission_model.dart';
 class RoleModel {
   final int rolId;
   final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
   final List<Permission> permissions;
 
   RoleModel({
-    required this.rolId,
+    this.rolId = 0,
     required this.name,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.permissions,
+    this.permissions = const [],
   });
 
   /// Factory constructor para crear una instancia de Role desde un Map (JSON).
   factory RoleModel.fromJson(Map<String, dynamic> json) {
-    // Parseamos la lista de permisos llamando a Permission.fromJson por cada ítem.
-    // Usamos '?? []' para asegurar que la lista nunca sea nula, incluso si la API
-    // omite el campo 'permissions' cuando está vacío.
+    
+    // Parseamos la lista de permisos: robusto contra null.
     var permissionsList = (json['permissions'] as List<dynamic>?)
-            ?.map((permJson) =>
-                Permission.fromJson(permJson as Map<String, dynamic>))
-            .toList() ??
+        ?.map((permJson) =>
+            Permission.fromJson(permJson as Map<String, dynamic>))
+        .toList() ??
         [];
 
     return RoleModel(
-      rolId: json['rol_id'] as int,
-      name: json['name'] as String,
-      // Es vital parsear los strings de fecha a objetos DateTime
-      // para poder manipularlos en Dart.
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      // 💡 MEJORA DE SEGURIDAD 1: Usa 'as int?' y proporciona un valor por defecto.
+      // Esto evita crashes si 'rolId' es nulo o falta.
+      rolId: json['rol_id'], 
+      
+      // 💡 MEJORA DE SEGURIDAD 2: Usa 'as String?' y proporciona un valor por defecto.
+      // Esto evita crashes si 'name' es nulo o falta.
+      name: json['name'] as String? ?? 'Sin Nombre',
+      
       permissions: permissionsList,
     );
   }
@@ -51,9 +48,6 @@ class RoleModel {
     return {
       'rol_id': rolId,
       'name': name,
-      // Convertimos DateTime a formato ISO 8601 string, estándar en JSON.
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
       'permissions': permissions.map((p) => p.toMap()).toList(),
     };
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/destinations.dart';
+import 'package:sicv_flutter/services/auth_service.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class MySideBar extends StatelessWidget {
@@ -89,6 +90,8 @@ class MySideBar extends StatelessWidget {
           icon: Icons.logout,
           label: 'Cerrar Sesión',
           onTap: () {
+            // Llama al método logout del AuthService para limpiar datos
+            AuthService().logout();
             Navigator.pushReplacementNamed(context, AppRoutes.login);
           },
         ),

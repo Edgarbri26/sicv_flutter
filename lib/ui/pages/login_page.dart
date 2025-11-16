@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/services/auth_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
@@ -46,7 +47,21 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    await Future.delayed(const Duration(milliseconds: 700));
+    bool success = await AuthService().login(
+      _userCtrl.text.trim(),
+      _passCtrl.text,
+    );
+    
+    if (!success) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al iniciar sesión. Verifica tus credenciales.'),
+        ),
+      );
+      setState(() => _loading = false);
+      return;
+    }
 
     setState(() => _loading = false);
     if (!mounted) return;

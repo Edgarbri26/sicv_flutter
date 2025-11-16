@@ -20,5 +20,5 @@ final List<Destination> destinationsPages = [
   //   icon: Icons.settings,
   //   route: AppRoutes.settings,
   // ),
-  // Destination(label: 'Cerrar Sesión', icon: Icons.logout),
+  Destination(label: 'Cerrar Sesión', icon: Icons.logout),
 ];
