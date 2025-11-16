@@ -28,6 +28,27 @@ class ProductService {
     }
   }
 
+  Future<ProductModel> getById(int id) async {
+    final url = Uri.parse('$_baseUrl/product/$id');
+
+    try {
+      final response = await http.get(url, headers: {
+        'Content-Type': 'application/json',
+      });
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseBody = json.decode(response.body);
+        final Map<String, dynamic> productJson = responseBody['data'];
+
+        return ProductModel.fromJson(productJson);
+      } else {
+        throw Exception('Failed to load product (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
   Future<bool> createProduct({
     required String name,
     required String sku,
@@ -59,6 +80,44 @@ class ProductService {
         throw Exception('Failed to create product (Código: ${response.statusCode})');
       }
     } catch(e){
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  Future<void> deactivateProduct(int id) async {
+    final url = Uri.parse('$_baseUrl/product/$id/deactivate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Error al desactivar el producto (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  Future<void> activateProduct(int id) async {
+    final url = Uri.parse('$_baseUrl/product/$id/activate');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Error al activar el producto (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
       throw Exception('Error de conexión: $e');
     }
   }

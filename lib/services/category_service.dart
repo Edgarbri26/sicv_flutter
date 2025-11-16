@@ -46,7 +46,6 @@ class CategoryService {
       final response = await http.get(url); // Añadir headers si es necesario
 
       if (response.statusCode == 200) {
-        // Asumiendo que tu API devuelve el objeto { "data": {cat} }
         // como en tu ejemplo de la compra
         final Map<String, dynamic> responseBody = json.decode(response.body);
         final Map<String, dynamic> categoryJson = responseBody['data'];
@@ -162,28 +161,4 @@ class CategoryService {
       throw Exception('Error de conexión: $e');
     }
   }
-
-  // Future<List<CategoryModel>> getAllCategories() async {
-  //   final url = Uri.parse('$_baseUrl/category');
-
-  //   try {
-  //     final response = await http.get(
-  //       url,
-  //       headers: {'Content-Type': 'application/json'},
-  //     );
-
-  //     if (response.statusCode == 200) {
-  //       final Map<String, dynamic> responseBody = json.decode(response.body);
-  //       final List<dynamic> jsonList = responseBody['data'];
-
-  //       return jsonList.map((json) => CategoryModel.fromJson(json)).toList();
-  //     } else {
-  //       throw Exception(
-  //         'Failed to load categories (Código: ${response.statusCode})',
-  //       );
-  //     }
-  //   } catch (e) {
-  //     throw Exception('Error de conexión: $e');
-  //   }
-  // }
 }

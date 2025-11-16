@@ -12,7 +12,7 @@ class RoleService {
   RoleService({http.Client? client}) : _client = client ?? http.Client();
 
   /// Obtiene un rol específico por su ID.
-  Future<Role> getRoleById(int id) async {
+  Future<RoleModel> getRoleById(int id) async {
     final uri = Uri.parse('$_baseUrl/rol/$id');
     try {
       final response = await _client.get(
@@ -30,7 +30,7 @@ class RoleService {
         final Map<String, dynamic> roleData =
             responseData['data'] as Map<String, dynamic>;
 
-        return Role.fromJson(roleData);
+        return RoleModel.fromJson(roleData);
       } else {
         throw Exception(
           'Error al cargar el rol (Código: ${response.statusCode})',
@@ -43,7 +43,7 @@ class RoleService {
   }
 
   /// Obtiene una lista de todos los roles.
-  Future<List<Role>> getAllRoles() async {
+  Future<List<RoleModel>> getAllRoles() async {
     final uri = Uri.parse('$_baseUrl/rol');
     try {
       final response = await _client.get(
@@ -62,7 +62,7 @@ class RoleService {
             responseData['data'] as List<dynamic>;
 
         return roleListJson
-            .map((json) => Role.fromJson(json as Map<String, dynamic>))
+            .map((json) => RoleModel.fromJson(json as Map<String, dynamic>))
             .toList();
       } else {
         throw Exception(
@@ -94,7 +94,7 @@ class RoleService {
         // final Map<String, dynamic> responseData =
         //     json.decode(response.body) as Map<String, dynamic>;
 
-        // return Role.fromJson(roleData);
+        // return RoleModel.fromJson(roleData);
       } else {
         throw Exception(
           'Error al crear el rol (Código: ${response.statusCode})',
@@ -132,7 +132,7 @@ class RoleService {
         // final Map<String, dynamic> roleData =
         //     responseData['data'] as Map<String, dynamic>;
 
-        // return Role.fromJson(roleData);
+        // return RoleModel.fromJson(roleData);
       } else {
         throw Exception(
           'Error al actualizar el rol (Código: ${response.statusCode})',

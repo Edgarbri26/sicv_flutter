@@ -6,14 +6,14 @@ import 'package:flutter/foundation.dart' show listEquals;
 // Importamos el modelo de permiso que acabamos de crear.
 import 'permission_model.dart';
 
-class Role {
+class RoleModel {
   final int rolId;
   final String name;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<Permission> permissions;
 
-  Role({
+  RoleModel({
     required this.rolId,
     required this.name,
     required this.createdAt,
@@ -22,7 +22,7 @@ class Role {
   });
 
   /// Factory constructor para crear una instancia de Role desde un Map (JSON).
-  factory Role.fromJson(Map<String, dynamic> json) {
+  factory RoleModel.fromJson(Map<String, dynamic> json) {
     // Parseamos la lista de permisos llamando a Permission.fromJson por cada ítem.
     // Usamos '?? []' para asegurar que la lista nunca sea nula, incluso si la API
     // omite el campo 'permissions' cuando está vacío.
@@ -32,7 +32,7 @@ class Role {
             .toList() ??
         [];
 
-    return Role(
+    return RoleModel(
       rolId: json['rol_id'] as int,
       name: json['name'] as String,
       // Es vital parsear los strings de fecha a objetos DateTime
@@ -64,7 +64,7 @@ class Role {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is Role &&
+    return other is RoleModel &&
         other.rolId == rolId &&
         other.name == name &&
         listEquals(other.permissions, permissions);

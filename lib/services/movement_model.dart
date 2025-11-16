@@ -5,13 +5,12 @@
 // import 'package:sicv_flutter/models/moviment_model.dart';
 
 
-// class MovimentService {
+// class MovementService {
 //   final String baseUrl = ApiUrl().url;
 //   final http.Client _client;
 
-//   MovimentService({http.Client? client}) : _client = client ?? http.Client();
-
-//   Future<List<MovimentModel>> getAllMoviments() async {
+//   MovementService({http.Client? client}) : _client = client ?? http.Client();
+//   Future<List<MovementModel>> getAllMovements() async {
 //     final uri = Uri.parse('$baseUrl/movement');
 
 //     try {

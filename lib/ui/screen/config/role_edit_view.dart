@@ -10,7 +10,7 @@ import 'package:sicv_flutter/providers/role_provider.dart';
 class RoleEditView extends ConsumerStatefulWidget {
   /// Si [role] es null, estamos en modo "Crear".
   /// Si no es null, estamos en modo "Actualizar".
-  final Role? role;
+  final RoleModel? role;
 
   const RoleEditView({super.key, this.role});
 

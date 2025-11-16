@@ -23,7 +23,7 @@ final permissionServiceProvider = Provider<PermissionService>((ref) {
 
 /// Obtiene y cachea la lista de TODOS los roles.
 /// `.autoDispose` limpia el caché si no se usa, ahorrando memoria.
-final allRolesProvider = FutureProvider.autoDispose<List<Role>>((ref) async {
+final allRolesProvider = FutureProvider.autoDispose<List<RoleModel>>((ref) async {
   // Observa el servicio
   final roleService = ref.watch(roleServiceProvider);
   // Llama al método y devuelve el futuro
