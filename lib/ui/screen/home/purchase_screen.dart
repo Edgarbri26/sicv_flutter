@@ -150,12 +150,14 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecciona un proveedor.')),
       );
+      setState(() => _isRegistering = false);
       return;
     }
     if (_purchaseItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No has añadido productos a la orden.')),
       );
+      setState(() => _isRegistering = false);
       return;
     }
 
