@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/category_model.dart';
+import 'package:sicv_flutter/models/depot_model.dart';
 import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/models/provider_model.dart';
 import 'package:sicv_flutter/models/purchase_detail.dart';
+import 'package:sicv_flutter/models/purchase_input_model.dart';
+import 'package:sicv_flutter/models/purchase_item_input_model.dart';
+import 'package:sicv_flutter/models/purchase_model.dart';
+import 'package:sicv_flutter/services/depot_service.dart';
+import 'package:sicv_flutter/services/product_service.dart';
 import 'package:sicv_flutter/services/provider_service.dart';
+import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 
 class PurchaseScreen extends StatefulWidget {
   const PurchaseScreen({super.key});
@@ -17,6 +26,9 @@ class PurchaseScreen extends StatefulWidget {
 
 class PurchaseScreenState extends State<PurchaseScreen> {
   final ProviderService _providerService = ProviderService();
+  final ProductService _productService = ProductService();
+  final DepotService _depotService = DepotService();
+  final PurchaseService _purchaseService = PurchaseService();
   late List<ProviderModel> _allProviders = [];
 
   ProviderModel? _selectedProvider;
@@ -26,11 +38,11 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   // El "carrito" de la compra. Usamos la helper class.
   final List<PurchaseDetail> _purchaseItems = [];
+  late List<DepotModel> _allDepots = [];
 
   // El costo total de la orden
   double _totalCost = 0.0;
 
-  // --- CONTROLADORES ---
   // Controlador para el modal de búsqueda
   final TextEditingController _searchController = TextEditingController();
 
@@ -38,7 +50,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   void initState() {
     super.initState();
     _loadData();
-    startServices();
   }
 
   @override
@@ -48,42 +59,17 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     for (var item in _purchaseItems) {
       item.quantityController.dispose();
       item.costController.dispose();
+      item.expirationDateController?.dispose();
     }
     super.dispose();
   }
 
-  void startServices() async {
-    _allProviders = await _providerService.getAllProviders();
-  }
-
   /// Carga los datos maestros (simulación de API)
-  void _loadData() {
+  void _loadData() async {
     // SIMULACIÓN DE PRODUCTOS
-    _allProducts = [
-      // --- CAMBIO AQUÍ ---
-      ProductModel(
-        id: 1,
-        name: 'Harina PAN',
-        description: '...',
-        price: 1.40,
-        totalStock: 50,
-        category: CategoryModel(
-          id: 1,
-          name: 'Alimentos',
-          status: true,
-          description: 'Alimentos',
-        ),
-        sku: 'ALI-001',
-        minStock: 10,
-        perishable: true,
-        status: true,
-        stockGenerals: [],
-        stockLots: [],
-        priceBs: 1.40,
-      ),
-    ];
-
-    // Inicialmente no hay nada seleccionado
+    _allProducts = await _productService.getAll();
+    _allProviders = await _providerService.getAllProviders();
+    _allDepots = await _depotService.getDepots();
     setState(() {});
   }
 
@@ -109,7 +95,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       );
       return;
     }
-
     // Crea los controladores para este nuevo item
     final quantityController = TextEditingController(text: '1');
     // Usamos el precio de VENTA como *sugerencia* de costo, pero es editable
@@ -117,6 +102,13 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       text: product.price.toStringAsFixed(2),
     );
 
+    DepotModel? initialDepot = (_allDepots.isNotEmpty) ? _allDepots.first : null;
+
+    TextEditingController? expirationDateController;
+
+    if(product.perishable) {
+      expirationDateController = TextEditingController();
+    }
     // Añade listeners para que el total se actualice automáticamente
     quantityController.addListener(_updateTotalCost);
     costController.addListener(_updateTotalCost);
@@ -125,8 +117,10 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       product: product,
       quantityController: quantityController,
       costController: costController,
+      expirationDateController: expirationDateController,
+      selectedDepot: initialDepot,
     );
-
+    
     setState(() {
       _purchaseItems.add(newItem);
     });
@@ -141,6 +135,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     _purchaseItems[index].costController.removeListener(_updateTotalCost);
     _purchaseItems[index].quantityController.dispose();
     _purchaseItems[index].costController.dispose();
+    _purchaseItems[index].expirationDateController?.dispose();
 
     setState(() {
       _purchaseItems.removeAt(index);
@@ -149,7 +144,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   }
 
   /// Guarda la compra (lógica final)
-  void _registerPurchase() {
+  void _registerPurchase() async {
     setState(() => _isRegistering = true);
     if (_selectedProvider == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -164,21 +159,50 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       return;
     }
 
-    // AQUÍ VA TU LÓGICA DE API/BD
-    // 1. Obtén el supplierId: _selectedSupplier!.id
-    // 2. Obtén el total: _totalCost
-    // 3. Itera sobre _purchaseItems para obtener la lista de productos:
-    //    _purchaseItems.map((item) => {
-    //        "productId": item.product.id,
-    //        "quantity": int.tryParse(item.quantityController.text) ?? 0,
-    //        "cost": double.tryParse(item.costController.text) ?? 0.0,
-    //    }).toList()
-    // 4. Envía esto a tu backend Node.js
-    // 5. Si tiene éxito, limpia la pantalla y muestra un mensaje.
+    final List<PurchaseItemInputModel> purchaseItemsList = [];
 
-    print('Registrando compra del proveedor: ${_selectedProvider!.name}');
-    print('Total: \$$_totalCost');
-    print('Items: ${_purchaseItems.length}');
+    for (var item in _purchaseItems) {
+      final amount = int.tryParse(item.quantityController.text) ?? 0;
+      final unitCost = double.tryParse(item.costController.text) ?? 0.0;
+
+      final purchaseItem = PurchaseItemInputModel(
+        productId: item.product.id, 
+        depotId: item.selectedDepot!.depotId,
+        amount: amount, 
+        unitCost: unitCost,
+        expirationDate: item.product.perishable && item.expirationDateController != null && item.expirationDateController!.text.isNotEmpty
+        // 💡 Mejor usar DateTime.tryParse() para evitar errores si el formato es malo
+        ? DateTime.tryParse(item.expirationDateController!.text)
+        : null,
+      );
+      purchaseItemsList.add(purchaseItem);
+    }
+
+    final purchaseInput = PurchaseInputModel(
+      providerId: _selectedProvider!.providerId,
+      userCi: '31350493',
+      status: 'Aprobado',
+      typePaymentId: 1,
+      items: purchaseItemsList,
+    );
+
+    try {
+
+    final PurchaseModel response = await _purchaseService.createPurchase(purchaseInput);
+
+    print(  'Compra registrada con ID: ${response.providerId}');
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al registrar la compra: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() => _isRegistering = false);
+      return;
+    }
+    _searchController.clear();
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -192,13 +216,12 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       _purchaseItems.clear();
       _selectedProvider = null;
       _totalCost = 0.0;
+      _isRegistering = false;
     });
   }
 
   /// Muestra el modal para buscar y añadir productos
   void showProductSearchModal() {
-    // Filtra los productos que pertenecen al proveedor seleccionado
-    // OJO: Si _selectedSupplier es null, la lista estará vacía (¡bien!)
     List<ProductModel> supplierProducts = _allProducts;
 
     // Lista filtrada para la búsqueda dentro del modal
@@ -206,9 +229,8 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Permite que el modal sea de pantalla completa
+      isScrollControlled: true,
       builder: (ctx) {
-        // Usamos StatefulBuilder para que el modal maneje su propio estado de búsqueda
         return StatefulBuilder(
           builder: (modalContext, modalSetState) {
             void filterModalList(String query) {
@@ -233,13 +255,12 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
             return Container(
               height:
-                  MediaQuery.of(context).size.height *
-                  0.8, // 80% de la pantalla
+                  MediaQuery.of(context).size.height * 0.8, 
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   Text(
-                    'Añadir Producto a la Orden', // Título genérico
+                    'Añadir Producto a la Orden',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
@@ -249,9 +270,9 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                     decoration: InputDecoration(
                       labelStyle: TextStyle(
                         fontSize:
-                            14.0, // <-- Cambia el tamaño de la fuente del label
+                            14.0, 
                         color: AppColors
-                            .textSecondary, // (Opcional: define el color del label)
+                            .textSecondary,
                       ),
 
                       filled: true,
@@ -261,8 +282,8 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          width: 3.0, // <-- Tu grosor deseado
-                          color: AppColors.border, // Color del borde
+                          width: 3.0, 
+                          color: AppColors.border,
                         ),
                       ),
 
@@ -270,9 +291,9 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
                           width:
-                              3.0, // <-- Puedes poner un grosor mayor al enfocar
+                              3.0, 
                           color: AppColors
-                              .textSecondary, // Color del borde al enfocar
+                              .textSecondary,
                         ),
                       ),
                     ),
@@ -290,15 +311,11 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
                         return Card(
                           elevation: 0.0,
-                          // 2. Define el borde exterior usando 'shape'
                           shape: RoundedRectangleBorder(
-                            // Define el radio de las esquinas
                             borderRadius: BorderRadius.circular(8.0),
-
-                            // Define el borde (grosor y color)
                             side: BorderSide(
-                              color: AppColors.border, // El color del borde
-                              width: 3.0, // El grosor del borde
+                              color: AppColors.border,
+                              width: 3.0,
                             ),
                           ),
                           clipBehavior: Clip.antiAlias,
@@ -335,11 +352,10 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
       decoration: InputDecoration(
         labelStyle: TextStyle(
-          fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
+          fontSize: 14.0,
           color:
-              AppColors.textSecondary, // (Opcional: define el color del label)
+              AppColors.textSecondary,
         ),
-
         filled: true,
         fillColor: AppColors.secondary,
         prefixIcon: Icon(Icons.store, size: 20),
@@ -348,16 +364,15 @@ class PurchaseScreenState extends State<PurchaseScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            width: 3.0, // <-- Tu grosor deseado
-            color: AppColors.border, // Color del borde
+            width: 3.0,
+            color: AppColors.border,
           ),
         ),
-
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
-            color: AppColors.textSecondary, // Color del borde al enfocar
+            width: 3.0, 
+            color: AppColors.textSecondary,
           ),
         ),
       ),
@@ -372,8 +387,8 @@ class PurchaseScreenState extends State<PurchaseScreen> {
         setState(() {
           // Si el proveedor cambia, limpiamos la orden
           _selectedProvider = newValue;
-          _purchaseItems.clear();
-          _totalCost = 0.0;
+          //_purchaseItems.clear();
+          //_totalCost = 0.0;
         });
       },
     );
@@ -382,9 +397,8 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   /// La lista expandible de productos añadidos
   Widget _buildProductList() {
     if (_purchaseItems.isEmpty) {
-      // No necesitamos Expanded, pero sí podemos darle un alto mínimo para que el mensaje se vea bien
       return SizedBox(
-        height: 300, // Alto mínimo para el mensaje
+        height: 300,
         child: Center(
           child: Text(
             'Añade productos a la orden usando el botón (+).',
@@ -395,15 +409,13 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       );
     }
 
-    // Si hay items, muestra la lista con una altura limitada
     return ConstrainedBox(
       constraints: const BoxConstraints(
         maxHeight: 600,
-      ), // Limita la lista a 600px de altura
+      ),
       child: ListView.builder(
-        shrinkWrap:
-            true, // Esto es vital para ListView dentro de SingleChildScrollView
-        physics: const ClampingScrollPhysics(), // Mejor manejo del scroll
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
         itemCount: _purchaseItems.length,
         itemBuilder: (context, index) {
           final item = _purchaseItems[index];
@@ -413,12 +425,80 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     );
   }
 
+/// Construye el campo de fecha de vencimiento con el DatePicker
+  Widget _buildExpirationDateField(TextEditingController? controller) {
+    // Es crucial que el controlador no sea nulo antes de usarlo
+    if (controller == null) return const SizedBox.shrink(); 
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: 160,
+        maxWidth: 160,
+      ),
+      child: TextFieldApp(
+        controller: controller,
+        labelText: 'F. Vencimiento',
+        prefixIcon: Icons.calendar_today,
+        readOnly: true,
+        onTap: () async {
+          // Implementación del DatePicker
+          final DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(), // Fecha inicial
+            firstDate: DateTime.now(), // No se pueden seleccionar fechas pasadas
+            lastDate: DateTime(2050), // Límite superior
+          );
+
+          if (pickedDate != null) {
+            // Formatea la fecha seleccionada (YYYY-MM-DD es común para APIs)
+            final formattedDate =
+                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+            
+            // Actualiza el controlador de texto con la fecha formateada
+            controller.text = formattedDate;
+          }
+        },
+       ),
+      /*TextField(
+        controller: controller,
+        readOnly: true, // Importante: solo se selecciona tocando
+        onTap: () async {
+          // Implementación del DatePicker
+          final DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(), // Fecha inicial
+            firstDate: DateTime.now(), // No se pueden seleccionar fechas pasadas
+            lastDate: DateTime(2050), // Límite superior
+          );
+
+          if (pickedDate != null) {
+            // Formatea la fecha seleccionada (YYYY-MM-DD es común para APIs)
+            final formattedDate =
+                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+            
+            // Actualiza el controlador de texto con la fecha formateada
+            controller.text = formattedDate;
+          }
+        },
+        style: const TextStyle(fontSize: 14.0),
+        decoration: const InputDecoration(
+          labelText: 'F. Vencimiento',
+          prefixIcon: Icon(Icons.calendar_today, size: 20),
+          isDense: true,
+          contentPadding:
+              EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+          // ... (Añade tus estilos de borde aquí si es necesario) ...
+        ),
+      ),*/
+    );
+  }
+
   Widget _buildPurchaseItemTile(
     PurchaseDetail item,
     int index,
     VoidCallback onRemove,
   ) {
-    // Añadido onRemove como parámetro
+   
     return Card(
       elevation: 0.0,
       color: AppColors.background,
@@ -428,125 +508,59 @@ class PurchaseScreenState extends State<PurchaseScreen> {
       ),
       margin: const EdgeInsets.symmetric(
         vertical: 8.0,
-      ), // Reduje un poco el margen vertical
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0), // Ajuste ligero del padding
+        padding: const EdgeInsets.all(12.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Alinea todo al inicio
+          crossAxisAlignment: CrossAxisAlignment.start, 
           children: [
             // Sección Superior: Nombre, SKU y Botón Eliminar
             ListTile(
               contentPadding:
-                  EdgeInsets.zero, // Quitamos padding extra del ListTile
+                  EdgeInsets.zero,
               title: Text(
                 item.product.name,
                 style: const TextStyle(fontWeight: FontWeight.w600),
-              ), // Nombre más resaltado
+              ),
               subtitle: Text(item.product.sku ?? 'Sin SKU'),
               trailing: IconButton(
                 icon: Icon(Icons.delete_outline, color: Colors.red[700]),
-                tooltip: 'Eliminar item', // Añadido tooltip
-                onPressed: onRemove, // Usamos la función pasada como parámetro
+                tooltip: 'Eliminar item', 
+                onPressed: onRemove,
               ),
             ),
-            const SizedBox(height: 8), // Espacio antes de los campos
+            const SizedBox(height: 8),
             // Sección Inferior: Campos de Cantidad y Costo (Usando Wrap)
             Wrap(
-              spacing:
-                  12.0, // Espacio horizontal entre campos cuando están en la misma línea
-              runSpacing:
-                  12.0, // Espacio vertical entre campos cuando se apilan
-              crossAxisAlignment:
-                  WrapCrossAlignment.end, // Alinea los campos por la base
+              spacing: 12.0, 
+              runSpacing: 12.0, 
+              crossAxisAlignment: WrapCrossAlignment.end, 
               children: [
                 // --- Campo de Cantidad ---
-                // Usamos ConstrainedBox para darle un tamaño mínimo y máximo razonable
                 ConstrainedBox(
                   constraints: const BoxConstraints(
-                    minWidth: 130,
-                    maxWidth: 200,
+                    minWidth: 100,
+                    maxWidth: 150,
                   ),
-                  child: TextField(
-                    controller: item.quantityController,
-                    style: const TextStyle(fontSize: 14.0),
-                    decoration: InputDecoration(
-                      labelText: 'Cantidad',
-                      prefixIcon: const Icon(
-                        Icons.inventory_2_outlined,
-                        size: 20,
-                      ),
-                      // Mantenemos tu estilo de decoración
-                      isDense: true, // Hace el campo un poco más compacto
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 12.0,
-                        horizontal: 12.0,
-                      ), // Ajusta padding si es necesario
-                      labelStyle: const TextStyle(
-                        fontSize: 14.0, // Reducimos tamaño label
-                        color: AppColors.textSecondary,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          width: 2.0,
-                          color: AppColors.border,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          width: 2.5,
-                          color: AppColors.textSecondary,
-                        ), // Grosor ligeramente menor al enfocar
-                      ),
-                    ),
+                  child: TextFieldApp(
+                    controller: item.quantityController, 
+                    labelText: 'Cantidad', 
+                    prefixIcon: Icons.inventory_2_outlined,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (value) {
-                      // Aquí puedes añadir lógica si necesitas recalcular totales al cambiar cantidad
-                      print('Cantidad cambiada a: $value');
-                    },
                   ),
                 ),
 
                 // --- Campo de Costo ---
-                // Usamos ConstrainedBox para darle un tamaño mínimo y máximo razonable
                 ConstrainedBox(
                   constraints: const BoxConstraints(
                     minWidth: 160,
-                    maxWidth: 250,
+                    maxWidth: 160,
                   ),
-                  child: TextField(
-                    controller: item.costController,
-                    style: const TextStyle(fontSize: 14.0),
-                    decoration: InputDecoration(
-                      labelText: 'Costo por Unidad',
-                      prefixIcon: const Icon(Icons.attach_money, size: 20),
-                      // Mantenemos tu estilo de decoración
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 12.0,
-                        horizontal: 12.0,
-                      ),
-                      labelStyle: const TextStyle(
-                        fontSize: 14.0, // Reducimos tamaño label
-                        color: AppColors.textSecondary,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          width: 2.0,
-                          color: AppColors.border,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          width: 2.5,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
+                  child: TextFieldApp(
+                    controller: item.costController, 
+                    labelText: 'Costo por Unidad', 
+                    prefixIcon: Icons.attach_money,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
@@ -555,13 +569,33 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                         RegExp(r'^\d+\.?\d{0,2}'),
                       ),
                     ],
-                    onChanged: (value) {
-                      // Aquí puedes añadir lógica si necesitas recalcular totales al cambiar costo
-                      print('Costo cambiado a: $value');
+                  ),
+                ),
+
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 160,
+                    maxWidth: 160,
+                  ),
+                  child: DropDownApp(
+                    labelText: 'Depósito', 
+                    hintText: 'Selecciona un depósito...',
+                    initialValue: item.selectedDepot,
+                    items: _allDepots, 
+                    onChanged:(newValue) {
+                        setState(() {
+                          item.selectedDepot = newValue;
+                        });
+                      } , 
+                    itemToString: (DepotModel depot) {
+                      return depot.name;
                     },
                   ),
                 ),
+                 if (item.product.perishable) 
+                    _buildExpirationDateField(item.expirationDateController),
               ],
+              
             ),
           ],
         ),
@@ -590,16 +624,12 @@ class PurchaseScreenState extends State<PurchaseScreen> {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          // --- 1. CAMBIO: Centra TODO en la columna ---
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Resumen de Total
-            // Como el Column centra, este Row necesita ocupar todo el ancho
-            // para que spaceBetween funcione. Padding lo fuerza.
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
-              ), // Añade padding horizontal al Row
+              ), 
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -621,10 +651,10 @@ class PurchaseScreenState extends State<PurchaseScreen> {
             PrimaryButtonApp(
               text: 'Registrar Compra',
               icon: Icons.save,
-              isLoading: _isRegistering, // Conectas tu variable de estado
-              onPressed: _registerPurchase, // Conectas tu función
+              isLoading: _isRegistering, 
+              onPressed: _registerPurchase, 
             ),
-            const SizedBox(height: 16), // Espacio al final
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -632,25 +662,21 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   }
 
   // --- CONSTRUCCIÓN DE LA UI ---
-
   @override
   Widget build(BuildContext context) {
     return Center(
       // Centra el contenido horizontalmente
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 800.0), // Limita el ancho
+        constraints: const BoxConstraints(maxWidth: 800.0),
         child: Column(
-          // Usamos Column para darle espacio al SingleChildScrollView
           children: [
             Expanded(
-              // Expanded hace que el SingleChildScrollView tome todo el alto restante
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  // Alinea el contenido interno a la izquierda
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize
-                      .min, // Deja que el contenido defina la altura
+                      .min,
                   children: [
                     _buildSupplierSelector(),
                     const SizedBox(height: 16),
@@ -661,7 +687,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                 ),
               ),
             ),
-            // La barra de resumen queda fija en la parte inferior
             _buildSummaryAndSave(),
           ],
         ),

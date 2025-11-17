@@ -16,13 +16,22 @@ class PurchaseLotsItemModel {
   });
 
   factory PurchaseLotsItemModel.fromJson(Map<String, dynamic> json) {
+    final unitCostValue = json['unit_cost']?.toString(); 
+    final amountValue = json['amount']?.toString();
+
+    final dateString = json['expiration_date'] as String?;
+
+    if (dateString == null) {
+      throw FormatException('Fecha de vencimiento faltante o nula para el producto ${json['product_id']}.');
+    }
+
     return PurchaseLotsItemModel(
       productId: json['product_id'],
       purchaseId: json['purchase_id'],
       depotId: json['depot_id'],
-      unitCost: json['unit_cost'],
-      amount: json['amount'],
-      expirationDate: DateTime.parse(json['expiration_date']),
+      unitCost: double.tryParse(unitCostValue ?? '0.0') ?? 0.0,
+      amount: int.tryParse(amountValue ?? '0') ?? 0,
+      expirationDate: DateTime.parse(dateString),
     );
   }
 

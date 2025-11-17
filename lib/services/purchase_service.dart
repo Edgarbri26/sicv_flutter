@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
+import 'package:sicv_flutter/models/purchase_input_model.dart';
 import 'package:sicv_flutter/models/purchase_model.dart';
 
 class PurchaseService {
@@ -48,7 +49,7 @@ class PurchaseService {
     }
   }
 
-  Future<PurchaseModel> createPurchase(PurchaseModel purchase) async {
+  Future<PurchaseModel> createPurchase(PurchaseInputModel purchase) async {
     final url = Uri.parse('$_baseUrl/purchase');
     final body = json.encode(purchase.toJson());
 

@@ -14,6 +14,8 @@ class TextFieldApp extends StatelessWidget {
   final bool obscureText;
   final bool enabled;
   final TextCapitalization textCapitalization;
+  final VoidCallback? onTap;
+  final bool? readOnly;
 
   const TextFieldApp({
     super.key,
@@ -28,6 +30,8 @@ class TextFieldApp extends StatelessWidget {
     this.enabled = true,
     this.validator,
     this.textCapitalization = TextCapitalization.sentences,
+    this.onTap,
+    this.readOnly = false,
   });
 
   @override
@@ -41,6 +45,8 @@ class TextFieldApp extends StatelessWidget {
       validator: validator,
       obscureText: obscureText,
       textCapitalization: textCapitalization,
+      onTap: onTap,
+      readOnly: readOnly ?? false,
       style: const TextStyle(
         fontSize: 15.0,
         color: AppColors.textPrimary, // Estilo del texto que escribes
