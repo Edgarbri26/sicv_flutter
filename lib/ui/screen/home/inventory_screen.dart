@@ -24,8 +24,7 @@ class InventoryDatatableScreen extends ConsumerStatefulWidget {
       InventoryDatatableScreenState();
 }
 
-class InventoryDatatableScreenState
-    extends ConsumerState<InventoryDatatableScreen> {
+class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScreen> {
   // Categorías (se mantienen locales como pediste, aunque podrían ir a un provider)
   late List<CategoryModel> _allCategories = [];
   late List<CategoryModel> categoriesFilter = [];
