@@ -21,8 +21,6 @@ class SaleScreen extends ConsumerStatefulWidget {
 }
 
 class SaleScreenState extends ConsumerState<SaleScreen> {
-
-  // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
 
   List<CategoryModel> _categories = [];
@@ -35,9 +33,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData(); // Carga los datos
+    _loadData();
 
-    // Añade un listener al buscador para filtrar en tiempo real
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -52,20 +49,16 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      // 💡 Actualiza el StateProvider de búsqueda con el texto actual
       ref.read(saleSearchTermProvider.notifier).state = _searchController.text;
     });
   }
 
-  // Carga y prepara los datos
   Future<void> _loadData() async {
 
     final loadedCategories = await _fetchCategories();
 
-    // 2. Usar setState para actualizar la interfaz con los datos cargados
     if (mounted) {
       setState(() {
-        // 💡 SOLUCIÓN: Inicializa la variable 'late' aquí
         _categories = loadedCategories;
       });
     }
@@ -81,7 +74,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
-    // Usamos Column para añadir el buscador y filtros sobre la cuadrícula
     return Column(
       children: [
         // --- 1. WIDGET DE BÚSQUEDA ---
@@ -97,41 +89,34 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         // --- 2. WIDGET DE FILTRO DE CATEGORÍAS ---
         _buildCategoryFilter(),
 
-        // --- 3. CUADRÍCULA DE PRODUCTOS (AHORA EXPANDIDA) ---
+        // --- 3. CUADRÍCULA DE PRODUCTOS ---
         Expanded(
           child: productsState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(child: Text('Error: $error')),
             data: (products) {
-              final filteredProducts = ref.watch(filteredProductsProvider); // Usar el provider derivado
+              final filteredProducts = ref.watch(filteredProductsProvider);
 
               return filteredProducts.isEmpty
               ? Center(child: Text('No se encontraron productos.'))
               : GridView.builder(
                   padding: const EdgeInsets.all(16.0),
-                  // --- MEJORA DE RESPONSIVIDAD ---
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200, // Ancho máx. de cada tarjeta
+                    maxCrossAxisExtent: 200,
                     mainAxisSpacing: 16.0,
                     crossAxisSpacing: 16.0,
                     childAspectRatio: 0.7, // Ajusta la altura (Ancho / Alto)
                   ),
-                  // --- FIN DE MEJORA ---
-                  itemCount: filteredProducts.length, // Usa la lista filtrada
+                  itemCount: filteredProducts.length,
                   itemBuilder: (context, index) {
                     final product =
-                        filteredProducts[index]; // Usa la lista filtrada
+                        filteredProducts[index];
                     bool isOutOfStock = product.totalStock == 0;
 
                     return ProductCard(
                       product: product,
                       isOutOfStock: isOutOfStock,
-                      
-                      // 3. Pasar las acciones (callbacks)
-                      // Llama a la función del widget padre (ProductListScreen)
-                      onTap: () => widget.onProductAdded(product), 
-                      
-                      // Llama a la función de la pantalla principal
+                      onTap: () => widget.onProductAdded(product),
                       onLongPress: () => _mostrarDialogoDetalleProducto(context, product), 
                     );
                   }, 
@@ -150,20 +135,13 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   ) {
     showDialog(
       context: context,
-      // 'barrierDismissible' permite cerrar el diálogo tocando fuera (comportamiento estándar)
       barrierDismissible: true,
       builder: (BuildContext dialogContext) {
-        // Usamos AlertDialog por su layout estándar, pero lo personalizamos
         return AlertDialog(
-          // Forma redondeada, como el modal
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          // Eliminamos el padding para que la imagen se pegue a los bordes
           contentPadding: EdgeInsets.zero,
-
-          // Usamos MainAxisSize.min para que la columna no intente
-          // ocupar toda la altura de la pantalla
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -191,17 +169,13 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      // Asumo que tu producto tiene 'descripcion'
                       product.description,
                       style: Theme.of(context).textTheme.bodyMedium,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
-
-                    // ubicacion
                     const SizedBox(height: 16),
                     Text(
-                      // Asumo que tiene 'precio'
                       "S/ ${product.price.toStringAsFixed(2)}",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
