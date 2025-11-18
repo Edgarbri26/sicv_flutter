@@ -1,37 +1,36 @@
 // lib/ui/pages/screen/sale_screen.dart
-
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/providers/product_provider.dart';
+import 'package:sicv_flutter/providers/sale_provider.dart';
 import 'package:sicv_flutter/services/category_service.dart';
-import 'package:sicv_flutter/services/product_service.dart';
-import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
+import 'package:sicv_flutter/ui/widgets/product_card.dart';
 
-class SaleScreen extends StatefulWidget {
+class SaleScreen extends ConsumerStatefulWidget {
   final Function(ProductModel) onProductAdded;
   const SaleScreen({super.key, required this.onProductAdded});
 
   @override
-  State<SaleScreen> createState() => _SaleScreenState();
+  ConsumerState<SaleScreen> createState() => SaleScreenState();
 }
 
-class _SaleScreenState extends State<SaleScreen> {
-  // --- MEJORA DE ESTADO ---
-  // Lista "maestra" que nunca cambia
-  final ProductService _productService = ProductService();
-  late List<ProductModel> _allProducts;
+class SaleScreenState extends ConsumerState<SaleScreen> {
 
-  // Lista que se muestra en la UI y cambia con los filtros
-  List<ProductModel> _filteredProducts = [];
   // Controlador para el campo de búsqueda
   final TextEditingController _searchController = TextEditingController();
-  // Lista de categorías (incluyendo "Todos")
+
   List<CategoryModel> _categories = [];
+
   // Categoría seleccionada actualmente
   int _selectedCategoryId = 0; // 0 para "Todos"
+
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -39,49 +38,36 @@ class _SaleScreenState extends State<SaleScreen> {
     _loadData(); // Carga los datos
 
     // Añade un listener al buscador para filtrar en tiempo real
-    _searchController.addListener(_runFilter);
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      // 💡 Actualiza el StateProvider de búsqueda con el texto actual
+      ref.read(saleSearchTermProvider.notifier).state = _searchController.text;
+    });
+  }
+
   // Carga y prepara los datos
   Future<void> _loadData() async {
-    final loadedProducts = await _fetchProducts();
 
     final loadedCategories = await _fetchCategories();
 
     // 2. Usar setState para actualizar la interfaz con los datos cargados
     if (mounted) {
       setState(() {
-        _allProducts = loadedProducts;
-        _filteredProducts = _allProducts; // Inicializa el filtro
-
         // 💡 SOLUCIÓN: Inicializa la variable 'late' aquí
         _categories = loadedCategories;
       });
-    }
-  }
-
-  Future<List<ProductModel>> _fetchProducts() async {
-    // Desde aquí cargamos los productos usando tu ProductService desde la api
-    try {
-      final products = await _productService.getAll();
-
-      return products;
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cargar productos: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      throw Exception('Error al cargar productos: $e');
     }
   }
 
@@ -91,99 +77,35 @@ class _SaleScreenState extends State<SaleScreen> {
     return await CategoryService().getAllCategories();
   }
 
-  // --- LÓGICA DE FILTRADO ---
-  void _runFilter() {
-    List<ProductModel> results = _allProducts;
-    String searchText = _searchController.text.toLowerCase();
-
-    // 1. Filtrar por categoría (si no es "Todos")
-    if (_selectedCategoryId != 0) {
-      results = results
-          .where((product) => product.category.id == _selectedCategoryId)
-          .toList();
-    }
-
-    // 2. Filtrar por texto de búsqueda
-    if (searchText.isNotEmpty) {
-      results = results
-          .where(
-            (product) =>
-                product.name.toLowerCase().contains(searchText) ||
-                (product.sku ?? '').toLowerCase().contains(searchText),
-          ) // Busca por nombre o SKU
-          .toList();
-    }
-
-    // 3. Actualizar la UI
-    setState(() {
-      _filteredProducts = results;
-    });
-  }
-
   // --- MEJORA DE LAYOUT ---
   @override
   Widget build(BuildContext context) {
+    final productsState = ref.watch(productsProvider);
     // Usamos Column para añadir el buscador y filtros sobre la cuadrícula
     return Column(
       children: [
-        /*Expanded(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: 100,
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary
-              ),
-              child: Center(
-                child: Text("Ejemplo", style: TextStyle(color: AppColors.secondary),),
-              ),
-            ),
-          ),
-        ),*/
         // --- 1. WIDGET DE BÚSQUEDA ---
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.secondary,
-              labelText: 'Buscar por Nombre o SKU',
-              prefixIcon: Icon(Icons.search),
-              labelStyle: TextStyle(
-                fontSize: 14.0, // <-- Cambia el tamaño de la fuente del label
-                color: AppColors
-                    .textSecondary, // (Opcional: define el color del label)
-              ),
-
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  width: 2.0, // <-- Tu grosor deseado
-                  color: AppColors.border, // Color del borde
-                ),
-              ),
-
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
-                  color: AppColors.textSecondary, // Color del borde al enfocar
-                ),
-              ),
-
-              contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-            ),
+          child: 
+          TextFieldApp(
+            controller: _searchController, 
+            labelText: 'Buscar por Nombre o SKU', 
+            prefixIcon:Icons.search
           ),
         ),
-
         // --- 2. WIDGET DE FILTRO DE CATEGORÍAS ---
         _buildCategoryFilter(),
 
         // --- 3. CUADRÍCULA DE PRODUCTOS (AHORA EXPANDIDA) ---
         Expanded(
-          child: _filteredProducts.isEmpty
+          child: productsState.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(child: Text('Error: $error')),
+            data: (products) {
+              final filteredProducts = ref.watch(filteredProductsProvider); // Usar el provider derivado
+
+              return filteredProducts.isEmpty
               ? Center(child: Text('No se encontraron productos.'))
               : GridView.builder(
                   padding: const EdgeInsets.all(16.0),
@@ -195,98 +117,27 @@ class _SaleScreenState extends State<SaleScreen> {
                     childAspectRatio: 0.7, // Ajusta la altura (Ancho / Alto)
                   ),
                   // --- FIN DE MEJORA ---
-                  itemCount: _filteredProducts.length, // Usa la lista filtrada
+                  itemCount: filteredProducts.length, // Usa la lista filtrada
                   itemBuilder: (context, index) {
                     final product =
-                        _filteredProducts[index]; // Usa la lista filtrada
+                        filteredProducts[index]; // Usa la lista filtrada
                     bool isOutOfStock = product.totalStock == 0;
 
-                    return Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(
-                          AppSizes.borderRadiusL,
-                        ),
-                        border: Border.all(color: AppColors.border, width: 2),
-                      ),
-                      child: InkWell(
-                        onLongPress: () =>
-                            _mostrarDialogoDetalleProducto(context, product),
-                        onTap: isOutOfStock
-                            ? null
-                            : () => widget.onProductAdded(product),
-                        child: Opacity(
-                          opacity: isOutOfStock ? 0.5 : 1.0,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: ImgProduct(
-                                  imageUrl: product.imageUrl ?? '',
-                                ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      final ancho = constraints.maxWidth;
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            product.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  ancho *
-                                                  0.095, // Puedes ajustar el factor
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Spacer(),
-                                          Row(
-                                            spacing: AppSizes.spacingXXS,
-                                            children: [
-                                              InfoChip(
-                                                text:
-                                                    '\$${product.price.toStringAsFixed(2)}',
-                                                color: AppColors.info,
-                                              ),
-                                              if (product.totalStock > 0)
-                                                InfoChip(
-                                                  text:
-                                                      '${product.totalStock} Uds.',
-                                                  color: product.totalStock > 5
-                                                      ? AppColors.success
-                                                      : AppColors.edit,
-                                                )
-                                              else
-                                                InfoChip(
-                                                  text: 'Agotado',
-                                                  color: AppColors.error,
-                                                ),
-                                            ],
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                    return ProductCard(
+                      product: product,
+                      isOutOfStock: isOutOfStock,
+                      
+                      // 3. Pasar las acciones (callbacks)
+                      // Llama a la función del widget padre (ProductListScreen)
+                      onTap: () => widget.onProductAdded(product), 
+                      
+                      // Llama a la función de la pantalla principal
+                      onLongPress: () => _mostrarDialogoDetalleProducto(context, product), 
                     );
-                    
-                  },
-                ),
+                  }, 
+                );  
+              },  
+          )
         ),
       ],
     );
@@ -411,7 +262,7 @@ class _SaleScreenState extends State<SaleScreen> {
                   setState(() {
                     _selectedCategoryId = category.id;
                   });
-                  _runFilter(); // Vuelve a filtrar
+                  //_runFilter(); // Vuelve a filtrar
                 }
               },
               selectedColor: Theme.of(context).primaryColor,

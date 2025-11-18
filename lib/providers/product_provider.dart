@@ -87,28 +87,6 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
   }
 }
 
-final saleSearchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
-
-// 2. Creamos la lista filtrada AUTOMÁTICA
-final saleFilteredProductsProvider = Provider.autoDispose<List<ProductModel>>((ref) {
-  
-  // A. Obtenemos la lista completa de tu provider original
-  final productsState = ref.watch(productsProvider);
-  // Si está cargando o dio error, usamos una lista vacía por seguridad
-  final allProducts = productsState.value ?? [];
-
-  // B. Obtenemos el texto del buscador
-  final query = ref.watch(saleSearchQueryProvider).toLowerCase();
-
-  // C. Si no hay texto, devolvemos todo. Si hay texto, filtramos.
-  if (query.isEmpty) return allProducts;
-
-  return allProducts.where((product) {
-    final nameMatch = product.name.toLowerCase().contains(query);
-    final skuMatch = product.sku?.toLowerCase().contains(query) ?? false;
-    return nameMatch || skuMatch;
-  }).toList();
-});
 
 // 3. El Proveedor Global que usará tu pantalla
 final productsProvider = StateNotifierProvider<ProductsNotifier, AsyncValue<List<ProductModel>>>((ref) {
