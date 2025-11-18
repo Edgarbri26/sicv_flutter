@@ -325,18 +325,6 @@ class _SaleScreenState extends State<SaleScreen> {
                   height: 200,
                   width: double.infinity,
                   child: ImgProduct(imageUrl: product.imageUrl ?? ''),
-                  // (product.imageUrl != null && product.imageUrl!.isNotEmpty)
-                  // ? Image.network(
-                  //     product.imageUrl!,
-                  //     fit: BoxFit.cover,
-                  //     loadingBuilder: (context, child, progress) =>
-                  //         progress == null
-                  //         ? child
-                  //         : Center(child: CircularProgressIndicator()),
-                  //     errorBuilder: (context, error, stackTrace) =>
-                  //         _buildImagePlaceholder(),
-                  //   )
-                  // : _buildImagePlaceholder(),
                 ),
               ),
 
