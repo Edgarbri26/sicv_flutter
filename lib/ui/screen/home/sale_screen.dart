@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
-import 'package:sicv_flutter/services/category_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
 import 'package:sicv_flutter/ui/widgets/product_card.dart';
@@ -22,18 +22,11 @@ class SaleScreen extends ConsumerStatefulWidget {
 class SaleScreenState extends ConsumerState<SaleScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  List<CategoryModel> _categories = [];
-
-  // Categoría seleccionada actualmente
-  int _selectedCategoryId = 0; // 0 para "Todos"
-
   Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -50,23 +43,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     _debounce = Timer(const Duration(milliseconds: 300), () {
       ref.read(saleSearchTermProvider.notifier).state = _searchController.text;
     });
-  }
-
-  Future<void> _loadData() async {
-
-    final loadedCategories = await _fetchCategories();
-
-    if (mounted) {
-      setState(() {
-        _categories = loadedCategories;
-      });
-    }
-  }
-
-  Future<List<CategoryModel>> _fetchCategories() async {
-    // 💡 ASUME que tienes un CategoryService con un método getAll()
-    // Si no lo tienes, debes crearlo.
-    return await CategoryService().getAll();
   }
 
   // --- MEJORA DE LAYOUT ---
@@ -213,45 +189,63 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
   // Widget para la barra horizontal de categorías
   Widget _buildCategoryFilter() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final category = _categories[index];
-          final bool isSelected = category.id == _selectedCategoryId;
+    final categoriesState = ref.watch(categoryProvider);
 
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: ChoiceChip(
-              label: Text(category.name),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedCategoryId = category.id;
-                  });
-                  //_runFilter(); // Vuelve a filtrar
-                }
-              },
-              selectedColor: Theme.of(context).primaryColor,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-              ),
-              backgroundColor: AppColors.secondary,
-              shape: StadiumBorder(
-                side: BorderSide(
-                  color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey.shade300,
-                ),
-              ),
-            ),
-          );
-        },
+    final selectedCategoryId = ref.watch(saleSelectedCategoryIdProvider);
+
+    return categoriesState.when(
+      loading: () => const SizedBox(
+        height: 50,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
+      error: (error, stack) => SizedBox(
+        height: 50,
+        child: Center(child: Text('Error cargando categorías: ${error.toString()}')),
+      ),
+      data: (categories) {
+        final List<CategoryModel> categoriesWithAll = [
+          CategoryModel(id: 0, name: 'Todos', description: 'Todos los productos', status: true),
+          ...categories,
+        ];
+
+        return Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categoriesWithAll.length,
+            itemBuilder: (context, index) {
+              final category = categoriesWithAll[index];
+              final bool isSelected = category.id == selectedCategoryId;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: ChoiceChip(
+                  label: Text(category.name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
+                      ref.read(saleSelectedCategoryIdProvider.notifier).state = category.id;
+                    }
+                  },
+                  selectedColor: Theme.of(context).primaryColor,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                  ),
+                  backgroundColor: AppColors.secondary,
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
