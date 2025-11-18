@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/providers/category_provider.dart';
+import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
@@ -9,20 +12,14 @@ import 'package:sicv_flutter/services/category_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Reemplaza con tu ruta real
 import 'package:sicv_flutter/ui/widgets/atomic/checkbox_field_app.dart'; // Reemplaza con tu ruta real
 
-class CategoriesScreen extends StatefulWidget {
+class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
 
   @override
-  _CategoriasScreenState createState() => _CategoriasScreenState();
+  CategoriasScreenState createState() => CategoriasScreenState();
 }
 
-class _CategoriasScreenState extends State<CategoriesScreen> {
-  // --- ESTADO MANEJADO POR LA API ---
-  final CategoryService _categoryService = CategoryService();
-  late Future<List<CategoryModel>> _categoriesFuture;
-  List<CategoryModel> _categoriasOriginales = [];
-  List<CategoryModel> _categoriasFiltradas = [];
-
+class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
   final TextEditingController _searchController = TextEditingController();
   // Tu lógica de prefijos local se mantiene
   final Map<String, String> _prefixes = {};
@@ -31,23 +28,6 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
   void initState() {
     super.initState();
     // Inicia la carga de datos desde la API
-    _categoriesFuture = _fetchCategories();
-  }
-
-  Future<List<CategoryModel>> _fetchCategories() async {
-    try {
-      // Llama al servicio
-      final categories = await _categoryService.getAllCategories();
-      // Guarda las listas originales y filtradas
-      setState(() {
-        _categoriasOriginales = categories;
-        _categoriasFiltradas = categories;
-      });
-      return categories;
-    } catch (e) {
-      // Propaga el error para que FutureBuilder lo maneje
-      throw Exception('Error al cargar categorías: $e');
-    }
   }
 
   @override
@@ -56,18 +36,170 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
     super.dispose();
   }
 
-  void _filtrarCategorias(String query) {
-    final lowerCaseQuery = query.toLowerCase();
-    setState(() {
-      _categoriasFiltradas = _categoriasOriginales
-          .where(
-            // Filtra por el nombre de la categoría
-            (categoria) =>
-                categoria.name.toLowerCase().contains(lowerCaseQuery),
-          )
-          .toList();
-    });
+  @override
+  Widget build(BuildContext context) {
+    final categoryState = ref.watch(categoryProvider);
+    return Scaffold(
+      appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          // --- USA FUTUREBUILDER PARA MANEJAR ESTADOS ---
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SearchTextFieldApp(
+                  controller: _searchController,
+                  labelText: 'Buscar Categoría',
+                  hintText: 'Ej. Electrónica',
+                ),
+              ),
+              Expanded(
+                child: categoryState.when(
+                  loading: () => ListView.builder(
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return const CategoryLoadingSkeleton();
+                    },
+                  ),
+                  error: (error, stack) =>
+                      Center(child: Text('Error al cargar categorías: $error')),
+                  data: (categories) {
+                    final filteredList = categories
+                        .where(
+                          (categoria) => categoria.name.toLowerCase().contains(
+                            _searchController.text.toLowerCase(),
+                          ),
+                        )
+                        .toList();
+                    return ListView.builder(
+                      itemCount: filteredList.length,
+                      itemBuilder: (context, index) {
+                        // El item ahora es un objeto CategoryModel
+                        final category = filteredList[index];
+                        final prefix = _prefixes[category.name];
+                        final statusChip = Chip(
+                          label: Text(
+                            category.status ? 'Activo' : 'Inactivo',
+                            style: TextStyle(
+                              color: category.status
+                                  ? Colors.green.shade800
+                                  : Colors.red.shade800,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          backgroundColor: category.status
+                              ? Colors.green.withOpacity(0.15)
+                              : Colors.red.withOpacity(0.15),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 3,
+                            vertical: 0,
+                          ),
+                          side: BorderSide.none,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        );
+
+                        return ListTile(
+                          title: Row(
+                            children: [
+                              Text(category.name),
+                              const SizedBox(width: 8),
+                              statusChip,
+                            ],
+                          ),
+                          leading: const Icon(Icons.category_outlined),
+                          // Muestra el prefijo si existe, si no, la descripción
+                          subtitle: prefix != null && prefix.isNotEmpty
+                              ? Text('Prefijo: $prefix')
+                              : (category.description.isNotEmpty
+                                    ? Text(category.description)
+                                    : null),
+                          onTap: () => print(
+                            'TODO: Ver subcategorías de ${category.name}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.blue,
+                                ),
+                                // Pasa el objeto CategoryModel completo
+                                onPressed: () => _editarCategoria(category),
+                              ),
+                              category.status
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.block,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Desactivar',
+                                      onPressed: () =>
+                                          _showDeactivateConfirmDialog(
+                                            category,
+                                          ),
+                                    )
+                                  : IconButton(
+                                      onPressed: () =>
+                                          _showActivateConfirmDialog(category),
+                                      tooltip: 'Activar',
+                                      icon: const Icon(
+                                        Icons.restore,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _agregarCategoria,
+        tooltip: 'Agregar Categoría',
+        child: const Icon(Icons.add),
+      ),
+    );
   }
+
+  // Future<List<CategoryModel>> _fetchCategories() async {
+  //   try {
+  //     // Llama al servicio
+  //     final categories = await _categoryService.getAll();
+  //     // Guarda las listas originales y filtradas
+  //     setState(() {
+  //       _categoriasOriginales = categories;
+  //       _categoriasFiltradas = categories;
+  //     });
+  //     return categories;
+  //   } catch (e) {
+  //     // Propaga el error para que FutureBuilder lo maneje
+  //     throw Exception('Error al cargar categorías: $e');
+  //   }
+  // }
+
+  // void _filtrarCategorias(String query) {
+  //   final lowerCaseQuery = query.toLowerCase();
+  //   setState(() {
+  //     _categoriasFiltradas = _categoriasOriginales
+  //         .where(
+  //           // Filtra por el nombre de la categoría
+  //           (categoria) =>
+  //               categoria.name.toLowerCase().contains(lowerCaseQuery),
+  //         )
+  //         .toList();
+  //   });
+  // }
 
   // --- FUNCIÓN DE AGREGAR (IMPLEMENTADA) ---
   void _agregarCategoria() {
@@ -100,14 +232,18 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                 final name = nameController.text.trim();
                 final description = descriptionController.text.trim();
 
-                if (name.isEmpty) return; // Validación simple
+                if (name.isEmpty || description.isEmpty)
+                  return; // Validación simple
 
                 try {
                   // Llama al servicio para crear
-                  final newCategory = await _categoryService.createCategory(
-                    name,
-                    description,
-                  );
+                  ref
+                      .read(categoryProvider.notifier)
+                      .createCategory(name: name, description: description);
+                  // final newCategory = await _categoryService.create(
+                  //   name,
+                  //   description,
+                  // );
 
                   // Cierra el diálogo
                   if (!mounted) return;
@@ -116,15 +252,10 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                   // Muestra confirmación
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Categoría "${newCategory.name}" creada'),
+                      content: Text('Categoría "$name" creada'),
                       backgroundColor: Colors.green,
                     ),
                   );
-
-                  // Recarga la lista
-                  setState(() {
-                    _categoriesFuture = _fetchCategories();
-                  });
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -196,11 +327,11 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
 
                     try {
                       // 1. Llama al servicio de actualización
-                      await _categoryService.updateCategory(
-                        categoria.id, // El ID de la categoría
-                        name,
-                        description,
-                        currentStatus, // El estado (activo/inactivo)
+                      await ref.read(categoryProvider.notifier).updateCategory(
+                        id: categoria.id, // El ID de la categoría
+                        name: name,
+                        description: description,
+                        status: currentStatus, // El estado (activo/inactivo)
                       );
 
                       if (!mounted) return;
@@ -213,11 +344,6 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                           backgroundColor: Colors.green,
                         ),
                       );
-
-                      // 3. Recarga la lista de categorías
-                      setState(() {
-                        _categoriesFuture = _fetchCategories();
-                      });
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -255,7 +381,7 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () async {
                 try {
-                  await _categoryService.deactivateCategory(category.id);
+                  await ref.read(categoryProvider.notifier).deactivateCategory(category.id);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -266,10 +392,6 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                       backgroundColor: Colors.green,
                     ),
                   );
-
-                  setState(() {
-                    _categoriesFuture = _fetchCategories();
-                  });
                 } catch (e) {
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -307,7 +429,8 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
               style: TextButton.styleFrom(foregroundColor: Colors.green),
               onPressed: () async {
                 try {
-                  await _categoryService.activateCategory(category.id);
+                  await ref.read(categoryProvider.notifier).activateCategory(category.id);
+                  
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -319,9 +442,6 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
                     ),
                   );
 
-                  setState(() {
-                    _categoriesFuture = _fetchCategories();
-                  });
                 } catch (e) {
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -338,149 +458,6 @@ class _CategoriasScreenState extends State<CategoriesScreen> {
           ],
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          // --- USA FUTUREBUILDER PARA MANEJAR ESTADOS ---
-          child: FutureBuilder<List<CategoryModel>>(
-            future: _categoriesFuture,
-            builder: (context, snapshot) {
-              // 1. ESTADO DE CARGA
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              // 2. ESTADO DE ERROR
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                );
-              }
-
-              // 3. ESTADO DE ÉXITO (PERO VACÍO)
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(
-                  child: Text('No se encontraron categorías.'),
-                );
-              }
-
-              // 4. ESTADO DE ÉXITO (CON DATOS)
-              // Si llegamos aquí, los datos están cargados en _categoriasFiltradas
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SearchTextFieldApp(
-                      controller: _searchController,
-                      labelText: 'Buscar Categoría',
-                      hintText: 'Ej. Electrónica',
-                      onChanged: _filtrarCategorias,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _categoriasFiltradas.length,
-                      itemBuilder: (context, index) {
-                        // El item ahora es un objeto CategoryModel
-                        final category = _categoriasFiltradas[index];
-                        final prefix = _prefixes[category.name];
-                        final statusChip = Chip(
-                          label: Text(
-                            category.status ? 'Activo' : 'Inactivo',
-                            style: TextStyle(
-                              color: category.status
-                                  ? Colors.green.shade800
-                                  : Colors.red.shade800,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          backgroundColor: category.status
-                              ? Colors.green.withOpacity(0.15)
-                              : Colors.red.withOpacity(0.15),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                            vertical: 0,
-                          ),
-                          side: BorderSide.none,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        );
-
-                        return ListTile(
-                          title: Row(
-                            children: [
-                              Text(category.name),
-                              const SizedBox(width: 8),
-                              statusChip,
-                            ],
-                          ),
-                          leading: const Icon(Icons.category_outlined),
-                          // Muestra el prefijo si existe, si no, la descripción
-                          subtitle: prefix != null && prefix.isNotEmpty
-                              ? Text('Prefijo: $prefix')
-                              : (category.description.isNotEmpty
-                                    ? Text(category.description)
-                                    : null),
-                          onTap: () => print(
-                            'TODO: Ver subcategorías de ${category.name}',
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                // Pasa el objeto CategoryModel completo
-                                onPressed: () => _editarCategoria(category),
-                              ),
-                              category.status
-                                ? IconButton(
-                                    icon: const Icon(
-                                      Icons.block,
-                                      color: Colors.red,
-                                    ),
-                                    tooltip: 'Desactivar',
-                                    onPressed: () =>
-                                        _showDeactivateConfirmDialog(
-                                          category,
-                                        ),
-                                  )
-                                : IconButton(
-                                    onPressed: () =>
-                                        _showActivateConfirmDialog(category),
-                                    tooltip: 'Activar',
-                                    icon: const Icon(
-                                      Icons.restore,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _agregarCategoria,
-        tooltip: 'Agregar Categoría',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

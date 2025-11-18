@@ -36,9 +36,8 @@ class InventoryApp extends StatelessWidget {
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
       home: LoginPage(),
-      
-      //HomePage(controller: _controller),
 
+      //HomePage(controller: _controller),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case AppRoutes.home:
@@ -112,9 +111,7 @@ class InventoryApp extends StatelessWidget {
               builder: (context) => const TypePaymentScreen(),
             );
           case AppRoutes.login:
-            return MaterialPageRoute(
-              builder: (context) => const LoginPage(),
-            );
+            return MaterialPageRoute(builder: (context) => const LoginPage());
 
           default:
             return MaterialPageRoute(

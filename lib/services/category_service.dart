@@ -10,7 +10,7 @@ class CategoryService {
   final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
 
   // --- OBTENER TODAS LAS CATEGORÍAS ---
-  Future<List<CategoryModel>> getAllCategories() async {
+  Future<List<CategoryModel>> getAll() async {
     final url = Uri.parse('$_baseUrl/category');
 
     try {
@@ -39,7 +39,7 @@ class CategoryService {
   }
 
   // --- OBTENER UNA CATEGORÍA POR ID ---
-  Future<CategoryModel> getCategoryById(int id) async {
+  Future<CategoryModel> getById(int id) async {
     final url = Uri.parse('$_baseUrl/category/$id');
 
     try {
@@ -62,7 +62,7 @@ class CategoryService {
   }
 
   // --- CREAR UNA NUEVA CATEGORÍA ---
-  Future<CategoryModel> createCategory(String name, String description) async {
+  Future<CategoryModel> create(String name, String description) async {
     final url = Uri.parse('$_baseUrl/category');
 
     // Crea el cuerpo de la petición
@@ -89,7 +89,7 @@ class CategoryService {
     }
   }
 
-  Future<CategoryModel> updateCategory(
+  Future<CategoryModel> update(
     int id,
     String name,
     String description,
@@ -124,7 +124,7 @@ class CategoryService {
     }
   }
 
-  Future<void> deactivateCategory(int id) async {
+  Future<void> deactivate(int id) async {
     final url = Uri.parse('$_baseUrl/category/$id/deactivate');
 
     try {
@@ -143,7 +143,7 @@ class CategoryService {
     }
   }
 
-  Future<void> activateCategory(int id) async {
+  Future<void> activate(int id) async {
     final url = Uri.parse('$_baseUrl/category/$id/activate');
 
     try {

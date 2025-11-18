@@ -44,9 +44,67 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
     // No necesitamos cargar productos aquí manualmente; el Provider lo hace al iniciarse.
   }
 
+  @override
+  Widget build(BuildContext context) {
+    // 3. Escuchamos al Provider (La fuente de verdad)
+    final productsState = ref.watch(productsProvider);
+
+    return Scaffold(
+      // Usamos .when para manejar los estados de carga/error/datos automáticamente
+      body: productsState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+        data: (allProducts) {
+          // Calculamos los productos a mostrar "al vuelo"
+          final displayProducts = _getFilteredProducts(allProducts);
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // KPI Dashboard usa TODOS los productos para calcular totales reales
+                _buildKpiDashboard(allProducts),
+                SizedBox(height: 16),
+                // Filtros
+                _buildFiltersAndSearch(),
+                SizedBox(height: 16),
+                // DataTable usa los productos FILTRADOS
+                SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    elevation: 0.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      side: BorderSide(color: AppColors.border, width: 3.0),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: constraints.maxWidth,
+                            ),
+                            child: _buildDataTable(displayProducts),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _fetchCategories() async {
     try {
-      _allCategories = await CategoryService().getAllCategories();
+      _allCategories = await CategoryService().getAll();
       categoriesFilter = [
         CategoryModel(
           id: 0,
@@ -130,64 +188,6 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
       _sortAscending = ascending;
       // No llamamos a _filterProducts(), el build lo hará automáticamente
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 3. Escuchamos al Provider (La fuente de verdad)
-    final productsState = ref.watch(productsProvider);
-
-    return Scaffold(
-      // Usamos .when para manejar los estados de carga/error/datos automáticamente
-      body: productsState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        data: (allProducts) {
-          // Calculamos los productos a mostrar "al vuelo"
-          final displayProducts = _getFilteredProducts(allProducts);
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // KPI Dashboard usa TODOS los productos para calcular totales reales
-                _buildKpiDashboard(allProducts),
-                SizedBox(height: 16),
-                // Filtros
-                _buildFiltersAndSearch(),
-                SizedBox(height: 16),
-                // DataTable usa los productos FILTRADOS
-                SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    elevation: 0.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      side: BorderSide(color: AppColors.border, width: 3.0),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth: constraints.maxWidth,
-                            ),
-                            child: _buildDataTable(displayProducts),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
   }
 
   /// KPI Dashboard (Ahora recibe la lista como parámetro)

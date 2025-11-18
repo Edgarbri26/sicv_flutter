@@ -66,7 +66,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   Future<List<CategoryModel>> _fetchCategories() async {
     // 💡 ASUME que tienes un CategoryService con un método getAll()
     // Si no lo tienes, debes crearlo.
-    return await CategoryService().getAllCategories();
+    return await CategoryService().getAll();
   }
 
   // --- MEJORA DE LAYOUT ---
