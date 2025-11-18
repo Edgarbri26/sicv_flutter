@@ -16,6 +16,7 @@ class TextFieldApp extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final VoidCallback? onTap;
   final bool? readOnly;
+  final ValueChanged<String>? onChanged;
 
   const TextFieldApp({
     super.key,
@@ -32,6 +33,7 @@ class TextFieldApp extends StatelessWidget {
     this.textCapitalization = TextCapitalization.sentences,
     this.onTap,
     this.readOnly = false,
+    this.onChanged,
   });
 
   @override
@@ -47,6 +49,7 @@ class TextFieldApp extends StatelessWidget {
       textCapitalization: textCapitalization,
       onTap: onTap,
       readOnly: readOnly ?? false,
+      onChanged: onChanged,
       style: const TextStyle(
         fontSize: 15.0,
         color: AppColors.textPrimary, // Estilo del texto que escribes

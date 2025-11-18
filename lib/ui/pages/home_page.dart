@@ -16,8 +16,6 @@ import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
 import 'package:sidebarx/sidebarx.dart';
-// import 'package:sicv_flutter/ui/widgets/MyDrawer.dart'; // Ya no se usa
-// import 'package:sicv_flutter/ui/widgets/my_side_nav_rail.dart'; // Ya no se usa
 
 class HomePage extends StatefulWidget {
   final SidebarXController controller;
@@ -27,11 +25,10 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-// 1. Añadimos SingleTickerProviderStateMixin para el TabController
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   late PageController _pageController;
-  late TabController _tabController; // 2. Controlador para Tabs (escritorio)
+  late TabController _tabController; 
   final double breakpoint = 600.0;
   int _currentIndex = 0;
 
@@ -41,7 +38,6 @@ class _HomePageState extends State<HomePage>
     IconMenu(icon: Icons.inventory, label: 'Inventario', index: 2),
   ];
 
-  // ... (Tus listas de itemsSelled, _itemsParaLaVenta, etc. se mantienen igual)
   final List<ProductModel> _itemsParaLaVenta = [];
   final List<String> _screenTitles = [
     'Registro de Ventas',
@@ -58,7 +54,7 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
-    // 3. Inicializamos ambos controladores
+
     _tabController = TabController(
       length: _screens.length,
       vsync: this,
@@ -69,7 +65,7 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _pageController.dispose();
-    _tabController.dispose(); // 4. Hacemos dispose de ambos
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -79,12 +75,10 @@ class _HomePageState extends State<HomePage>
     setState(() {
       _currentIndex = index;
     });
-    // Sincronizamos el TabController por si acaso
     _tabController.animateTo(index);
   }
 
   // 6. Esta es la nueva función "maestra" para NAVEGAR CON CLIC
-  // (BottomNav, Menu lateral, TabBar superior)
   void _navigateToPage(int index) {
     if (_currentIndex == index) return;
 
@@ -92,31 +86,27 @@ class _HomePageState extends State<HomePage>
       _currentIndex = index;
     });
 
-    // Anima el TabBarView (seguro para PC y móvil)
-    _tabController.animateTo(index);
+    //gracias a esto se soluciona el error de que no sincroniza el tabcontroller con el pageview y no se petatea
+    if (mounted) {
+      // Sincroniza el TabController
+      _tabController.animateTo(index);
 
-    // ¡LA CORRECCIÓN ESTÁ AQUÍ!
-    // Solo anima el PageView si existe (si hasClients es true)
-    if (_pageController.hasClients) {
-      _pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     }
   }
 
   void _onProductAddedToSale(ProductModel product) {
-    // ... (tu lógica de añadir producto se mantiene igual)
     setState(() {
       final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
       if (index != -1) {
         _itemsParaLaVenta[index].quantity =
             _itemsParaLaVenta[index].quantity + 1;
-        // final existingProduct = _itemsParaLaVenta[index];
-        // _itemsParaLaVenta[index] = existingProduct.copyWith(
-        //   quantity: existingProduct.quantity! + 1,
-        // );
       } else {
         _itemsParaLaVenta.add(product);
       }
@@ -140,19 +130,16 @@ class _HomePageState extends State<HomePage>
   Widget _buildNarrowLayout() {
     return PageView(
       controller: _pageController,
-      onPageChanged: _onPageChanged, // Se activa con swipe
+      onPageChanged: _onPageChanged,
       children: _screens,
     );
   }
 
   /// El layout para pantallas anchas (desktop/tablet).
-  // 12. Acepta el TabController
   Widget _buildWideLayout(TabController tabController) {
     return Row(
       children: [
         MySideBar(controller: widget.controller),
-
-        // El contenido principal
         Expanded(
           child: Row(
             children: [
@@ -161,21 +148,12 @@ class _HomePageState extends State<HomePage>
                 child: Column(
                   children: [
                     AppBarApp(title: _screenTitles[_currentIndex]),
-                    // TabBar(
-                    //   controller: tabController,
-                    //   tabs: _pageMenuItems
-                    //       .map((item) => Tab(icon: Icon(item.icon)))
-                    //       .toList(),
-                    // ),
                     Expanded(
                       child: Row(
                         children: [
-                          // _buildDesktopNavigationRail(),
-
-                          // const VerticalDivider(thickness: 1, width: 1),
                           Expanded(
                             child: TabBarView(
-                              controller: tabController, // Usa el controller
+                              controller: tabController, 
                               physics:
                                   const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
                               children: _screens,
@@ -198,7 +176,7 @@ class _HomePageState extends State<HomePage>
   Widget _buildBottomNavBar() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
-      onTap: _navigateToPage, // 14. Usa la nueva función de navegación
+      onTap: _navigateToPage, 
       backgroundColor: AppColors.background,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textSecondary,
@@ -215,7 +193,6 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget? _buildFloatingActionButton() {
-    // ... (Tu lógica de FAB se mantiene igual)
     switch (_currentIndex) {
       case 0:
         return FloatingActionButton(
@@ -241,10 +218,6 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  // Asumo que tienes una lista de tus productos.
-  // Deberías pasar esta lista como parámetro a la función o tomarla de un provider.
-  // List<Product> _listaDeProductos = ...;
-
   void _mostrarDetallesDeVenta(BuildContext context) {
     double total = _itemsParaLaVenta.fold(
       0,
@@ -258,7 +231,6 @@ class _HomePageState extends State<HomePage>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        // 1. Usamos StatefulBuilder para obtener un setState local para el modal
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter modalSetState) {
             return DraggableScrollableSheet(
@@ -272,15 +244,13 @@ class _HomePageState extends State<HomePage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ... (Tu código del 'handle' gris y título no cambia)
                       Center(
                         child: Container(
                           width: 40,
                           height: 5,
                           margin: const EdgeInsets.only(bottom: 15),
                           decoration: BoxDecoration(
-                            color: AppColors
-                                .border, // Asumiendo que tienes AppColors
+                            color: AppColors.border, 
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
@@ -303,39 +273,24 @@ class _HomePageState extends State<HomePage>
                           PrimaryButtonApp(text: "Confirmar", onPressed: () {}),
                         ],
                       ),
-
-                      // 2. El ListView ahora puede usar el modalSetState
                       Expanded(
                         child: ListView.builder(
                           controller: scrollController,
                           itemCount: _itemsParaLaVenta.length,
                           itemBuilder: (context, index) {
-                            // Obtenemos el item específico
                             final item = _itemsParaLaVenta[index];
-
                             return DetailProductCart(
                               item: item,
                               onTap: () {
-                                // 3. Llamamos a nuestra nueva función de diálogo
                                 _mostrarDialogoEditarCantidad(context, item, (
                                   nuevaCantidad,
                                 ) {
-                                  // Este es el callback de 'onConfirm'.
-                                  // Usamos modalSetState para redibujar el contenido
-                                  // del bottom sheet.
                                   modalSetState(() {
-                                    // Asumo que tu 'item' tiene una propiedad 'cantidad'.
-                                    // Si tu modelo de datos es inmutable (preferible),
-                                    // harías algo como:
-                                    // _itemsParaLaVenta[index] = item.copyWith(cantidad: nuevaCantidad);
-
-                                    // Si es mutable (como en este ejemplo):
                                     item.quantity = nuevaCantidad;
                                   });
                                 });
                               },
                               onDelete: () {
-                                // También deberías usar modalSetState aquí
                                 modalSetState(() {
                                   _itemsParaLaVenta.removeAt(index);
                                 });
@@ -361,21 +316,16 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
-
-  /// Muestra un diálogo para editar la cantidad de un item.
-  ///
   /// [context] El BuildContext para mostrar el diálogo.
   /// [item] El item cuya cantidad se está modificando (asumo que tiene .cantidad).
   /// [onConfirm] Callback que se ejecuta con la nueva cantidad si se confirma.
   void _mostrarDialogoEditarCantidad(
     BuildContext context,
     ProductModel
-    item, // Deberías tipar esto con tu modelo (ej: ProductoVenta item)
+    item, 
     Function(int) onConfirm,
   ) {
-    // Controlador para el campo de texto
     final TextEditingController cantidadController = TextEditingController();
-    // Asumimos que el item tiene una propiedad 'cantidad'
     cantidadController.text = item.quantity.toString();
 
     showDialog(
@@ -385,34 +335,28 @@ class _HomePageState extends State<HomePage>
           title: Text("Modificar Cantidad"),
           content: TextField(
             controller: cantidadController,
-            keyboardType: TextInputType.number, // Teclado numérico
+            keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: "Nueva cantidad",
               border: OutlineInputBorder(),
             ),
             autofocus: true,
-            // Filtro para permitir solo dígitos
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
           actions: [
             TextButton(
               child: Text("Cancelar"),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Cierra solo el diálogo
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
               child: Text("Confirmar"),
               onPressed: () {
-                final int? nuevaCantidad = int.tryParse(
-                  cantidadController.text,
-                );
+                final int? nuevaCantidad = int.tryParse(cantidadController.text);
 
-                // Validamos que el número sea válido
                 if (nuevaCantidad != null && nuevaCantidad >= 0) {
-                  // Ejecutamos el callback con el nuevo valor
                   onConfirm(nuevaCantidad);
-                  // Cerramos el diálogo
                   Navigator.of(dialogContext).pop();
                 } else {
                   // Opcional: Mostrar un error si el valor no es válido
@@ -450,14 +394,10 @@ class _HomePageState extends State<HomePage>
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
-
-        // 7. Quitamos el DefaultTabController
         return Scaffold(
           backgroundColor: AppColors.background,
-          //appBar: AppBarApp(title:_screenTitles[_currentIndex], iconColor: AppColors.textPrimary,)
           appBar: !isWide
               ? AppBar(
-                  // 8. Pasamos el TabController y la función de Tap
                   /*bottom: isWide
                 ? null
                 : TabBar(
@@ -488,15 +428,10 @@ class _HomePageState extends State<HomePage>
               : null,
 
           drawer: isWide ? null : MySideBar(controller: widget.controller),
-
-          // 10. Pasamos el TabController al layout de escritorio
           body: isWide
               ? _buildWideLayout(_tabController)
               : _buildNarrowLayout(),
-
-          // 11. El BottomNavBar (móvil) usa la nueva función de navegación
           bottomNavigationBar: isWide ? null : _buildBottomNavBar(),
-
           floatingActionButton: _buildFloatingActionButton(),
         );
       },

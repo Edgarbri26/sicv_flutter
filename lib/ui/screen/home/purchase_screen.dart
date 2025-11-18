@@ -8,31 +8,29 @@ import 'package:sicv_flutter/models/purchase_detail.dart';
 import 'package:sicv_flutter/models/purchase_input_model.dart';
 import 'package:sicv_flutter/models/purchase_item_input_model.dart';
 import 'package:sicv_flutter/models/purchase_model.dart';
+import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/services/depot_service.dart';
-import 'package:sicv_flutter/services/product_service.dart';
 import 'package:sicv_flutter/services/provider_service.dart';
 import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PurchaseScreen extends StatefulWidget {
+class PurchaseScreen extends ConsumerStatefulWidget {
   const PurchaseScreen({super.key});
 
   @override
-  State<PurchaseScreen> createState() => PurchaseScreenState();
+  ConsumerState<PurchaseScreen> createState() => PurchaseScreenState();
 }
 
-class PurchaseScreenState extends State<PurchaseScreen> {
+class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
   final ProviderService _providerService = ProviderService();
-  final ProductService _productService = ProductService();
   final DepotService _depotService = DepotService();
   final PurchaseService _purchaseService = PurchaseService();
   late List<ProviderModel> _allProviders = [];
 
   ProviderModel? _selectedProvider;
-
-  List<ProductModel> _allProducts = [];
   bool _isRegistering = false;
 
   // El "carrito" de la compra. Usamos la helper class.
@@ -42,7 +40,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   // El costo total de la orden
   double _totalCost = 0.0;
 
-  // Controlador para el modal de búsqueda
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -63,13 +60,16 @@ class PurchaseScreenState extends State<PurchaseScreen> {
     super.dispose();
   }
 
-  /// Carga los datos maestros (simulación de API)
   void _loadData() async {
-    // SIMULACIÓN DE PRODUCTOS
-    _allProducts = await _productService.getAll();
-    _allProviders = await _providerService.getAllProviders();
-    _allDepots = await _depotService.getDepots();
-    setState(() {});
+    final providers = await _providerService.getAllProviders();
+    final depots = await _depotService.getDepots();
+
+    if (mounted) {
+      setState(() {
+        _allProviders = providers;
+        _allDepots = depots;
+      });
+    }
   }
 
   /// Recalcula el costo total de la orden
@@ -223,9 +223,25 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
   /// Muestra el modal para buscar y añadir productos
   void showProductSearchModal() {
-    List<ProductModel> supplierProducts = _allProducts;
+    final productsState = ref.watch(productsProvider);
 
     // Lista filtrada para la búsqueda dentro del modal
+    if (productsState.isLoading) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cargando productos, por favor espera...')),
+      );
+      return;
+    }
+
+    if (productsState.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar productos: ${productsState.error}')),
+      );
+      return;
+    }
+
+    List<ProductModel> supplierProducts = productsState.value ?? [];
+
     List<ProductModel> filteredProducts = supplierProducts;
 
     showModalBottomSheet(
@@ -265,39 +281,11 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _searchController,
+                  TextFieldApp(
+                    controller: _searchController, 
+                    labelText: 'Buscar producto por nombre o SKU',
+                    prefixIcon: Icons.search,
                     onChanged: filterModalList,
-                    decoration: InputDecoration(
-                      labelStyle: TextStyle(
-                        fontSize:
-                            14.0, 
-                        color: AppColors
-                            .textSecondary,
-                      ),
-
-                      filled: true,
-                      fillColor: AppColors.secondary,
-                      prefixIcon: Icon(Icons.search),
-                      labelText: 'Buscar producto por nombre o SKU',
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          width: 3.0, 
-                          color: AppColors.border,
-                        ),
-                      ),
-
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          width:
-                              3.0, 
-                          color: AppColors
-                              .textSecondary,
-                        ),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 16),
                   Expanded(
@@ -328,7 +316,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                                 ? Icon(Icons.check, color: Colors.green)
                                 : Icon(Icons.add),
                             onTap: isAlreadyAdded
-                                ? null // No hacer nada si ya está añadido
+                                ? null 
                                 : () => _addProductToPurchase(product),
                           ),
                         );
@@ -386,10 +374,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
 
       onChanged: (ProviderModel? newValue) {
         setState(() {
-          // Si el proveedor cambia, limpiamos la orden
           _selectedProvider = newValue;
-          //_purchaseItems.clear();
-          //_totalCost = 0.0;
         });
       },
     );
@@ -666,7 +651,6 @@ class PurchaseScreenState extends State<PurchaseScreen> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      // Centra el contenido horizontalmente
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 800.0),
         child: Column(
@@ -682,7 +666,7 @@ class PurchaseScreenState extends State<PurchaseScreen> {
                     _buildSupplierSelector(),
                     const SizedBox(height: 16),
                     const Divider(),
-                    _buildProductList(), // Esta función debe ser modificada (ver punto 2)
+                    _buildProductList(),
                     const SizedBox(height: 16),
                   ],
                 ),

@@ -1,4 +1,3 @@
-// lib/ui/pages/screen/sale_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,11 +199,9 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
             ElevatedButton(
               child: const Text("VER MÁS"),
               onPressed: () {
-                // 1. Cerramos el diálogo
                 Navigator.of(dialogContext).pop();
-                // 2. Cerramos el ModalBottomSheet
                 Navigator.of(context).pop();
-                // 3. (Opcional) Navegamos a la página de detalle completa
+                // (Opcional) Navegamos a la página de detalle completa
                 // Navigator.push(context, MaterialPageRoute(builder: (_) => PaginaDetalleProducto(product: product)));
               },
             ),
