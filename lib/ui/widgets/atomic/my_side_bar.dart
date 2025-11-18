@@ -8,7 +8,9 @@ import 'package:sidebarx/sidebarx.dart';
 class MySideBar extends StatelessWidget {
   const MySideBar({super.key, required SidebarXController controller})
     : _controller = controller;
-
+  final Color primaryColor = AppColors.primary;
+    // Color de fondo de la barra lateral, usando el color de fondo de la aplicación
+    final Color sidebarBackgroundColor = AppColors.background;
   final SidebarXController _controller;
 
   @override
@@ -18,43 +20,63 @@ class MySideBar extends StatelessWidget {
       theme: SidebarXTheme(
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.background,
-          // borderRadius: BorderRadius.circular(20),
-        ),
-        hoverColor: AppColors.primary.withValues(alpha: 0.1),
-        textStyle: TextStyle(color: AppColors.textPrimary),
-        selectedTextStyle: const TextStyle(color: AppColors.secondary),
-        hoverTextStyle: const TextStyle(
-          color: AppColors.info,
-          fontWeight: FontWeight.w500,
-        ),
-        itemTextPadding: const EdgeInsets.only(left: 30),
-        selectedItemTextPadding: const EdgeInsets.only(left: 30),
-        itemDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          // border: Border.all(color: AppColors.textSecondary),
-        ),
-        selectedItemDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.primary.withOpacity(0.37)),
-          gradient: LinearGradient(
-            colors: [
-              AppColors.primary,
-              AppColors.primary.withValues(alpha: 0.1),
-            ],
-          ),
+          color: sidebarBackgroundColor,
+          // Borde redondeado suave para el contenedor principal de la barra
+          borderRadius: BorderRadius.circular(16), 
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.28), blurRadius: 30),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
-        iconTheme: IconThemeData(color: AppColors.textSecondary, size: 25),
-        selectedIconTheme: const IconThemeData(color: Colors.white, size: 25),
+        
+        // Estilos de Texto e Iconos
+        textStyle: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        selectedTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
+        iconTheme: IconThemeData(color: AppColors.textSecondary, size: 22),
+        selectedIconTheme: const IconThemeData(color: Colors.white, size: 22),
+        
+        // Estilo al pasar el ratón (Hover)
+        hoverColor: primaryColor.withOpacity(0.1),
+        hoverTextStyle: TextStyle(color: primaryColor, fontWeight: FontWeight.w600),
+        
+        itemTextPadding: const EdgeInsets.only(left: 15),
+        selectedItemTextPadding: const EdgeInsets.only(left: 15),
+        
+        // --- DECORACIÓN DEL ELEMENTO SELECCIONADO (GRADIENTE) ---
+        selectedItemDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          // Replicamos el gradiente sutil de la vista de ventas
+          gradient: LinearGradient(
+            colors: [
+              primaryColor.withOpacity(0.9), // Color primario fuerte
+              primaryColor.withOpacity(0.6), // Color primario más suave
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.4), 
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        
+        // Estilo de los elementos no seleccionados
+        itemDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
-      extendedTheme: const SidebarXTheme(
-        width: 200,
-        decoration: BoxDecoration(color: AppColors.background),
+      
+      // --- TEMA EXTENDIDO ---
+      extendedTheme: SidebarXTheme(
+        width: 220, // Un poco más ancho para desktop
+        decoration: BoxDecoration(color: sidebarBackgroundColor),
       ),
-      footerDivider: Divider(),
       headerBuilder: (context, extended) {
         return SizedBox(
           height: 100,
