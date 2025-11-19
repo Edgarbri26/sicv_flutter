@@ -39,7 +39,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
     }
   }
 
-  // Crear productohttps://support.discord.com/
+  // Crear producto
   Future<void> createProduct({
     required String name,
     required String sku,

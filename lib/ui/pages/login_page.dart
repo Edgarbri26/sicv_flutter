@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/services/auth_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/providers/user_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _userCtrl = TextEditingController();
   final TextEditingController _passCtrl = TextEditingController();
@@ -47,7 +48,8 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    bool success = await AuthService().login(
+    // Usamos el UserNotifier a través del provider para iniciar sesión
+    final bool success = await ref.read(userProvider.notifier).login(
       _userCtrl.text.trim(),
       _passCtrl.text,
     );
