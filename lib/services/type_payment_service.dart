@@ -46,7 +46,7 @@ class TypePaymentService {
   }
 
   /// CREATE: Crear un nuevo tipo de pago
-  Future<void> createPaymentType(String name) async {
+  Future<void> create(String name) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/type_payment'),
       headers: _headers,
@@ -64,7 +64,7 @@ class TypePaymentService {
   }
 
   /// UPDATE: Actualizar un tipo de pago existente
-  Future<void> updatePaymentType(int id, String newName) async {
+  Future<void> update(int id, String newName) async {
     final response = await http.patch(
       Uri.parse('$_baseUrl/type_payment/$id'),
       headers: _headers,
@@ -79,7 +79,7 @@ class TypePaymentService {
   }
 
   /// DELETE: Eliminar un tipo de pago
-  Future<void> deletePaymentType(int id) async {
+  Future<void> delete(int id) async {
     final response = await http.delete(
       Uri.parse('$_baseUrl/type_payment/$id'),
       headers: _headers,
@@ -92,7 +92,7 @@ class TypePaymentService {
     // No se retorna contenido.
   }
 
-  Future<void> deactivateTypePayment(int id) async {
+  Future<void> deactivate(int id) async {
     final url = Uri.parse('$_baseUrl/type_payment/$id/deactivate');
 
     try {
@@ -111,7 +111,7 @@ class TypePaymentService {
     }
   }
 
-  Future<void> activateTypePayment(int id) async {
+  Future<void> activate(int id) async {
     final url = Uri.parse('$_baseUrl/type_payment/$id/activate');
 
     try {

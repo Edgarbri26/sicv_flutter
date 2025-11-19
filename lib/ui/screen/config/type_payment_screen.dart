@@ -52,7 +52,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
               style: TextButton.styleFrom(foregroundColor: Colors.green),
               onPressed: () async {
                 try {
-                  await _service.activateTypePayment(typePayment.typePaymentId);
+                  await _service.activate(typePayment.typePaymentId);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -108,7 +108,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
               onPressed: () async {
                 try {
                   // 1. Llama al servicio de desactivación
-                  await _service.deactivateTypePayment(
+                  await _service.deactivate(
                     typePayment.typePaymentId,
                   );
 
@@ -317,7 +317,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
 
   Future<void> _performCreate(BuildContext context, String name) async {
     try {
-      await _service.createPaymentType(name);
+      await _service.create(name);
       _showFeedback(context, 'Creado exitosamente.');
       _loadPaymentTypes(); // Recargar la lista
     } catch (e) {
@@ -327,7 +327,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
 
   Future<void> _performUpdate(BuildContext context, int id, String name) async {
     try {
-      await _service.updatePaymentType(id, name);
+      await _service.update(id, name);
       _showFeedback(context, 'Actualizado exitosamente.');
       _loadPaymentTypes(); // Recargar la lista
     } catch (e) {
