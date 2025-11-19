@@ -2,6 +2,7 @@ import 'package:sicv_flutter/models/purchase_general_item_model.dart';
 import 'package:sicv_flutter/models/purchase_lots_item_model.dart';
 
 class PurchaseModel {
+  final int? purchaseId;
   final int providerId;
   final String userCi;
   final int typePaymentId;
@@ -16,6 +17,7 @@ class PurchaseModel {
     required this.status,
     this.purchaseItems,
     this.purchaseLots,
+    this.purchaseId,
   });
 
   factory PurchaseModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,7 @@ class PurchaseModel {
     final List<dynamic> lotItemsJson = json['purchase_lots'] ?? [];
 
     return PurchaseModel(
+      purchaseId: json['purchase_id'],
       providerId: json['provider_id'],
       userCi: json['user_ci'],
       typePaymentId: json['type_payment_id'],
@@ -40,6 +43,7 @@ class PurchaseModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'purchase_id': purchaseId,
       'provider_id': providerId,
       'user_ci': userCi,
       'type_payment_id': typePaymentId,

@@ -14,7 +14,7 @@ class TypePaymentService {
   };
 
   /// READ: Obtener todos los tipos de pago
-  Future<List<TypePaymentModel>> getPaymentTypes() async {
+  Future<List<TypePaymentModel>> getAll() async {
     final response = await http.get(
       Uri.parse(
         '$_baseUrl/type_payment',

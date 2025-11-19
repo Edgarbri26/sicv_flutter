@@ -8,10 +8,13 @@ import 'package:sicv_flutter/models/purchase_detail.dart';
 import 'package:sicv_flutter/models/purchase_input_model.dart';
 import 'package:sicv_flutter/models/purchase_item_input_model.dart';
 import 'package:sicv_flutter/models/purchase_model.dart';
+import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/services/depot_service.dart';
 import 'package:sicv_flutter/services/provider_service.dart';
 import 'package:sicv_flutter/services/purchase_service.dart';
+import 'package:sicv_flutter/services/type_payment_service.dart';
+import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -26,11 +29,14 @@ class PurchaseScreen extends ConsumerStatefulWidget {
 
 class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
   final ProviderService _providerService = ProviderService();
+  final TypePaymentService _typePaymentService = TypePaymentService();
   final DepotService _depotService = DepotService();
   final PurchaseService _purchaseService = PurchaseService();
   late List<ProviderModel> _allProviders = [];
+  late List<TypePaymentModel> _allTypePayments = [];
 
   ProviderModel? _selectedProvider;
+  TypePaymentModel? _selectedTypePayment;
   bool _isRegistering = false;
 
   // El "carrito" de la compra. Usamos la helper class.
@@ -63,11 +69,13 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
   void _loadData() async {
     final providers = await _providerService.getAllProviders();
     final depots = await _depotService.getDepots();
+    final typePayments = await _typePaymentService.getAll();
 
     if (mounted) {
       setState(() {
         _allProviders = providers;
         _allDepots = depots;
+        _allTypePayments = typePayments;
       });
     }
   }
@@ -183,7 +191,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       providerId: _selectedProvider!.providerId,
       userCi: '31350493',
       status: 'Aprobado',
-      typePaymentId: 1,
+      typePaymentId: _selectedTypePayment!.typePaymentId,
       items: purchaseItemsList,
     );
 
@@ -191,7 +199,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
     final PurchaseModel response = await _purchaseService.createPurchase(purchaseInput);
 
-    print(  'Compra registrada con ID: ${response.providerId}');
+    print('Compra registrada con ID: ${response.providerId}');
+    print(response.purchaseId);
 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -212,10 +221,13 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       ),
     );
 
+    ref.invalidate(productsProvider);
+
     // Limpia la pantalla para una nueva orden
     setState(() {
       _purchaseItems.clear();
       _selectedProvider = null;
+      _selectedTypePayment = null;
       _totalCost = 0.0;
       _isRegistering = false;
     });
@@ -223,112 +235,118 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
   /// Muestra el modal para buscar y añadir productos
   void showProductSearchModal() {
-    final productsState = ref.watch(productsProvider);
-
-    // Lista filtrada para la búsqueda dentro del modal
-    if (productsState.isLoading) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cargando productos, por favor espera...')),
-      );
-      return;
-    }
-
-    if (productsState.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar productos: ${productsState.error}')),
-      );
-      return;
-    }
-
-    List<ProductModel> supplierProducts = productsState.value ?? [];
-
-    List<ProductModel> filteredProducts = supplierProducts;
-
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (modalContext, modalSetState) {
-            void filterModalList(String query) {
-              modalSetState(() {
-                if (query.isEmpty) {
-                  filteredProducts = supplierProducts;
-                } else {
-                  filteredProducts = supplierProducts
-                      .where(
-                        (p) =>
-                            p.name.toLowerCase().contains(
-                              query.toLowerCase(),
-                            ) ||
-                            (p.sku ?? '').toLowerCase().contains(
-                              query.toLowerCase(),
-                            ),
-                      )
-                      .toList();
-                }
-              });
-            }
-
-            return Container(
-              height:
-                  MediaQuery.of(context).size.height * 0.8, 
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    'Añadir Producto a la Orden',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFieldApp(
-                    controller: _searchController, 
-                    labelText: 'Buscar producto por nombre o SKU',
-                    prefixIcon: Icons.search,
-                    onChanged: filterModalList,
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filteredProducts.length,
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        // Revisa si ya está en la orden principal
-                        final bool isAlreadyAdded = _purchaseItems.any(
-                          (item) => item.product.id == product.id,
-                        );
-
-                        return Card(
-                          elevation: 0.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            side: BorderSide(
-                              color: AppColors.border,
-                              width: 3.0,
-                            ),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          color: isAlreadyAdded ? Colors.grey[300] : null,
-                          child: ListTile(
-                            title: Text(product.name),
-                            subtitle: Text('Stock actual: ${product.totalStock}'),
-                            trailing: isAlreadyAdded
-                                ? Icon(Icons.check, color: Colors.green)
-                                : Icon(Icons.add),
-                            onTap: isAlreadyAdded
-                                ? null 
-                                : () => _addProductToPurchase(product),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+        return Consumer(
+          builder: (context, ref, child) { 
+            final productsState = ref.watch(productsProvider);
+            final modalHeight = MediaQuery.of(context).size.height * 0.8;
+            
+            return productsState.when(
+              loading: () => Container(
+                height: modalHeight,
+                child: ListView.builder(
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return const CategoryLoadingSkeleton();
+                  },
+                ),
               ),
+              error: (error, stack) => Container(
+                height: modalHeight,
+                child: Center(child: Text('Error: $error'))
+              ),
+              data: (products) {
+                List<ProductModel> supplierProducts = productsState.value ?? [];
+                List<ProductModel> filteredProducts = supplierProducts;
+                return StatefulBuilder(
+                  
+                  builder: (modalContext, modalSetState) {
+                    void filterModalList(String query) {
+                      modalSetState(() {
+                        if (query.isEmpty) {
+                          filteredProducts = supplierProducts;
+                        } else {
+                          filteredProducts = supplierProducts
+                              .where(
+                                (p) =>
+                                    p.name.toLowerCase().contains(
+                                      query.toLowerCase(),
+                                    ) ||
+                                    (p.sku ?? '').toLowerCase().contains(
+                                      query.toLowerCase(),
+                                    ),
+                              )
+                              .toList();
+                        }
+                      });
+                    }
+
+                    return Container(
+                      height: modalHeight, 
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Añadir Producto a la Orden',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFieldApp(
+                            controller: _searchController, 
+                            labelText: 'Buscar producto por nombre o SKU',
+                            prefixIcon: Icons.search,
+                            onChanged: filterModalList,
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: filteredProducts.length,
+                              itemBuilder: (context, index) {
+                                final product = filteredProducts[index];
+                                // Revisa si ya está en la orden principal
+                                final bool isAlreadyAdded = _purchaseItems.any(
+                                  (item) => item.product.id == product.id,
+                                );
+
+                                return Card(
+                                  elevation: 0.0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    side: BorderSide(
+                                      color: AppColors.border,
+                                      width: 3.0,
+                                    ),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  color: isAlreadyAdded ? Colors.grey[300] : null,
+                                  child: ListTile(
+                                    title: Text(product.name),
+                                    subtitle: Text('Stock actual: ${product.totalStock}'),
+                                    trailing: isAlreadyAdded
+                                        ? Icon(Icons.check, color: Colors.green)
+                                        : Icon(Icons.add),
+                                    onTap: isAlreadyAdded
+                                        ? null 
+                                        : () => _addProductToPurchase(product),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
             );
-          },
-        );
-      },
+          }
+        );   
+      } 
     ).whenComplete(
       () => _searchController.clear(),
     ); // Limpia el buscador al cerrar el modal
@@ -375,6 +393,51 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       onChanged: (ProviderModel? newValue) {
         setState(() {
           _selectedProvider = newValue;
+        });
+      },
+    );
+  }
+
+  Widget _buildTypePaymentSelector() {
+    return DropdownButtonFormField<TypePaymentModel>(
+      initialValue: _selectedTypePayment,
+
+      decoration: InputDecoration(
+        labelStyle: TextStyle(
+          fontSize: 14.0,
+          color:
+              AppColors.textSecondary,
+        ),
+        filled: true,
+        fillColor: AppColors.secondary,
+        prefixIcon: Icon(Icons.store, size: 20),
+        labelText: 'Tipo de Pago',
+        hintText: 'Selecciona un Tipo de Pago...',
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 3.0,
+            color: AppColors.border,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            width: 3.0, 
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+      items: _allTypePayments.map((typePayment) {
+        return DropdownMenuItem<TypePaymentModel>(
+          value: typePayment,
+          child: Text(typePayment.name),
+        );
+      }).toList(),
+
+      onChanged: (TypePaymentModel? newValue) {
+        setState(() {
+          _selectedTypePayment = newValue;
         });
       },
     );
@@ -664,6 +727,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                       .min,
                   children: [
                     _buildSupplierSelector(),
+                    const SizedBox(height: 8),
+                    _buildTypePaymentSelector(),
                     const SizedBox(height: 16),
                     const Divider(),
                     _buildProductList(),

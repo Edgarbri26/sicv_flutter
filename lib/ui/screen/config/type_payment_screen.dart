@@ -30,7 +30,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
   /// Método para cargar o recargar los datos
   void _loadPaymentTypes() {
     setState(() {
-      _paymentTypesFuture = _service.getPaymentTypes();
+      _paymentTypesFuture = _service.getAll();
     });
   }
 
@@ -67,7 +67,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                   );
 
                   setState(() {
-                    _paymentTypesFuture = _service.getPaymentTypes();
+                    _paymentTypesFuture = _service.getAll();
                   });
                 } catch (e) {
                   if (!mounted) return;
@@ -127,7 +127,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
 
                   // 3. Recarga la lista
                   setState(() {
-                    _paymentTypesFuture = _service.getPaymentTypes();
+                    _paymentTypesFuture = _service.getAll();
                   });
                 } catch (e) {
                   if (!mounted) return;
