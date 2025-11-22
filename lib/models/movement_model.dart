@@ -13,7 +13,7 @@ class MovementModel {
   ProductModel product;
   DepotModel depot;
 
-  MovementModel.MovementModel({
+  MovementModel({
     required this.movementId,
     required this.depotId,
     required this.productId,
@@ -27,7 +27,7 @@ class MovementModel {
   });
 
   factory MovementModel.fromJson(Map<String, dynamic> json) {
-    return MovementModel.MovementModel(
+    return MovementModel(
       movementId: json['movement_id'],
       depotId: json['depot_id'],
       productId: json['product_id'],
