@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
 // Importa tus modelos
 // Necesario para el modelo Product
 import 'package:sicv_flutter/models/movement_type.dart';
@@ -84,6 +85,7 @@ class _MovementsPageState extends State<MovementsPage> {
   void _loadMovements() {
     // --- SIMULACIÓN DE DATOS (Reemplaza con tu API) ---
     final now = DateTime.now();
+
     _allMovements = [
       StockMovement(
         dateTime: now.subtract(const Duration(hours: 1)),
@@ -264,145 +266,6 @@ class _MovementsPageState extends State<MovementsPage> {
     setState(() {
       _filteredMovements = results;
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    //final double breakpoint = 600.0;
-    //final bool isWide = MediaQuery.of(context).size.width >= breakpoint;
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        // 1. Apariencia limpia: Fondo blanco/claro y sin elevación marcada
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface, // Usa el color de fondo del tema
-        surfaceTintColor: Colors
-            .transparent, // Elimina el tinte al hacer scroll (Android 12+)
-        elevation: 0, // 0 para un look plano y moderno
-        // 2. Título estilizado
-        title: Text(
-          'Historial de Movimientos',
-          style: TextStyle(
-            fontWeight: FontWeight.bold, // Título en negrita
-            fontSize: 20,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface, // Color de texto basado en el tema
-          ),
-        ),
-
-        // 3. Altura de la barra (opcional pero profesional)
-        toolbarHeight: 64.0, // Un poco más de altura para un mejor 'feel'
-        // 4. Integración con la interfaz de usuario (Buscador y Ajuste Manual)
-        // Nota: Si el FAB (Ajuste Manual) está en la parte inferior, puedes dejar esto vacío.
-        // Si deseas una acción de ícono en la AppBar, úsala aquí.
-        actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.add_circle_outline),
-          //   onPressed: () => _showAddMovementModal(context),
-          //   tooltip: 'Registrar Ajuste Manual',
-          // ),
-          const SizedBox(width: 16), // Espacio al final
-        ],
-
-        // 5. Configuración de Tema (para íconos y otros elementos)
-        iconTheme: IconThemeData(
-          color: Theme.of(
-            context,
-          ).colorScheme.primary, // Íconos con color primario del tema
-        ),
-      ),
-      body: Column(
-        children: [
-          // Buscador y Filtros (sin cambios)
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 16,
-              bottom: 16,
-              left: 16,
-              right: 16,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 400),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelStyle: TextStyle(
-                    fontSize:
-                        14.0, // <-- Cambia el tamaño de la fuente del label
-                    color: AppColors
-                        .textSecondary, // (Opcional: define el color del label)
-                  ),
-
-                  filled: true,
-                  fillColor: AppColors.secondary,
-                  labelText: 'Buscar por el nombre del producto...',
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      width: 3.0, // <-- Tu grosor deseado
-                      color: AppColors.border, // Color del borde
-                    ),
-                  ),
-
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      width: 3.0, // <-- Puedes poner un grosor mayor al enfocar
-                      color:
-                          AppColors.textSecondary, // Color del borde al enfocar
-                    ),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 16,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
-              spacing: 12.0,
-              runSpacing: 8.0,
-              children: [
-                _buildDateRangeFilter(),
-                _buildMovementTypeFilter(),
-                _buildUserFilter(),
-              ],
-            ),
-          ),
-          //const Divider(height: 24),
-
-          // Lista/Tabla
-          Center(
-            child: Expanded(
-              // Empieza directamente comprobando si está vacía
-              child: _filteredMovements.isEmpty
-                  ? const Center(child: Text('No se encontraron movimientos.'))
-                  : LayoutBuilder(
-                      builder: (context, constraints) {
-                        bool isDesktop = constraints.maxWidth > 700;
-                        return isDesktop
-                            ? _buildMovementsDataTable()
-                            : _buildMovementsListView();
-                      },
-                    ),
-            ),
-          ),
-        ],
-      ),
-      drawer: MySideBar(controller: widget.controller),
-      // drawer: isWide ? null : MySideBar(controller: widget.controller),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add_circle_outline),
-        label: const Text('Ajuste Manual'),
-        onPressed: () => _showAddMovementModal(context),
-      ),
-    );
   }
 
   // --- Dropdowns (_buildDateRangeFilter, _buildMovementTypeFilter) ---
@@ -1266,4 +1129,174 @@ class _MovementsPageState extends State<MovementsPage> {
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    //final double breakpoint = 600.0;
+    //final bool isWide = MediaQuery.of(context).size.width >= breakpoint;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: !isWide
+              ? AppBar(
+                  // 1. Apariencia limpia: Fondo blanco/claro y sin elevación marcada
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surface, // Usa el color de fondo del tema
+                  surfaceTintColor: Colors
+                      .transparent, // Elimina el tinte al hacer scroll (Android 12+)
+                  elevation: 0, // 0 para un look plano y moderno
+                  // 2. Título estilizado
+                  title: Text(
+                    'Historial de Movimientos',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold, // Título en negrita
+                      fontSize: 20,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface, // Color de texto basado en el tema
+                    ),
+                  ),
+
+                  // 3. Altura de la barra (opcional pero profesional)
+                  toolbarHeight:
+                      64.0, // Un poco más de altura para un mejor 'feel'
+                  // 4. Integración con la interfaz de usuario (Buscador y Ajuste Manual)
+                  // Nota: Si el FAB (Ajuste Manual) está en la parte inferior, puedes dejar esto vacío.
+                  // Si deseas una acción de ícono en la AppBar, úsala aquí.
+                  actions: [
+                    // IconButton(
+                    //   icon: const Icon(Icons.add_circle_outline),
+                    //   onPressed: () => _showAddMovementModal(context),
+                    //   tooltip: 'Registrar Ajuste Manual',
+                    // ),
+                    const SizedBox(width: 16), // Espacio al final
+                  ],
+
+                  // 5. Configuración de Tema (para íconos y otros elementos)
+                  iconTheme: IconThemeData(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary, // Íconos con color primario del tema
+                  ),
+                )
+              : null,
+
+          body: Column(
+            children: [
+              // Buscador y Filtros (sin cambios)
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  bottom: 16,
+                  left: 16,
+                  right: 16,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 400),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelStyle: TextStyle(
+                        fontSize:
+                            14.0, // <-- Cambia el tamaño de la fuente del label
+                        color: AppColors
+                            .textSecondary, // (Opcional: define el color del label)
+                      ),
+
+                      filled: true,
+                      fillColor: AppColors.secondary,
+                      labelText: 'Buscar por el nombre del producto...',
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          width: 3.0, // <-- Tu grosor deseado
+                          color: AppColors.border, // Color del borde
+                        ),
+                      ),
+
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          width:
+                              3.0, // <-- Puedes poner un grosor mayor al enfocar
+                          color: AppColors
+                              .textSecondary, // Color del borde al enfocar
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Wrap(
+                  spacing: 12.0,
+                  runSpacing: 8.0,
+                  children: [
+                    _buildDateRangeFilter(),
+                    _buildMovementTypeFilter(),
+                    _buildUserFilter(),
+                  ],
+                ),
+              ),
+              //const Divider(height: 24),
+
+              // Lista/Tabla
+              Center(
+                child: Expanded(
+                  // Empieza directamente comprobando si está vacía
+                  child: _filteredMovements.isEmpty
+                      ? const Center(
+                          child: Text('No se encontraron movimientos.'),
+                        )
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            bool isDesktop = constraints.maxWidth > 700;
+                            return isDesktop
+                                ? _buildMovementsDataTable()
+                                : _buildMovementsListView();
+                          },
+                        ),
+                ),
+              ),
+            ],
+          ),
+          drawer: isWide ? null : MySideBar(controller: widget.controller),
+          // drawer: isWide ? null : MySideBar(controller: widget.controller),
+          floatingActionButton: FloatingActionButton.extended(
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Ajuste Manual'),
+            onPressed: () => _showAddMovementModal(context),
+          ),
+        );
+      },
+    );
+  }
 } // Fin de _MovementsScreenState
+
+class MovementsWideLayout extends StatelessWidget {
+  const MovementsWideLayout({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class MovementsNarrowLayot extends StatelessWidget {
+  const MovementsNarrowLayot({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}

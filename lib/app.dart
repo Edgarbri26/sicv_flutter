@@ -41,10 +41,12 @@ class InventoryApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case AppRoutes.home:
+            _controller.selectIndex(0);
             return MaterialPageRoute(
               builder: (context) => HomePage(controller: _controller),
             );
           case AppRoutes.settings:
+            // _controller.selectIndex(_controller.previousIndex);
             return MaterialPageRoute(
               builder: (context) => const SettingsScreen(),
             );
