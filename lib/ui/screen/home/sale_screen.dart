@@ -648,6 +648,12 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         );
         
         Navigator.of(context).pop(); 
+
+        setState(() {
+          _itemsForSale.clear();
+          selectedClient = null;
+          _selectedTypePayment = null;
+        });
     } on BackendException catch (e) {
       
       Navigator.of(context).pop();
