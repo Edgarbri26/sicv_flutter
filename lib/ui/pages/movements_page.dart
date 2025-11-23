@@ -544,16 +544,30 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
+        print(  'isWide: $isWide');
 
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: !isWide ? AppBar(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            title: Text('Movimientos', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)),
-            elevation: 0,
-            iconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary),
-          ) : null,
+          appBar: !isWide
+              ? AppBar(
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  title: Text(
+                    'Movimientos de Inventario',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  toolbarHeight: 64.0,
+                  actions: [const SizedBox(width: 16)],
+                  iconTheme: IconThemeData(color: AppColors.textPrimary),
+                )
+              : null,
           drawer: isWide ? null : MySideBar(controller: widget.controller),
+
           floatingActionButton: FloatingActionButton.extended(
             icon: const Icon(Icons.add),
             label: const Text('Ajuste'),
@@ -608,4 +622,5 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
       },
     );
   }
+  
 }
