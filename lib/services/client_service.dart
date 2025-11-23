@@ -11,7 +11,7 @@ class ClientService {
 
 
   // --- OBTENER TODOS LOS CLIENTES ---
-  Future<List<ClientModel>> getClients() async {
+  Future<List<ClientModel>> getAll() async {
     final url = Uri.parse('$_baseUrl/client');
     try {
       final response = await http.get(url, headers: {

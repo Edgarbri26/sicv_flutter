@@ -25,8 +25,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late PageController _pageController;
   late TabController _tabController; 
   final double breakpoint = 600.0;
@@ -38,17 +37,15 @@ class _HomePageState extends State<HomePage>
     IconMenu(icon: Icons.inventory, label: 'Inventario', index: 2),
   ];
 
-  final List<ProductModel> _itemsParaLaVenta = [];
   final List<String> _screenTitles = [
     'Registro de Ventas',
     'Registro de Compras',
     'Gestión del Inventario',
   ];
 
-  final GlobalKey<PurchaseScreenState> _purchaseScreenKey =
-      GlobalKey<PurchaseScreenState>();
-  final GlobalKey<InventoryDatatableScreenState> _inventoryScreenKey =
-      GlobalKey<InventoryDatatableScreenState>();
+  final GlobalKey<PurchaseScreenState> _purchaseScreenKey = GlobalKey<PurchaseScreenState>();
+  final GlobalKey<InventoryDatatableScreenState> _inventoryScreenKey = GlobalKey<InventoryDatatableScreenState>();
+  final GlobalKey<SaleScreenState> _saleScreenKey = GlobalKey<SaleScreenState>();
 
   @override
   void initState() {
@@ -101,27 +98,10 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  void _onProductAddedToSale(ProductModel product) {
-    setState(() {
-      final index = _itemsParaLaVenta.indexWhere((p) => p.id == product.id);
-      if (index != -1) {
-        _itemsParaLaVenta[index].quantity =
-            _itemsParaLaVenta[index].quantity + 1;
-      } else {
-        _itemsParaLaVenta.add(product);
-      }
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${product.name} añadido a la venta.'),
-        duration: Duration(seconds: 1),
-      ),
-    );
-  }
+  
 
   List<Widget> get _screens => [
-    SaleScreen(onProductAdded: _onProductAddedToSale),
+    SaleScreen(key: _saleScreenKey),
     PurchaseScreen(key: _purchaseScreenKey),
     InventoryDatatableScreen(key: _inventoryScreenKey),
   ];
@@ -196,7 +176,7 @@ class _HomePageState extends State<HomePage>
     switch (_currentIndex) {
       case 0:
         return FloatingActionButton(
-          onPressed: () => _mostrarDetallesDeVenta(context),
+          onPressed: () => _saleScreenKey.currentState?.showSaleDetail(context),
           backgroundColor: AppColors.primary,
           child: Icon(Symbols.edit_arrow_up, color: AppColors.secondary),
         );
@@ -218,158 +198,11 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  void _mostrarDetallesDeVenta(BuildContext context) {
-    double total = _itemsParaLaVenta.fold(
-      0,
-      (previousValue, element) =>
-          previousValue + (element.quantity * element.price),
-    );
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter modalSetState) {
-            return DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.5,
-              minChildSize: 0.3,
-              maxChildSize: 0.9,
-              builder: (context, scrollController) {
-                return Container(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 5,
-                          margin: const EdgeInsets.only(bottom: 15),
-                          decoration: BoxDecoration(
-                            color: AppColors.border, 
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          textAlign: TextAlign.center,
-                          "Detalles de la Venta",
-                          style: AppTextStyles.headlineLarge,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Total: \$${total.toStringAsFixed(2)}",
-                            style: AppTextStyles.bodyLarge,
-                          ),
-                          PrimaryButtonApp(text: "Confirmar", onPressed: () {}),
-                        ],
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          controller: scrollController,
-                          itemCount: _itemsParaLaVenta.length,
-                          itemBuilder: (context, index) {
-                            final item = _itemsParaLaVenta[index];
-                            return DetailProductCart(
-                              item: item,
-                              onTap: () {
-                                _mostrarDialogoEditarCantidad(context, item, (
-                                  nuevaCantidad,
-                                ) {
-                                  modalSetState(() {
-                                    item.quantity = nuevaCantidad;
-                                  });
-                                });
-                              },
-                              onDelete: () {
-                                modalSetState(() {
-                                  _itemsParaLaVenta.removeAt(index);
-                                });
-                              },
-                              trailing: Row(
-                                children: [
-                                  // ... (Iconos de añadir/quitar)
-                                  // Nota: Estos botones también deberían usar modalSetState
-                                  // si quieres que actualicen la UI en tiempo real.
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
+  
   /// [context] El BuildContext para mostrar el diálogo.
   /// [item] El item cuya cantidad se está modificando (asumo que tiene .cantidad).
   /// [onConfirm] Callback que se ejecuta con la nueva cantidad si se confirma.
-  void _mostrarDialogoEditarCantidad(
-    BuildContext context,
-    ProductModel
-    item, 
-    Function(int) onConfirm,
-  ) {
-    final TextEditingController cantidadController = TextEditingController();
-    cantidadController.text = item.quantity.toString();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text("Modificar Cantidad"),
-          content: TextField(
-            controller: cantidadController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: "Nueva cantidad",
-              border: OutlineInputBorder(),
-            ),
-            autofocus: true,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          ),
-          actions: [
-            TextButton(
-              child: Text("Cancelar"),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            TextButton(
-              child: Text("Confirmar"),
-              onPressed: () {
-                final int? nuevaCantidad = int.tryParse(cantidadController.text);
-
-                if (nuevaCantidad != null && nuevaCantidad >= 0) {
-                  onConfirm(nuevaCantidad);
-                  Navigator.of(dialogContext).pop();
-                } else {
-                  // Opcional: Mostrar un error si el valor no es válido
-                  // (ej: usando un SnackBar o moviendo la lógica a un validador)
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+  
   Widget _buildDesktopNavigationRail() {
     return NavigationRail(
       labelType: NavigationRailLabelType.all,
@@ -398,18 +231,6 @@ class _HomePageState extends State<HomePage>
           backgroundColor: AppColors.background,
           appBar: !isWide
               ? AppBar(
-                  /*bottom: isWide
-                ? null
-                : TabBar(
-                    controller: _tabController,
-                    onTap: _navigateToPage, // Usamos la nueva función
-                    tabs: bottomNavItems
-                        .map(
-                          (item) =>
-                              Tab(icon: Icon(item.icon), text: item.label),
-                        )
-                        .toList(),
-                  ),*/
                   backgroundColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
                   elevation: 0,

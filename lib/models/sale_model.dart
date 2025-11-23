@@ -4,14 +4,14 @@ class SaleModel {
   final String clientCi;
   final String userCi;
   final int typePaymentId;
-  final DateTime soldAt;
+  final DateTime? soldAt;
   final List<SaleItemModel> saleItems;
 
   SaleModel({
     required this.clientCi,
     required this.userCi,
     required this.typePaymentId,
-    required this.soldAt,
+    this.soldAt,
     required this.saleItems,
   });
 
@@ -21,7 +21,7 @@ class SaleModel {
       userCi: json['user_ci'],
       typePaymentId: json['type_payment_id'],
       soldAt: DateTime.parse(json['sold_at']),
-      saleItems: (json['sale_items'] as List)
+      saleItems: (json['sale_items'] as List<dynamic>? ?? [])
           .map((item) => SaleItemModel.fromJson(item))
           .toList(),
     );
@@ -32,7 +32,7 @@ class SaleModel {
       'client_ci': clientCi,
       'user_ci': userCi,
       'type_payment_id': typePaymentId,
-      'sold_at': soldAt.toIso8601String(),
+      'sold_at': soldAt?.toIso8601String(),
       'sale_items': saleItems.map((item) => item.toJson()).toList(),
     };
   }

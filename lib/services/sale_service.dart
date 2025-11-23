@@ -65,7 +65,7 @@ class SaleService {
 
         return SaleModel.fromJson(saleJson);
       } else {
-        throw Exception('Failed to create sale (Código: ${response.statusCode})');
+        throw Exception('Failed to create sale (Código: ${response.statusCode}), Mensaje: ${response.body}');
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');

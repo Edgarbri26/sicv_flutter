@@ -67,32 +67,10 @@ class DetailProductCart extends StatelessWidget {
                 ],
               ),
             ),
-            // Text((item.price * item.quantity).toStringAsFixed(2)),
-            // Container(
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.all(
-            //       Radius.circular(AppSizes.borderRadiusM),
-            //     ),
-            //     color: AppColors.background,
-            //   ),
-
-            //   child: Row(
-            //     // children: [
-            //     //   IconButton(onPressed: () {}, icon: Icon(Icons.add)),
-            //     //   Text((item.stock).toString()),
-            //     //   IconButton(onPressed: () {}, icon: Icon(Icons.remove)),
-            //     // ],
-            //   ),
-            // ),
             Row(
               spacing: 0,
               children: [
                 Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
-                // IconButton(
-                //   onPressed: onTap,
-                //   icon: Icon(Icons.edit),
-                //   color: AppColors.edit,
-                // ),
                 IconButton(
                   onPressed: onDelete,
                   icon: Icon(Icons.delete),

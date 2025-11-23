@@ -1,31 +1,35 @@
 // lib/ui/screen/movements_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
+import 'package:sicv_flutter/models/movement_model.dart';
 // Importa tus modelos
 // Necesario para el modelo Product
 import 'package:sicv_flutter/models/movement_type.dart';
-import 'package:sicv_flutter/models/movement.dart'; // Asegúrate que este sea el nombre correcto
 import 'package:sicv_flutter/models/product_model.dart';
 import 'package:flutter/services.dart';
+import 'package:sicv_flutter/providers/product_provider.dart';
+import 'package:sicv_flutter/services/movement_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sidebarx/sidebarx.dart';
 
-class MovementsPage extends StatefulWidget {
+class MovementsPage extends ConsumerStatefulWidget {
   final SidebarXController controller;
   const MovementsPage({super.key, required this.controller});
 
   @override
-  State<MovementsPage> createState() => _MovementsPageState();
+  ConsumerState<MovementsPage> createState() => MovementsPageState();
 }
 
-class _MovementsPageState extends State<MovementsPage> {
+class MovementsPageState extends ConsumerState<MovementsPage> {
   // --- Estado ---
-  late List<StockMovement> _allMovements;
-  late List<StockMovement> _filteredMovements;
+  List<MovementModel> _allMovements = [];
+  List<MovementModel> _filteredMovements = [];
   final TextEditingController _searchController = TextEditingController();
+  List<ProductModel> _allProducts = [];
 
   // Filtros
   MovementType? _selectedMovementType;
@@ -40,19 +44,13 @@ class _MovementsPageState extends State<MovementsPage> {
   int? _sortColumnIndex; // Índice de la columna ordenada (null = ninguna)
   bool _sortAscending = true; // Dirección del orden (true = Ascendente)
   String? _selectedUser;
-  // --- ¡IMPORTANTE! Mueve la lista de productos aquí ---
-  // Esta lista (_allProducts) debe estar disponible para el diálogo
-  // Asegúrate de que esta lista se cargue/actualice correctamente desde tu API
-  late List<ProductModel> _allProducts;
 
   @override
   void initState() {
     super.initState();
-    // Primero carga los productos (necesario para el diálogo)
-    _loadProducts(); // Función separada para productos
-    // Luego carga los movimientos
     _loadMovements(); // Función separada para movimientos
     _searchController.addListener(_runFilter);
+    allproducts();
   }
 
   @override
@@ -61,108 +59,36 @@ class _MovementsPageState extends State<MovementsPage> {
     super.dispose();
   }
 
-  // Carga productos (simulación)
-  void _loadProducts() {
-    // --- SIMULACIÓN DE PRODUCTOS ---
-    _allProducts = [
-      // Product(
-      //   id: 1,
-      //   name: 'Harina PAN',
-      //   description: '...',
-      //   price: 1.40,
-      //   stock: 50,
-      //   category: ProductCategory(id: 1, name: 'Alimentos'),
-      //   sku: 'ALI-001',
-      // )
-    ];
-    // --- FIN SIMULACIÓN ---
-
-    // Llama a setState si esta carga fuera asíncrona
-    // setState((){});
-  }
-
   // Carga movimientos (simulación)
-  void _loadMovements() {
-    // --- SIMULACIÓN DE DATOS (Reemplaza con tu API) ---
-    final now = DateTime.now();
-
-    _allMovements = [
-      StockMovement(
-        dateTime: now.subtract(const Duration(hours: 1)),
-        productName: 'Harina PAN',
-        productSku: 'ALI-001',
-        movementType: MovementType.venta,
-        quantity: -2,
-        stockBefore: 52,
-        stockAfter: 50,
-        userName: 'Vendedor1',
-        referenceId: 'VTA-101',
-      ),
-      StockMovement(
-        dateTime: now.subtract(const Duration(hours: 3)),
-        productName: 'Gaseosa 2L',
-        productSku: 'BEB-002',
-        movementType: MovementType.compra,
-        quantity: 24,
-        stockBefore: 26,
-        stockAfter: 50,
-        userName: 'Admin',
-        referenceId: 'CMP-050',
-      ),
-      StockMovement(
-        dateTime: now.subtract(const Duration(days: 1)),
-        productName: 'Cigarros Marlboro',
-        productSku: 'TAB-001',
-        movementType: MovementType.venta,
-        quantity: -1,
-        stockBefore: 6,
-        stockAfter: 5,
-        userName: 'Vendedor1',
-        referenceId: 'VTA-100',
-      ),
-      StockMovement(
-        dateTime: now.subtract(const Duration(days: 2)),
-        productName: 'Harina PAN',
-        productSku: 'ALI-001',
-        movementType: MovementType.compra,
-        quantity: 50,
-        stockBefore: 2,
-        stockAfter: 52,
-        userName: 'Admin',
-        referenceId: 'CMP-048',
-      ),
-      StockMovement(
-        dateTime: now.subtract(const Duration(days: 3)),
-        productName: 'Café',
-        productSku: 'BEB-001',
-        movementType: MovementType.ajusteNegativo,
-        quantity: -1,
-        stockBefore: 1,
-        stockAfter: 0,
-        userName: 'Admin',
-        referenceId: 'Ajuste por daño',
-      ),
-      StockMovement(
-        dateTime: now.subtract(const Duration(days: 8)),
-        productName: 'Gaseosa 2L',
-        productSku: 'BEB-002',
-        movementType: MovementType.venta,
-        quantity: -4,
-        stockBefore: 30,
-        stockAfter: 26,
-        userName: 'Vendedor2',
-        referenceId: 'VTA-095',
-      ),
-    ];
-    _allMovements.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+  void _loadMovements() async {  
+    _allMovements = await MovementService().getAll();
+    _allMovements.sort((a, b) => b.movedAt.compareTo(a.movedAt));
     _filteredMovements = _allMovements;
     _runFilter(); // Aplica filtros iniciales
     // --- FIN SIMULACIÓN ---
   }
 
+  void allproducts () async {
+    final productsState = ref.watch(productsProvider);
+    productsState.when(
+      data: (products) {
+        setState(() {
+          // Actualiza el estado con los productos obtenidos
+          _allProducts = products;
+        });
+      },
+      loading: () {
+        // Maneja el estado de carga si es necesario
+      },
+      error: (error, stackTrace) {
+        // Maneja el error si es necesario
+      },
+    );
+  }
+
   void _runFilter() {
     // Verifica que _allMovements no sea null antes de usarla
-    List<StockMovement> results = _allMovements;
+    List<MovementModel> results = _allMovements;
     String searchText = _searchController.text.toLowerCase();
     final now = DateTime.now();
     DateTime startDate;
@@ -178,8 +104,8 @@ class _MovementsPageState extends State<MovementsPage> {
         results = results
             .where(
               (m) =>
-                  m.dateTime.isAfter(startDate) &&
-                  m.dateTime.isBefore(DateTime(now.year, now.month, now.day)),
+                  m.movedAt.isAfter(startDate) &&
+                  m.movedAt.isBefore(DateTime(now.year, now.month, now.day)),
             )
             .toList();
         break;
@@ -196,19 +122,19 @@ class _MovementsPageState extends State<MovementsPage> {
     }
 
     if (_selectedDateRange != 'Ayer') {
-      results = results.where((m) => m.dateTime.isAfter(startDate)).toList();
+      results = results.where((m) => m.movedAt.isAfter(startDate)).toList();
     }
 
     // 2. Filtrar por Tipo de Movimiento
     if (_selectedMovementType != null) {
       results = results
-          .where((m) => m.movementType == _selectedMovementType)
+          .where((m) => m.type == _selectedMovementType)
           .toList();
     }
 
     // Se ejecuta solo si _selectedUser NO es null (es decir, no es 'Todos')
     if (_selectedUser != null && _selectedUser!.isNotEmpty) {
-      results = results.where((m) => m.userName == _selectedUser).toList();
+      results = results.where((m) => m.user!.name == _selectedUser).toList();
     }
 
     // 3. Filtrar por Texto de Búsqueda
@@ -216,8 +142,8 @@ class _MovementsPageState extends State<MovementsPage> {
       results = results
           .where(
             (m) =>
-                m.productName.toLowerCase().contains(searchText) ||
-                (m.productSku ?? '').toLowerCase().contains(searchText),
+                m.product!.name.toLowerCase().contains(searchText) //||
+                //(m.product.sku ?? '').toLowerCase().contains(searchText),
           )
           .toList();
     }
@@ -230,28 +156,28 @@ class _MovementsPageState extends State<MovementsPage> {
         // ⚠️ Corregido: Los índices ahora coinciden con las columnas
         switch (_sortColumnIndex) {
           case 0: // ✅ Fecha y Hora
-            aValue = a.dateTime;
-            bValue = b.dateTime;
+            aValue = a.movedAt;
+            bValue = b.movedAt;
             break;
           case 1: // ✅ Producto (Nombre)
             // Usar ?? '' para manejar nulls de forma segura en Strings
-            aValue = a.productName;
-            bValue = b.productName;
+            aValue = a.product!.name;
+            bValue = b.product!.name;
             break;
           case 2: // ✅ Tipo (MovementType)
             // Convertir el enum o tipo a String para poder compararlo
-            aValue = a.movementType.toString();
-            bValue = b.movementType.toString();
+            aValue = a.type.toString();
+            bValue = b.type.toString();
             break;
           case 3: // ✅ Cant. (Quantity)
-            aValue = a.quantity;
-            bValue = b.quantity;
+            aValue = a.amount;
+            bValue = b.amount;
             break;
           // Los casos 4 y 5 (Stock Ant./Desp.) no tienen onSort, se omite.
           case 6: // ✅ Usuario
             // Usar ?? '' para manejar nulls de forma segura en Strings
-            aValue = a.userName;
-            bValue = b.userName;
+            aValue = a.user!.name;
+            bValue = b.user!.name;
             break;
           default:
             return 0; // No ordenar
@@ -332,7 +258,7 @@ class _MovementsPageState extends State<MovementsPage> {
   Widget _buildUserFilter() {
     // 1. Obtener la lista única de usuarios
     final List<String> uniqueUsers = _allMovements
-        .map((m) => m.userName)
+        .map((m) => m.user!.name)
         .whereType<String>() // Filtra solo los que son String y no null
         .where((name) => name.isNotEmpty) // Filtra strings vacías
         .toSet()
@@ -454,22 +380,6 @@ class _MovementsPageState extends State<MovementsPage> {
               onSort: _onSort,
               numeric: true,
             ),
-            // Índice de Columna 4: Stock Ant. (Sin onSort, por defecto)
-            DataColumn(
-              label: Text(
-                'Stock Ant.',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              numeric: true,
-            ),
-            // Índice de Columna 5: Stock Desp. (Sin onSort, por defecto)
-            DataColumn(
-              label: Text(
-                'Stock Desp.',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              numeric: true,
-            ),
             // Índice de Columna 6: Usuario
             DataColumn(
               label: Text(
@@ -500,25 +410,25 @@ class _MovementsPageState extends State<MovementsPage> {
           // Genera las filas a partir de la lista filtrada
           rows: _filteredMovements.map((movement) {
             // Determina el color y prefijo de la cantidad
-            final qtyColor = movement.quantity >= 0
+            final qtyColor = movement.amount >= 0
                 ? Colors.green.shade700
                 : Colors.red.shade700;
-            final qtyPrefix = movement.quantity > 0
+            final qtyPrefix = movement.amount > 0
                 ? '+'
                 : ''; // Solo '+' si es positivo
 
             return DataRow(
               cells: [
                 DataCell(
-                  Text(dateFormat.format(movement.dateTime)),
+                  Text(dateFormat.format(movement.movedAt)),
                 ), // Fecha formateada
                 DataCell(
                   Tooltip(
                     // Añade Tooltip si el nombre es largo
                     message:
-                        '${movement.productName}\nSKU: ${movement.productSku ?? 'N/A'}',
+                        '${movement.product!.name}\nSKU: ${movement.product?.sku ?? 'N/A'}',
                     child: Text(
-                      movement.productName,
+                      movement.product!.name,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -526,36 +436,28 @@ class _MovementsPageState extends State<MovementsPage> {
                 DataCell(
                   Row(
                     children: [
-                      // Muestra ícono y nombre del tipo
-                      Icon(
-                        movement.movementType.icon,
-                        color: movement.movementType.color,
-                        size: 16,
-                      ),
                       const SizedBox(width: 4),
-                      Text(movement.movementType.displayName),
+                      Text(movement.type),
                     ],
                   ),
                 ),
                 DataCell(
                   Text(
                     // Cantidad con color y signo
-                    qtyPrefix + movement.quantity.toString(),
+                    qtyPrefix + movement.amount.toString(),
                     style: TextStyle(
                       color: qtyColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                DataCell(Text(movement.stockBefore.toString())), // Stock antes
-                DataCell(Text(movement.stockAfter.toString())), // Stock después
-                DataCell(Text(movement.userName)), // Usuario
+                DataCell(Text(movement.user!.name)), // Usuario
                 DataCell(
                   Tooltip(
                     // Tooltip para referencias largas
-                    message: movement.referenceId ?? '-',
+                    message: movement.observation,
                     child: Text(
-                      movement.referenceId ?? '-',
+                      movement.observation,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -608,10 +510,10 @@ class _MovementsPageState extends State<MovementsPage> {
       itemBuilder: (context, index) {
         final movement = _filteredMovements[index];
         // Determina color y prefijo de cantidad
-        final qtyColor = movement.quantity >= 0
+        final qtyColor = movement.amount >= 0
             ? Colors.green.shade700
             : Colors.red.shade700;
-        final qtyPrefix = movement.quantity >= 0 ? '+' : '';
+        final qtyPrefix = movement.amount >= 0 ? '+' : '';
 
         return Card(
           elevation: 0.0,
@@ -632,24 +534,20 @@ class _MovementsPageState extends State<MovementsPage> {
           child: ListTile(
             leading: Tooltip(
               // Tooltip para el tipo de movimiento
-              message: movement.movementType.displayName,
-              child: Icon(
-                movement.movementType.icon,
-                color: movement.movementType.color,
-              ),
+              message: movement.type,
             ),
             title: Text(
-              '${movement.productName} (${movement.productSku ?? 'N/A'})',
+              '${movement.product!.name} (${movement.product?.sku ?? 'N/A'})',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
-              '${dateFormat.format(movement.dateTime)} - ${movement.userName}\n' // Fecha y usuario
-              'Ref: ${movement.referenceId ?? '-'} | Stock: ${movement.stockBefore} -> ${movement.stockAfter}', // Referencia y cambio de stock
+              '${dateFormat.format(movement.movedAt)} - ${movement.user!.name}\n' // Fecha y usuario
+              'Ref: ${movement.observation} | Stock: ${movement.amount}', // Referencia y cambio de stock
             ),
             trailing: Text(
               // Cantidad al final
-              qtyPrefix + movement.quantity.toString(),
+              qtyPrefix + movement.amount.toString(),
               style: TextStyle(
                 color: qtyColor,
                 fontWeight: FontWeight.bold,
@@ -1078,18 +976,18 @@ class _MovementsPageState extends State<MovementsPage> {
       return; // No permite stock negativo
     }
 
-    final newMovement = StockMovement(
-      dateTime: DateTime.now(),
-      productName: product.name,
-      productSku: product.sku,
-      movementType: selectedAdjustmentType,
-      quantity: signedQuantity,
-      stockBefore: currentStock,
-      stockAfter: stockAfter,
-      userName: 'UsuarioActual', // Reemplaza
-      referenceId: reasonController.text.isNotEmpty
+    final newMovement = MovementModel(
+      movementId: 0, // Asumir que el ID será asignado por el backend
+      depotId: 1, // Reemplaza con el depósito adecuado
+      movedAt: DateTime.now(),
+      productId: product.id,
+      type: selectedAdjustmentType.displayName,
+      amount: signedQuantity,
+      userCi: "31350493", // Reemplaza con el CI de usuario adecuado
+      observation: reasonController.text.isNotEmpty
           ? reasonController.text
           : 'Ajuste manual',
+      status: true,
     );
 
     // --- LLAMADA A API Y ACTUALIZACIÓN LOCAL (dentro del setState de la página) ---

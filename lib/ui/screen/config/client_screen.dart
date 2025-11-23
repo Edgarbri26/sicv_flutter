@@ -40,7 +40,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
 
   Future<List<ClientModel>> _fetchClients() async {
     try {
-      final clients = await _clientService.getClients();
+      final clients = await _clientService.getAll();
       setState(() {
         _clientsOriginales = clients;
         _filterUsers(runSetState: false);

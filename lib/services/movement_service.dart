@@ -8,7 +8,7 @@ class MovementService {
   final String baseUrl = ApiUrl().url;
   //final http.Client _client  MovementService({http.Client? client}) : _client = client ?? http.Client();
 
-  Future<List<MovementModel>> getAllMovements() async {
+  Future<List<MovementModel>> getAll() async {
     final uri = Uri.parse('$baseUrl/movement');    
 
     try {
