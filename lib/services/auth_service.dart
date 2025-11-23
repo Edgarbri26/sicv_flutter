@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sicv_flutter/config/api_url.dart';
 import 'dart:convert';
-import 'package:sicv_flutter/models/user_model.dart';
+import 'package:sicv_flutter/models/user/user_model.dart';
 
 class AuthService {
   final String baseUrl = ApiUrl().url;

@@ -9,7 +9,7 @@ import 'package:sicv_flutter/models/movement_model.dart';
 // Importa tus modelos
 // Necesario para el modelo Product
 import 'package:sicv_flutter/models/movement_type.dart';
-import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/services/movement_service.dart';
@@ -48,9 +48,11 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
   @override
   void initState() {
     super.initState();
-    _loadMovements(); // Función separada para movimientos
     _searchController.addListener(_runFilter);
-    allproducts();
+
+    Future.microtask(() {
+      _loadMovements();
+    });
   }
 
   @override
@@ -61,29 +63,22 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
 
   // Carga movimientos (simulación)
   void _loadMovements() async {  
-    _allMovements = await MovementService().getAll();
-    _allMovements.sort((a, b) => b.movedAt.compareTo(a.movedAt));
-    _filteredMovements = _allMovements;
-    _runFilter(); // Aplica filtros iniciales
-    // --- FIN SIMULACIÓN ---
-  }
+    try {
+      final movements = await MovementService().getAll();
+      
+      // Verifica si el widget sigue vivo antes de actualizar el estado
+      if (!mounted) return; 
 
-  void allproducts () async {
-    final productsState = ref.watch(productsProvider);
-    productsState.when(
-      data: (products) {
-        setState(() {
-          // Actualiza el estado con los productos obtenidos
-          _allProducts = products;
-        });
-      },
-      loading: () {
-        // Maneja el estado de carga si es necesario
-      },
-      error: (error, stackTrace) {
-        // Maneja el error si es necesario
-      },
-    );
+      setState(() {
+        _allMovements = movements;
+        _allMovements.sort((a, b) => b.movedAt.compareTo(a.movedAt));
+        _filteredMovements = _allMovements;
+      });
+      
+      _runFilter(); 
+    } catch (e) {
+      print("Error cargando movimientos: $e");
+    }
   }
 
   void _runFilter() {
@@ -426,7 +421,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                   Tooltip(
                     // Añade Tooltip si el nombre es largo
                     message:
-                        '${movement.product!.name}\nSKU: ${movement.product?.sku ?? 'N/A'}',
+                        '${movement.product!.name}\nSKU: ${movement.product ?? 'N/A'}',
                     child: Text(
                       movement.product!.name,
                       overflow: TextOverflow.ellipsis,
@@ -537,7 +532,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
               message: movement.type,
             ),
             title: Text(
-              '${movement.product!.name} (${movement.product?.sku ?? 'N/A'})',
+              '${movement.product!.name} (${movement.product ?? 'N/A'})',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -560,11 +555,6 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
       },
     );
   }
-
-  // --- Diálogo _showAddMovementDialog ---
-  // Se asume que tienes estas variables de estado en tu StatefulWidget
-  // final List<Product> _allProducts;
-  // void _runFilter();
 
   void _showAddMovementModal(BuildContext context) {
     // Controladores y estado local para el modal
@@ -1030,8 +1020,19 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    //final double breakpoint = 600.0;
-    //final bool isWide = MediaQuery.of(context).size.width >= breakpoint;
+    ref.listen(productsProvider, (previous, next) {
+      next.when(
+        data: (products) {
+          setState(() {
+            _allProducts = products;
+            // Si tienes lógica de filtrado inicial, llámala aquí también:
+            // _filteredProducts = products; 
+          });
+        },
+        loading: () {}, // No hace nada mientras carga
+        error: (err, stack) => print("Error en productos: $err"),
+      );
+    });
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1149,14 +1150,14 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
               //const Divider(height: 24),
 
               // Lista/Tabla
-              Center(
-                child: Expanded(
-                  // Empieza directamente comprobando si está vacía
-                  child: _filteredMovements.isEmpty
-                      ? const Center(
-                          child: Text('No se encontraron movimientos.'),
-                        )
-                      : LayoutBuilder(
+              Expanded(
+                // Empieza directamente comprobando si está vacía
+                child: _filteredMovements.isEmpty
+                    ? const Center(
+                        child: Text('No se encontraron movimientos.'),
+                      )
+                    : Center(
+                      child: LayoutBuilder(
                           builder: (context, constraints) {
                             bool isDesktop = constraints.maxWidth > 700;
                             return isDesktop
@@ -1164,7 +1165,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                                 : _buildMovementsListView();
                           },
                         ),
-                ),
+                    ),
               ),
             ],
           ),
@@ -1181,20 +1182,3 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
   }
 } // Fin de _MovementsScreenState
 
-class MovementsWideLayout extends StatelessWidget {
-  const MovementsWideLayout({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-class MovementsNarrowLayot extends StatelessWidget {
-  const MovementsNarrowLayot({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}

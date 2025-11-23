@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/models/depot_model.dart';
-import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/models/depot/depot_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/models/provider_model.dart';
 import 'package:sicv_flutter/models/purchase_item_controller.dart';
 import 'package:sicv_flutter/models/purchase_input_model.dart';

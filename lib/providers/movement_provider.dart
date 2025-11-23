@@ -100,8 +100,7 @@ final filteredMovementsProvider = Provider<AsyncValue<List<MovementModel>>>((ref
     if (filters.searchQuery.isNotEmpty) {
       final query = filters.searchQuery.toLowerCase();
       results = results.where((m) =>
-          (m.product?.name.toLowerCase().contains(query) ?? false) ||
-          (m.product?.sku?.toLowerCase().contains(query) ?? false)
+          (m.product?.name.toLowerCase().contains(query) ?? false)
       ).toList();
     }
 

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/services/product_service.dart';
 
 // 1. Proveedor del Servicio (Para que sea testear y desacoplar)

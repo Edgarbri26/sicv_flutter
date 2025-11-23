@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:sicv_flutter/models/user_model.dart';
+import 'package:sicv_flutter/models/user/user_model.dart';
 import 'package:sicv_flutter/services/auth_service.dart';
 
 final userServiceProvider = Provider<AuthService>((ref) {

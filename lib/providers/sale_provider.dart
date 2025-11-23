@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';// Asegúrate de que este sea el path correcto
 
 // 1. Proveedor del Estado de Búsqueda

@@ -1,6 +1,6 @@
- import 'package:sicv_flutter/models/depot_model.dart';
- import 'package:sicv_flutter/models/product_model.dart';
-import 'package:sicv_flutter/models/user_model.dart';
+import 'package:sicv_flutter/models/depot/depot_summary_model.dart';
+import 'package:sicv_flutter/models/product/product_summary_model.dart';
+import 'package:sicv_flutter/models/user/user_summary_model.dart';
 
 class MovementModel {
   final int movementId;
@@ -12,9 +12,9 @@ class MovementModel {
   final String observation;
   final DateTime movedAt;
   final bool status;
-  final UserModel? user;
-  final ProductModel? product;
-  final DepotModel? depot;
+  final UserSummaryModel? user;
+  final ProductSummaryModel? product;
+  final DepotSummaryModel? depot;
 
   MovementModel({
     required this.movementId,
@@ -42,9 +42,9 @@ class MovementModel {
       observation: json['observation'],
       movedAt: DateTime.parse(json['moved_at']),
       status: json['status'],
-      product: ProductModel?.fromJson(json['product']),
-      depot: DepotModel?.fromJson(json['depot']),
-      user: UserModel?.fromJson(json['user']),
+      product: ProductSummaryModel.fromJson(json['product']),
+      depot: DepotSummaryModel?.fromJson(json['depot']),
+      user: UserSummaryModel?.fromJson(json['user']),
     );
   }
   
@@ -57,11 +57,7 @@ class MovementModel {
       'type': type,
       'amount': amount,
       'observation': observation,
-      'moved_at': movedAt.toIso8601String(),
       'status': status,
-      'product': product?.toJson(),
-      'depot': depot?.toJson(),
-      'user': user?.toJson(),
     };
   } 
 }

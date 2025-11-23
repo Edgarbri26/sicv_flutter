@@ -4,7 +4,7 @@ import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
 // --- IMPORTACIONES AÑADIDAS ---
-import 'package:sicv_flutter/models/depot_model.dart'; // Reemplaza con tu ruta real
+import 'package:sicv_flutter/models/depot/depot_model.dart'; // Reemplaza con tu ruta real
 import 'package:sicv_flutter/services/depot_service.dart'; // Reemplaza con tu ruta real
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Reemplaza con tu ruta real
 import 'package:sicv_flutter/ui/widgets/atomic/checkbox_field_app.dart'; // Reemplaza con tu ruta real

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // 1. Importar Riverpod
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/color_stock.dart';
 import 'package:sicv_flutter/models/category_model.dart';
-import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';

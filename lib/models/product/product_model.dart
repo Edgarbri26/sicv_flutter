@@ -1,7 +1,6 @@
-// --- 1. Importa el nuevo modelo que acabas de crear ---
 import 'package:sicv_flutter/models/stock_general_model.dart';
 import 'package:sicv_flutter/models/stock_lots_model.dart';
-import 'category_model.dart';
+import '../category_model.dart';
 
 class ProductModel {
   final int id;
@@ -75,34 +74,3 @@ class ProductModel {
     };
   }
 }
-
-
-//             "product_id": 9,
-//             "name": "Baterías AAA (Paquete 4)",
-//             "description": "Baterías alcalinas AAA, paquete de 4.",
-//             "base_price": "3.50",
-//             "image_url": null,
-//             "min_stock": 30,
-//             "perishable": true,
-//             "status": true,
-//             "category": {
-//                 "category_id": 4,
-//                 "name": "Consumibles",
-//                 "description": "Suministros que se agotan con el uso, como tinta, papel y baterías.",
-//                 "status": true,
-//                 "createdAt": "2025-11-11T04:16:58.477Z",
-//                 "updatedAt": "2025-11-11T04:16:58.477Z"
-//             },
-//             "stock_generals": [],
-//             "stock_lots": [
-//                 {
-//                     "stock_lot_id": 1,
-//                     "product_id": 9,
-//                     "expiration_date": "2027-10-01T00:00:00.000Z",
-//                     "amount": 150,
-//                     "cost_lot": "2.80",
-//                     "status": true,
-//                 },
-//             ],
-//             "price_bs": 815.66
-//         },

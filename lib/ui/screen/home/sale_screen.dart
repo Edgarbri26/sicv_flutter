@@ -7,16 +7,15 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/client_model.dart';
-import 'package:sicv_flutter/models/product_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/models/sale_item_model.dart';
 import 'package:sicv_flutter/models/sale_model.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
-import 'package:sicv_flutter/models/user_model.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
-import 'package:sicv_flutter/services/auth_service.dart';
+
 import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/services/type_payment_service.dart';

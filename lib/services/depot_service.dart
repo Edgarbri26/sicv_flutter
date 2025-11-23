@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/depot_model.dart'; // Asegúrate de que la ruta sea correcta
+import '../models/depot/depot_model.dart'; // Asegúrate de que la ruta sea correcta
 import 'package:sicv_flutter/config/api_url.dart';
 
 

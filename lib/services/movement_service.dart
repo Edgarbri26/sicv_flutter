@@ -20,8 +20,8 @@ class MovementService {
       );      
       
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;        
-        final List<dynamic> movimentListJson = responseData['data'] as List<dynamic>;
+        final Map<String, dynamic> responseData = json.decode(response.body);        
+        final List<dynamic> movimentListJson = responseData['data'] ?? [];
 
         return movimentListJson
           .map((json) => MovementModel.fromJson(json as Map<String, dynamic>))
