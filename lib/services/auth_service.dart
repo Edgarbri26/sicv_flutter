@@ -78,7 +78,9 @@ class AuthService {
     final userModel = UserModel.fromJson(userJson);
 
     String userJsonString = json.encode(userModel.toJson());
+    print('Datos de usuario guardados: $userJsonString');
     await prefs.setString(_userDataKey, userJsonString);
+
   }
 
   Future<UserModel?> getLoggedInUser() async {
@@ -89,18 +91,44 @@ class AuthService {
 
     final Map<String, dynamic> userJson = json.decode(userJsonString);
 
+    print( 'Datos de usuario recuperados: $userJsonString');
+
     return UserModel.fromJson(userJson);  
   }
 
   Future<void> logout() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // 1. Eliminar el Token de autenticación
     await prefs.remove(_tokenKey);
 
-    // 2. Eliminar los datos del usuario (UserModel serializado)
     await prefs.remove(_userDataKey);
 
     print('Sesión cerrada. Token y datos de usuario eliminados.');
   }
+
+  Future<Map<String, dynamic>?> fetchFullRole(int roleId) async {
+  final token = await getToken();
+  if (token == null) return null;
+
+  final uri = Uri.parse('$baseUrl/rol/$roleId'); // O tu endpoint: /auth/me
+
+  try {
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Importante enviar el token
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      // Asumiendo que el backend devuelve { "data": { "id": 1, "name": "Admin", "permissions": [] } }
+      return decoded['data']; 
+    }
+  } catch (e) {
+    print("Error obteniendo rol: $e");
+  }
+  return null;
+}
 }

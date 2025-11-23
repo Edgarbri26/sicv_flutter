@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/core/exceptions/backend_exception.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/category_model.dart';
@@ -10,9 +11,12 @@ import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/models/sale_item_model.dart';
 import 'package:sicv_flutter/models/sale_model.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
+import 'package:sicv_flutter/models/user_model.dart';
+import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
+import 'package:sicv_flutter/services/auth_service.dart';
 import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/services/type_payment_service.dart';
@@ -445,7 +449,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                             onPressed: () {
                               // Lógica para confirmar la venta
                               _saveSale();
-                              Navigator.of(context).pop(); // Cerrar el modal
                             }),
                         ],
                       ),
@@ -566,7 +569,20 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void _saveSale() async {
+
     List<SaleItemModel> saleItems = [];
+
+    if (_itemsForSale.isEmpty) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('La venta no puede estar vacía.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     for (var item in _itemsForSale) {
       saleItems.add(
         SaleItemModel(
@@ -577,17 +593,87 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         ),
       );
     }
-    SaleModel sale = SaleModel(
+
+    if ( selectedClient == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, seleccione un cliente.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if ( _selectedTypePayment == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, seleccione un tipo de pago.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final authState = ref.watch(authProvider);
+  
+    if (authState.user == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al obtener datos del usuario.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final SaleModel sale = SaleModel(
       clientCi: selectedClient!.clientCi, 
-      userCi: "31350493", 
+      userCi: authState.user!.userCi, 
       typePaymentId: _selectedTypePayment!.typePaymentId,
       saleItems: saleItems,
     );
 
     try {
-       await SaleService().createSale(sale);
+
+        await SaleService().createSale(sale);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Venta registrada exitosamente.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        Navigator.of(context).pop(); 
+    } on BackendException catch (e) {
+      
+      Navigator.of(context).pop();
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Error al procesar'),
+          content: Text(e.message), // <--- "Stock insuficiente", etc.
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Aceptar'),
+            )
+          ],
+        ),
+      );
     } catch (e) {
-      print("Error al guardar la venta: $e");
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

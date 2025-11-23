@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
-import 'package:sicv_flutter/models/product_model.dart';
 import 'package:sicv_flutter/ui/screen/home/inventory_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 
 // Importaciones requeridas por tu widget 'Menu'
-import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
-import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class HomePage extends StatefulWidget {
