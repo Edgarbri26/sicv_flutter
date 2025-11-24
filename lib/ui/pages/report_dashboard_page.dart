@@ -1,9 +1,7 @@
 // lib/pages/report_dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
 import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
-import 'package:sicv_flutter/ui/screen/report/inventory_view.dart';
 import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';

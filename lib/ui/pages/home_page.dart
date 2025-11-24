@@ -184,7 +184,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         );
       case 2:
         return FloatingActionButton(
-          onPressed: () => _inventoryScreenKey.currentState?.addNewProduct(),
+          onPressed: () => _inventoryScreenKey.currentState?.showProductForm(),
           backgroundColor: AppColors.primary,
           child: Icon(Icons.add, color: AppColors.secondary),
         );

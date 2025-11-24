@@ -12,7 +12,7 @@ class ProductModel {
   final int minStock;
   final bool perishable;
   final bool status;
-  final String? imageUrl; // La URL de la imagen
+  final String? imageUrl;
   final int totalStock;
   final List<StockGeneralModel> stockGenerals;
   final List<StockLotsModel> stockLots;
@@ -39,19 +39,27 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      stockGenerals: StockGeneralModel.fromJsonList(json['stock_generals']),
-      stockLots: StockLotsModel.fromJsonList(json['stock_lots']),
-      priceBs: double.parse(json['price_bs'].toString()),
-      minStock: json['min_stock'],
-      perishable: json['perishable'],
-      status: json['status'],
+      // Nota: Es buena práctica usar condicionales (?) por si la lista viene nula
+      stockGenerals: json['stock_generals'] != null 
+          ? StockGeneralModel.fromJsonList(json['stock_generals']) 
+          : [],
+      stockLots: json['stock_lots'] != null 
+          ? StockLotsModel.fromJsonList(json['stock_lots']) 
+          : [],
+      priceBs: double.tryParse(json['price_bs'].toString()) ?? 0.0, // tryParse es más seguro
+      minStock: json['min_stock'] ?? 0,
+      perishable: json['perishable'] ?? false,
+      status: json['status'] ?? false,
       id: json['product_id'],
       name: json['name'],
-      description: json['description'],
-      price: double.parse(json['base_price'].toString()),
+      description: json['description'] ?? '',
+      price: double.tryParse(json['base_price'].toString()) ?? 0.0,
       imageUrl: json['image_url'],
-      totalStock: json['total_stock'],
+      totalStock: json['total_stock'] ?? 0,
       category: CategoryModel.fromJson(json['category']),
+      
+      // --- ¡AQUÍ FALTABA ESTA LÍNEA! ---
+      sku: json['sku'], 
     );
   }
 
@@ -67,7 +75,7 @@ class ProductModel {
       'perishable': perishable,
       'status': status,
       'total_stock': totalStock,
-      'stock_generals': stockGenerals,
+      'stock_generals': stockGenerals, // Asegúrate de que estos objetos tengan su propio toJson() si los envías
       'stock_lots': stockLots,
       'sku': sku,
       'category': category.toJson(),
