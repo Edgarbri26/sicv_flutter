@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sicv_flutter/core/base/services_base.dart';
 import '../models/provider_model.dart'; // Asegúrate de que la ruta sea correcta
 import '../config/api_url.dart';
 
-class ProviderService {
+class ProviderService implements ServicesInterface<ProviderModel> {
   final String _baseUrl = ApiUrl().url; // IP para emulador
 
   // --- OBTENER TODOS LOS PROVEEDORES ---
-  Future<List<ProviderModel>> getAllProviders() async {
+  @override
+  Future<List<ProviderModel>> getAll() async {
     final url = Uri.parse('$_baseUrl/provider'); // o /providers
     try {
       final response = await http.get(
@@ -29,8 +31,8 @@ class ProviderService {
     }
   }
 
-  // --- OBTENER UN PROVEEDOR POR ID ---
-  Future<ProviderModel> getProviderById(int id) async {
+  @override
+  Future<ProviderModel> getById(int id) async {
     final url = Uri.parse('$_baseUrl/provider/$id'); // o /providers/$id
     try {
       final response = await http.get(url);
@@ -47,13 +49,10 @@ class ProviderService {
     }
   }
 
-  // --- CREAR UN NUEVO PROVEEDOR ---
-  Future<ProviderModel> createProvider({
-    required String name,
-    required String located,
-  }) async {
+  @override
+  Future<ProviderModel> create(Map<String, dynamic> map) async {
     final url = Uri.parse('$_baseUrl/provider'); // o /providers
-    final body = json.encode({'name': name, 'located': located});
+    final body = json.encode({'name': map['name'], 'located': map['located']});
 
     try {
       final response = await http.post(
@@ -62,8 +61,21 @@ class ProviderService {
         body: body,
       );
 
-      if (response.statusCode == 201) {
-        return ProviderModel.fromJson(json.decode(response.body)['data']);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // Intentamos parsear el objeto retornado por la API
+        try {
+          final Map<String, dynamic> bodyMap = json.decode(response.body);
+          final data = bodyMap['data'] ?? bodyMap['provider'] ?? bodyMap;
+          if (data is Map<String, dynamic>) {
+            return ProviderModel.fromJson(data);
+          }
+        } catch (_) {
+          // Ignoramos parse errors y hacemos fallback
+        }
+
+        // Fallback: si la API no retorna el recurso, recargamos y buscamos por nombre
+        final all = await getAll();
+        return all.firstWhere((p) => p.name == map['name']);
       } else {
         throw Exception(
           'Error al crear el proveedor (Código: ${response.statusCode})',
@@ -74,14 +86,10 @@ class ProviderService {
     }
   }
 
-  // --- ACTUALIZAR UN PROVEEDOR (usando PATCH) ---
-  Future<ProviderModel> updateProvider(
-    int id, {
-    required String name,
-    required String located,
-  }) async {
-    final url = Uri.parse('$_baseUrl/provider/$id'); // o /providers/$id
-    final body = json.encode({'name': name, 'located': located});
+  @override
+  Future<ProviderModel> update(int id, Map<String, dynamic> map) async {
+    final url = Uri.parse('$_baseUrl/provider/${id}'); // o /providers/$id
+    final body = json.encode({'name': map['name'], 'located': map['located']});
 
     try {
       final response = await http.patch(
@@ -102,8 +110,8 @@ class ProviderService {
     }
   }
 
-  // --- ELIMINAR UN PROVEEDOR ---
-  Future<void> deleteProvider(int id) async {
+  @override
+  Future<void> delete(int id) async {
     final url = Uri.parse('$_baseUrl/provider/$id'); // o /providers/$id
     try {
       final response = await http.delete(
@@ -121,7 +129,8 @@ class ProviderService {
     }
   }
 
-  Future<void> deactivateProvider(int id) async {
+  @override
+  Future<void> deactivate(int id) async {
     final url = Uri.parse(
       '$_baseUrl/provider/$id/deactivate',
     ); // o /providers/$id
@@ -141,7 +150,8 @@ class ProviderService {
     }
   }
 
-  Future<void> activateProvider(int id) async {
+  @override
+  Future<void> activate(int id) async {
     final url = Uri.parse('$_baseUrl/provider/$id/activate');
 
     try {

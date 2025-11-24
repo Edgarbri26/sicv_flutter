@@ -10,10 +10,11 @@ import 'package:sicv_flutter/models/purchase_item_input_model.dart';
 import 'package:sicv_flutter/models/purchase_model.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
+import 'package:sicv_flutter/providers/providers_provider.dart';
+import 'package:sicv_flutter/providers/type_payment_provider.dart';
 import 'package:sicv_flutter/services/depot_service.dart';
 import 'package:sicv_flutter/services/provider_service.dart';
 import 'package:sicv_flutter/services/purchase_service.dart';
-import 'package:sicv_flutter/services/type_payment_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
@@ -28,12 +29,10 @@ class PurchaseScreen extends ConsumerStatefulWidget {
 }
 
 class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
-  final ProviderService _providerService = ProviderService();
-  final TypePaymentService _typePaymentService = TypePaymentService();
+  // final TypePaymentService _typePaymentService = TypePaymentService();
   final DepotService _depotService = DepotService();
   final PurchaseService _purchaseService = PurchaseService();
-  late List<ProviderModel> _allProviders = [];
-  late List<TypePaymentModel> _allTypePayments = [];
+  // late List<TypePaymentModel> _allTypePayments = [];
 
   ProviderModel? _selectedProvider;
   TypePaymentModel? _selectedTypePayment;
@@ -66,16 +65,96 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final typePaymentsState = ref.watch(typePaymentProvider);
+    final providersState = ref.watch(providersProvider);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Consumer(
+                      builder: (context, ref, child) {
+                        return providersState.when(
+                          loading: () =>
+                              Center(child: CircularProgressIndicator()),
+                          error: (error, stack) =>
+                              Center(child: Text('Error: $error')),
+                          data: (providers) {
+                            return DropDownApp(
+                              items: providers,
+                              initialValue: _selectedProvider,
+                              onChanged: (newValue) {
+                                // Manejar el cambio de tipo de pago seleccionado
+                                setState(() {
+                                  _selectedProvider = newValue;
+                                });
+                              },
+                              itemToString: (provider) => provider.name,
+                              labelText: 'Seleccionar Proveedor',
+                              prefixIcon: Icons.account_box,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        return typePaymentsState.when(
+                          loading: () =>
+                              Center(child: CircularProgressIndicator()),
+                          error: (error, stack) =>
+                              Center(child: Text('Error: $error')),
+                          data: (typePayments) {
+                            return DropDownApp(
+                              items: typePayments,
+                              initialValue: _selectedTypePayment,
+                              onChanged: (newValue) {
+                                // Manejar el cambio de tipo de pago seleccionado
+                                setState(() {
+                                  _selectedTypePayment = newValue;
+                                });
+                              },
+                              itemToString: (typePayment) => typePayment.name,
+                              labelText: 'Seleccionar Tipo de Pago',
+                              prefixIcon: Icons.payment,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    _buildProductList(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+            _buildSummaryAndSave(),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _loadData() async {
-    final providers = await _providerService.getAllProviders();
     final depots = await _depotService.getDepots();
-    final typePayments = await _typePaymentService.getAll();
+    // final typePayments = await _typePaymentService.getAll();
 
     if (mounted) {
       setState(() {
-        _allProviders = providers;
         _allDepots = depots;
-        _allTypePayments = typePayments;
+        // _allTypePayments = typePayments;
       });
     }
   }
@@ -109,11 +188,13 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       text: product.price.toStringAsFixed(2),
     );
 
-    DepotModel? initialDepot = (_allDepots.isNotEmpty) ? _allDepots.first : null;
+    DepotModel? initialDepot = (_allDepots.isNotEmpty)
+        ? _allDepots.first
+        : null;
 
     TextEditingController? expirationDateController;
 
-    if(product.perishable) {
+    if (product.perishable) {
       expirationDateController = TextEditingController();
     }
     // Añade listeners para que el total se actualice automáticamente
@@ -127,7 +208,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       expirationDateController: expirationDateController,
       selectedDepot: initialDepot,
     );
-    
+
     setState(() {
       _purchaseItems.add(newItem);
     });
@@ -175,20 +256,23 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       final unitCost = double.tryParse(item.costController.text) ?? 0.0;
 
       final purchaseItem = PurchaseItemInputModel(
-        productId: item.product.id, 
+        productId: item.product.id,
         depotId: item.selectedDepot!.depotId,
-        amount: amount, 
+        amount: amount,
         unitCost: unitCost,
-        expirationDate: item.product.perishable && item.expirationDateController != null && item.expirationDateController!.text.isNotEmpty
-        // 💡 Mejor usar DateTime.tryParse() para evitar errores si el formato es malo
-        ? DateTime.tryParse(item.expirationDateController!.text)
-        : null,
+        expirationDate:
+            item.product.perishable &&
+                item.expirationDateController != null &&
+                item.expirationDateController!.text.isNotEmpty
+            // 💡 Mejor usar DateTime.tryParse() para evitar errores si el formato es malo
+            ? DateTime.tryParse(item.expirationDateController!.text)
+            : null,
       );
       purchaseItemsList.add(purchaseItem);
     }
 
     final purchaseInput = PurchaseInputModel(
-      providerId: _selectedProvider!.providerId,
+      providerId: _selectedProvider!.id,
       userCi: '31350493',
       status: 'Aprobado',
       typePaymentId: _selectedTypePayment!.typePaymentId,
@@ -196,12 +280,12 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     );
 
     try {
+      final PurchaseModel response = await _purchaseService.createPurchase(
+        purchaseInput,
+      );
 
-    final PurchaseModel response = await _purchaseService.createPurchase(purchaseInput);
-
-    print('Compra registrada con ID: ${response.providerId}');
-    print(response.purchaseId);
-
+      print('Compra registrada con ID: ${response.providerId}');
+      print(response.purchaseId);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -235,16 +319,15 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
   /// Muestra el modal para buscar y añadir productos
   void showProductSearchModal() {
-    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) {
         return Consumer(
-          builder: (context, ref, child) { 
+          builder: (context, ref, child) {
             final productsState = ref.watch(productsProvider);
             final modalHeight = MediaQuery.of(context).size.height * 0.8;
-            
+
             return productsState.when(
               loading: () => Container(
                 height: modalHeight,
@@ -257,13 +340,12 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
               ),
               error: (error, stack) => Container(
                 height: modalHeight,
-                child: Center(child: Text('Error: $error'))
+                child: Center(child: Text('Error: $error')),
               ),
               data: (products) {
                 List<ProductModel> supplierProducts = productsState.value ?? [];
                 List<ProductModel> filteredProducts = supplierProducts;
                 return StatefulBuilder(
-                  
                   builder: (modalContext, modalSetState) {
                     void filterModalList(String query) {
                       modalSetState(() {
@@ -286,7 +368,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                     }
 
                     return Container(
-                      height: modalHeight, 
+                      height: modalHeight,
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
@@ -296,7 +378,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                           ),
                           const SizedBox(height: 16),
                           TextFieldApp(
-                            controller: _searchController, 
+                            controller: _searchController,
                             labelText: 'Buscar producto por nombre o SKU',
                             prefixIcon: Icons.search,
                             onChanged: filterModalList,
@@ -322,15 +404,19 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                                     ),
                                   ),
                                   clipBehavior: Clip.antiAlias,
-                                  color: isAlreadyAdded ? Colors.grey[300] : null,
+                                  color: isAlreadyAdded
+                                      ? Colors.grey[300]
+                                      : null,
                                   child: ListTile(
                                     title: Text(product.name),
-                                    subtitle: Text('Stock actual: ${product.totalStock}'),
+                                    subtitle: Text(
+                                      'Stock actual: ${product.totalStock}',
+                                    ),
                                     trailing: isAlreadyAdded
                                         ? Icon(Icons.check, color: Colors.green)
                                         : Icon(Icons.add),
                                     onTap: isAlreadyAdded
-                                        ? null 
+                                        ? null
                                         : () => _addProductToPurchase(product),
                                   ),
                                 );
@@ -342,106 +428,62 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                     );
                   },
                 );
-              }
+              },
             );
-          }
-        );   
-      } 
+          },
+        );
+      },
     ).whenComplete(
       () => _searchController.clear(),
     ); // Limpia el buscador al cerrar el modal
   }
 
   /// El Dropdown para seleccionar el proveedor
-  Widget _buildSupplierSelector() {
-    return DropdownButtonFormField<ProviderModel>(
-      initialValue: _selectedProvider,
 
-      decoration: InputDecoration(
-        labelStyle: TextStyle(
-          fontSize: 14.0,
-          color:
-              AppColors.textSecondary,
-        ),
-        filled: true,
-        fillColor: AppColors.secondary,
-        prefixIcon: Icon(Icons.store, size: 20),
-        labelText: 'Proveedor',
-        hintText: 'Selecciona un Proveedor...',
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            width: 3.0,
-            color: AppColors.border,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            width: 3.0, 
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ),
-      items: _allProviders.map((supplier) {
-        return DropdownMenuItem<ProviderModel>(
-          value: supplier,
-          child: Text(supplier.name),
-        );
-      }).toList(),
+  // Widget _buildTypePaymentSelector() {
+  // return DropdownButtonFormField<TypePaymentModel>(
+  //   initialValue: _selectedTypePayment,
 
-      onChanged: (ProviderModel? newValue) {
-        setState(() {
-          _selectedProvider = newValue;
-        });
-      },
-    );
-  }
+  //   decoration: InputDecoration(
+  //     labelStyle: TextStyle(
+  //       fontSize: 14.0,
+  //       color:
+  //           AppColors.textSecondary,
+  //     ),
+  //     filled: true,
+  //     fillColor: AppColors.secondary,
+  //     prefixIcon: Icon(Icons.store, size: 20),
+  //     labelText: 'Tipo de Pago',
+  //     hintText: 'Selecciona un Tipo de Pago...',
+  //     enabledBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(12),
+  //       borderSide: BorderSide(
+  //         width: 3.0,
+  //         color: AppColors.border,
+  //       ),
+  //     ),
+  //     focusedBorder: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(12),
+  //       borderSide: BorderSide(
+  //         width: 3.0,
+  //         color: AppColors.textSecondary,
+  //       ),
+  //     ),
+  //   ),
+  //   items: _allTypePayments.map((typePayment) {
+  //     return DropdownMenuItem<TypePaymentModel>(
+  //       value: typePayment,
+  //       child: Text(typePayment.name),
+  //     );
+  //   }).toList(),
 
-  Widget _buildTypePaymentSelector() {
-    return DropdownButtonFormField<TypePaymentModel>(
-      initialValue: _selectedTypePayment,
-
-      decoration: InputDecoration(
-        labelStyle: TextStyle(
-          fontSize: 14.0,
-          color:
-              AppColors.textSecondary,
-        ),
-        filled: true,
-        fillColor: AppColors.secondary,
-        prefixIcon: Icon(Icons.store, size: 20),
-        labelText: 'Tipo de Pago',
-        hintText: 'Selecciona un Tipo de Pago...',
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            width: 3.0,
-            color: AppColors.border,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            width: 3.0, 
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ),
-      items: _allTypePayments.map((typePayment) {
-        return DropdownMenuItem<TypePaymentModel>(
-          value: typePayment,
-          child: Text(typePayment.name),
-        );
-      }).toList(),
-
-      onChanged: (TypePaymentModel? newValue) {
-        setState(() {
-          _selectedTypePayment = newValue;
-        });
-      },
-    );
-  }
+  //   onChanged: (TypePaymentModel? newValue) {
+  //     setState(() {
+  //       _selectedTypePayment = newValue;
+  //     });
+  //   },
+  // );
+  // }
 
   /// La lista expandible de productos añadidos
   Widget _buildProductList() {
@@ -459,9 +501,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     }
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxHeight: 600,
-      ),
+      constraints: const BoxConstraints(maxHeight: 600),
       child: ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
@@ -474,16 +514,13 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     );
   }
 
-/// Construye el campo de fecha de vencimiento con el DatePicker
+  /// Construye el campo de fecha de vencimiento con el DatePicker
   Widget _buildExpirationDateField(TextEditingController? controller) {
     // Es crucial que el controlador no sea nulo antes de usarlo
-    if (controller == null) return const SizedBox.shrink(); 
+    if (controller == null) return const SizedBox.shrink();
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        minWidth: 160,
-        maxWidth: 160,
-      ),
+      constraints: const BoxConstraints(minWidth: 160, maxWidth: 160),
       child: TextFieldApp(
         controller: controller,
         labelText: 'F. Vencimiento',
@@ -494,7 +531,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
           final DateTime? pickedDate = await showDatePicker(
             context: context,
             initialDate: DateTime.now(), // Fecha inicial
-            firstDate: DateTime.now(), // No se pueden seleccionar fechas pasadas
+            firstDate:
+                DateTime.now(), // No se pueden seleccionar fechas pasadas
             lastDate: DateTime(2050), // Límite superior
           );
 
@@ -502,12 +540,12 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
             // Formatea la fecha seleccionada (YYYY-MM-DD es común para APIs)
             final formattedDate =
                 "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-            
+
             // Actualiza el controlador de texto con la fecha formateada
             controller.text = formattedDate;
           }
         },
-       ),
+      ),
       /*TextField(
         controller: controller,
         readOnly: true, // Importante: solo se selecciona tocando
@@ -547,7 +585,6 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     int index,
     VoidCallback onRemove,
   ) {
-   
     return Card(
       elevation: 0.0,
       color: AppColors.background,
@@ -555,18 +592,15 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         borderRadius: BorderRadius.circular(8.0),
         side: const BorderSide(color: AppColors.border, width: 2.0),
       ),
-      margin: const EdgeInsets.symmetric(
-        vertical: 8.0,
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, 
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Sección Superior: Nombre, SKU y Botón Eliminar
             ListTile(
-              contentPadding:
-                  EdgeInsets.zero,
+              contentPadding: EdgeInsets.zero,
               title: Text(
                 item.product.name,
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -574,16 +608,16 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
               subtitle: Text(item.product.sku ?? 'Sin SKU'),
               trailing: IconButton(
                 icon: Icon(Icons.delete_outline, color: Colors.red[700]),
-                tooltip: 'Eliminar item', 
+                tooltip: 'Eliminar item',
                 onPressed: onRemove,
               ),
             ),
             const SizedBox(height: 8),
             // Sección Inferior: Campos de Cantidad y Costo (Usando Wrap)
             Wrap(
-              spacing: 12.0, 
-              runSpacing: 12.0, 
-              crossAxisAlignment: WrapCrossAlignment.end, 
+              spacing: 12.0,
+              runSpacing: 12.0,
+              crossAxisAlignment: WrapCrossAlignment.end,
               children: [
                 // --- Campo de Cantidad ---
                 ConstrainedBox(
@@ -592,8 +626,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                     maxWidth: 150,
                   ),
                   child: TextFieldApp(
-                    controller: item.quantityController, 
-                    labelText: 'Cantidad', 
+                    controller: item.quantityController,
+                    labelText: 'Cantidad',
                     prefixIcon: Icons.inventory_2_outlined,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -607,8 +641,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                     maxWidth: 160,
                   ),
                   child: TextFieldApp(
-                    controller: item.costController, 
-                    labelText: 'Costo por Unidad', 
+                    controller: item.costController,
+                    labelText: 'Costo por Unidad',
                     prefixIcon: Icons.attach_money,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
@@ -627,24 +661,23 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                     maxWidth: 160,
                   ),
                   child: DropDownApp(
-                    labelText: 'Depósito', 
+                    labelText: 'Depósito',
                     hintText: 'Selecciona un depósito...',
                     initialValue: item.selectedDepot,
-                    items: _allDepots, 
-                    onChanged:(newValue) {
-                        setState(() {
-                          item.selectedDepot = newValue;
-                        });
-                      } , 
+                    items: _allDepots,
+                    onChanged: (newValue) {
+                      setState(() {
+                        item.selectedDepot = newValue;
+                      });
+                    },
                     itemToString: (DepotModel depot) {
                       return depot.name;
                     },
                   ),
                 ),
-                 if (item.product.perishable) 
-                    _buildExpirationDateField(item.expirationDateController),
+                if (item.product.perishable)
+                  _buildExpirationDateField(item.expirationDateController),
               ],
-              
             ),
           ],
         ),
@@ -676,9 +709,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-              ), 
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -700,8 +731,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
             PrimaryButtonApp(
               text: 'Registrar Compra',
               icon: Icons.save,
-              isLoading: _isRegistering, 
-              onPressed: _registerPurchase, 
+              isLoading: _isRegistering,
+              onPressed: _registerPurchase,
             ),
             const SizedBox(height: 16),
           ],
@@ -711,36 +742,4 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
   }
 
   // --- CONSTRUCCIÓN DE LA UI ---
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 800.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize
-                      .min,
-                  children: [
-                    _buildSupplierSelector(),
-                    const SizedBox(height: 8),
-                    _buildTypePaymentSelector(),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    _buildProductList(),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-            _buildSummaryAndSave(),
-          ],
-        ),
-      ),
-    );
-  }
 }

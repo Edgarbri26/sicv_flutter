@@ -15,10 +15,11 @@ import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
+import 'package:sicv_flutter/providers/type_payment_provider.dart';
 
 import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
-import 'package:sicv_flutter/services/type_payment_service.dart';
+import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -42,7 +43,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   ClientModel? selectedClient;
   List<ClientModel> _allClients = [];
 
-  late List<TypePaymentModel> _allTypePayments = [];
+  // late List<TypePaymentModel> _allTypePayments = [];
   TypePaymentModel? _selectedTypePayment;
 
   @override
@@ -50,7 +51,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     allClients();
-    allTypePayments();
+    // allTypePayments();
   }
 
   @override
@@ -66,11 +67,12 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     setState(() {});
   }
 
+  /*
   void allTypePayments() async {
     _allTypePayments = await TypePaymentService().getAll();
     print("Tipos de pago cargados: ${_allTypePayments.length}");
     setState(() {});
-  }
+  }*/
 
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -89,11 +91,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         // --- 1. WIDGET DE BÚSQUEDA ---
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: 
-          TextFieldApp(
-            controller: _searchController, 
-            labelText: 'Buscar por Nombre o SKU', 
-            prefixIcon:Icons.search
+          child: TextFieldApp(
+            controller: _searchController,
+            labelText: 'Buscar por Nombre o SKU',
+            prefixIcon: Icons.search,
           ),
         ),
         // --- 2. WIDGET DE FILTRO DE CATEGORÍAS ---
@@ -108,31 +109,33 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
               final filteredProducts = ref.watch(filteredProductsProvider);
 
               return filteredProducts.isEmpty
-              ? Center(child: Text('No se encontraron productos.'))
-              : GridView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200,
-                    mainAxisSpacing: 16.0,
-                    crossAxisSpacing: 16.0,
-                    childAspectRatio: 0.7, // Ajusta la altura (Ancho / Alto)
-                  ),
-                  itemCount: filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product =
-                        filteredProducts[index];
-                    bool isOutOfStock = product.totalStock == 0;
+                  ? Center(child: Text('No se encontraron productos.'))
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(16.0),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            mainAxisSpacing: 16.0,
+                            crossAxisSpacing: 16.0,
+                            childAspectRatio:
+                                0.7, // Ajusta la altura (Ancho / Alto)
+                          ),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        bool isOutOfStock = product.totalStock == 0;
 
-                    return ProductCard(
-                      product: product,
-                      isOutOfStock: isOutOfStock,
-                      onTap: () => _onProductAddedToSale(product),
-                      onLongPress: () => _mostrarDialogoDetalleProducto(context, product), 
+                        return ProductCard(
+                          product: product,
+                          isOutOfStock: isOutOfStock,
+                          onTap: () => _onProductAddedToSale(product),
+                          onLongPress: () =>
+                              _mostrarDialogoDetalleProducto(context, product),
+                        );
+                      },
                     );
-                  }, 
-                );  
-              },  
-          )
+            },
+          ),
         ),
       ],
     );
@@ -235,11 +238,18 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       ),
       error: (error, stack) => SizedBox(
         height: 50,
-        child: Center(child: Text('Error cargando categorías: ${error.toString()}')),
+        child: Center(
+          child: Text('Error cargando categorías: ${error.toString()}'),
+        ),
       ),
       data: (categories) {
         final List<CategoryModel> categoriesWithAll = [
-          CategoryModel(id: 0, name: 'Todos', description: 'Todos los productos', status: true),
+          CategoryModel(
+            id: 0,
+            name: 'Todos',
+            description: 'Todos los productos',
+            status: true,
+          ),
           ...categories,
         ];
 
@@ -260,7 +270,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                   selected: isSelected,
                   onSelected: (selected) {
                     if (selected) {
-                      ref.read(saleSelectedCategoryIdProvider.notifier).state = category.id;
+                      ref.read(saleSelectedCategoryIdProvider.notifier).state =
+                          category.id;
                     }
                   },
                   selectedColor: Theme.of(context).primaryColor,
@@ -284,7 +295,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     );
   }
 
-/*  void showProductSearchModal() {
+  /*  void showProductSearchModal() {
     
     showModalBottomSheet(
       context: context,
@@ -367,129 +378,144 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       (previousValue, element) =>
           previousValue + (element.quantity * element.price),
     );
+
     showModalBottomSheet(
-      
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-
         const double sheetSize = 0.8;
 
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter modalSetState) {
-            return DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: sheetSize,
-              minChildSize: 0.3,
-              maxChildSize: sheetSize,
-              builder: (context, scrollController) {
-                return Container(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 5,
-                          margin: const EdgeInsets.only(bottom: 15),
-                          decoration: BoxDecoration(
-                            color: AppColors.border, 
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          textAlign: TextAlign.center,
-                          "Detalles de la Venta",
-                          style: AppTextStyles.headlineLarge,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      DropDownApp(
-                        items: _allClients,
-                        initialValue: selectedClient, 
-                        onChanged: (newValue) {
-                          // Manejar el cambio de cliente seleccionado
-                          setState(() {
-                            selectedClient = newValue;
-                          });
-                        }, 
-                        itemToString: (client) => client.name, 
-                        labelText: 'Seleccionar Cliente',
-                        prefixIcon: Icons.person,
-                      ),
-                      const SizedBox(height: 20),
-                      DropDownApp(
-                        items: _allTypePayments,
-                        initialValue: _selectedTypePayment, 
-                        onChanged: (newValue) {
-                          // Manejar el cambio de tipo de pago seleccionado
-                          setState(() {
-                            _selectedTypePayment = newValue;
-                          });
-                        }, 
-                        itemToString: (typePayment) => typePayment.name, 
-                        labelText: 'Seleccionar Tipo de Pago',
-                        prefixIcon: Icons.payment,
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Consumer(
+          builder: (context, ref, child) {
+            final typePaymentsState = ref.watch(typePaymentProvider);
+
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter modalSetState) {
+                return DraggableScrollableSheet(
+                  expand: false,
+                  initialChildSize: sheetSize,
+                  minChildSize: 0.3,
+                  maxChildSize: sheetSize,
+                  builder: (context, scrollController) {
+                    return Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Total: \$${total.toStringAsFixed(2)}",
-                            style: AppTextStyles.bodyLarge,
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 5,
+                              margin: const EdgeInsets.only(bottom: 15),
+                              decoration: BoxDecoration(
+                                color: AppColors.border,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
                           ),
-                          PrimaryButtonApp(
-                            text: authState.user == null ? "Cargando..." : "Confirmar", 
-                            onPressed: () {
-                              if (authState.user != null) {
-                                _saveSale();
-                              }
+                          Center(
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              "Detalles de la Venta",
+                              style: AppTextStyles.headlineLarge,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          DropDownApp(
+                            items: _allClients,
+                            initialValue: selectedClient,
+                            onChanged: (newValue) {
+                              // Manejar el cambio de cliente seleccionado
+                              setState(() {
+                                selectedClient = newValue;
+                              });
                             },
+                            itemToString: (client) => client.name,
+                            labelText: 'Seleccionar Cliente',
+                            prefixIcon: Icons.person,
+                          ),
+                          const SizedBox(height: 20),
+
+                          typePaymentsState.when(
+                            loading: () => const CategoryLoadingSkeleton(),
+                            error: (error, stack) =>
+                                Center(child: Text('Error: $error')),
+                            data: (typePayments) {
+                              return DropDownApp(
+                                items: typePayments,
+                                initialValue: _selectedTypePayment,
+                                onChanged: (newValue) {
+                                  // Manejar el cambio de tipo de pago seleccionado
+                                  setState(() {
+                                    _selectedTypePayment = newValue;
+                                  });
+                                },
+                                itemToString: (typePayment) => typePayment.name,
+                                labelText: 'Seleccionar Tipo de Pago',
+                                prefixIcon: Icons.payment,
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Total: \$${total.toStringAsFixed(2)}",
+                                style: AppTextStyles.bodyLarge,
+                              ),
+                              PrimaryButtonApp(
+                                text: "Confirmar",
+                                onPressed: () {
+                                  // Lógica para confirmar la venta
+                                  _saveSale();
+                                },
+                              ),
+                            ],
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              controller: scrollController,
+                              itemCount: _itemsForSale.length,
+                              itemBuilder: (context, index) {
+                                final item = _itemsForSale[index];
+                                return DetailProductCart(
+                                  item: item,
+                                  onTap: () {
+                                    _mostrarDialogoEditarCantidad(
+                                      context,
+                                      item,
+                                      (nuevaCantidad) {
+                                        modalSetState(() {
+                                          item.quantity = nuevaCantidad;
+                                        });
+                                      },
+                                    );
+                                  },
+                                  onDelete: () {
+                                    modalSetState(() {
+                                      _itemsForSale.removeAt(index);
+                                    });
+                                  },
+                                  trailing: Row(
+                                    children: [
+                                      // ... (Iconos de añadir/quitar)
+                                      // Nota: Estos botones también deberían usar modalSetState
+                                      // si quieres que actualicen la UI en tiempo real.
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
-                      Expanded(
-                        child: ListView.builder(
-                          controller: scrollController,
-                          itemCount: _itemsForSale.length,
-                          itemBuilder: (context, index) {
-                            final item = _itemsForSale[index];
-                            return DetailProductCart(
-                              item: item,
-                              onTap: () {
-                                _mostrarDialogoEditarCantidad(context, item, (
-                                  nuevaCantidad,
-                                ) {
-                                  modalSetState(() {
-                                    item.quantity = nuevaCantidad;
-                                  });
-                                });
-                              },
-                              onDelete: () {
-                                modalSetState(() {
-                                  _itemsForSale.removeAt(index);
-                                });
-                              },
-                              trailing: Row(
-                                children: [
-                                  // ... (Iconos de añadir/quitar)
-                                  // Nota: Estos botones también deberían usar modalSetState
-                                  // si quieres que actualicen la UI en tiempo real.
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             );
@@ -501,8 +527,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
   void _mostrarDialogoEditarCantidad(
     BuildContext context,
-    ProductModel
-    item, 
+    ProductModel item,
     Function(int) onConfirm,
   ) {
     final TextEditingController cantidadController = TextEditingController();
@@ -533,7 +558,9 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
             TextButton(
               child: Text("Confirmar"),
               onPressed: () {
-                final int? nuevaCantidad = int.tryParse(cantidadController.text);
+                final int? nuevaCantidad = int.tryParse(
+                  cantidadController.text,
+                );
 
                 if (nuevaCantidad != null && nuevaCantidad >= 0) {
                   onConfirm(nuevaCantidad);
@@ -547,17 +574,14 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
           ],
         );
       },
-    ).whenComplete(
-      () => cantidadController.clear(),
-    );
+    ).whenComplete(() => cantidadController.clear());
   }
-  
+
   void _onProductAddedToSale(ProductModel product) {
     setState(() {
       final index = _itemsForSale.indexWhere((p) => p.id == product.id);
       if (index != -1) {
-        _itemsForSale[index].quantity =
-            _itemsForSale[index].quantity + 1;
+        _itemsForSale[index].quantity = _itemsForSale[index].quantity + 1;
       } else {
         _itemsForSale.add(product);
       }
@@ -572,16 +596,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void _saveSale() async {
+    List<SaleItemModel> saleItems = [];
 
-    final authState = ref.read(authProvider);
-
-    print("authState user: ${authState.user}");
-
-    // 2. VALIDACIÓN PRIMARIA: ¿Hay usuario?
-    // Movemos esto al principio. Si no hay usuario, cancelamos todo de inmediato.
-    if (authState.user == null) {
-      // Nota: Si tienes un diálogo de carga abierto, deja el pop. Si no, quítalo.
-      // Navigator.of(context).pop(); 
+    if (_itemsForSale.isEmpty) {
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error: No hay sesión de usuario activa.'),
@@ -614,7 +632,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     }
 
     // 4. Procesar items (Solo llegamos aquí si todo lo anterior está bien)
-    List<SaleItemModel> saleItems = [];
+    // List<SaleItemModel> saleItems = [];
     for (var item in _itemsForSale) {
       saleItems.add(
         SaleItemModel(
@@ -626,34 +644,66 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       );
     }
 
-    // Creación del modelo
+    if (selectedClient == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, seleccione un cliente.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedTypePayment == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, seleccione un tipo de pago.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final authState = ref.watch(authProvider);
+
+    if (authState.user == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al obtener datos del usuario.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final SaleModel sale = SaleModel(
       clientCi: selectedClient!.clientCi,
-      userCi: authState.user!.userCi, // Aquí ya estamos seguros de que user no es null
+      userCi: authState.user!.userCi,
       typePaymentId: _selectedTypePayment!.typePaymentId,
       saleItems: saleItems,
     );
 
     try {
+      await SaleService().createSale(sale);
 
-        await SaleService().createSale(sale);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Venta registrada exitosamente.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Venta registrada exitosamente.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        
-        Navigator.of(context).pop(); 
+      Navigator.of(context).pop();
 
-        setState(() {
-          _itemsForSale.clear();
-          selectedClient = null;
-          _selectedTypePayment = null;
-        });
+      setState(() {
+        _itemsForSale.clear();
+        selectedClient = null;
+        _selectedTypePayment = null;
+      });
     } on BackendException catch (e) {
-      
       Navigator.of(context).pop();
 
       showDialog(
@@ -665,7 +715,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('Aceptar'),
-            )
+            ),
           ],
         ),
       );
@@ -673,10 +723,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       Navigator.of(context).pop();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
     }
   }
