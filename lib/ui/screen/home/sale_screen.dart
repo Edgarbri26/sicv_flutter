@@ -84,7 +84,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
-    final authState = ref.watch(authProvider);
     return Column(
       children: [
         // --- 1. WIDGET DE BÚSQUEDA ---
