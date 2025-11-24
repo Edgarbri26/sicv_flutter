@@ -1,58 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/providers/providers_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
+import 'package:sicv_flutter/models/provider_model.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 
-// --- IMPORTACIONES AÑADIDAS ---
-import 'package:sicv_flutter/models/provider_model.dart'; // Reemplaza con tu ruta real
-import 'package:sicv_flutter/services/provider_service.dart'; // Reemplaza con tu ruta real
-import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Reemplaza con tu ruta real
-// CheckboxFieldApp se elimina porque el modelo no tiene 'status'
-// import 'package:sicv_flutter/ui/widgets/atomic/checkbox_field_app.dart';
-
-class ProviderScreem extends StatefulWidget {
+class ProviderScreem extends ConsumerStatefulWidget {
   const ProviderScreem({super.key});
 
   @override
-  _ProviderScreemState createState() => _ProviderScreemState();
+  ConsumerState<ProviderScreem> createState() => _ProviderScreemState();
 }
 
-class _ProviderScreemState extends State<ProviderScreem> {
-  // --- ESTADO MANEJADO POR LA API ---
-  final ProviderService _providerService = ProviderService();
-  late Future<List<ProviderModel>> _providersFuture;
-  List<ProviderModel> _providersOriginales = [];
-  List<ProviderModel> _providersFiltrados = [];
-
+class _ProviderScreemState extends ConsumerState<ProviderScreem> {
   final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _providersFuture = _fetchProviders();
-  }
-
-  Future<List<ProviderModel>> _fetchProviders() async {
-    try {
-      final providers = await _providerService.getAllProviders();
-      setState(() {
-        _providersOriginales = providers;
-        _providersFiltrados = providers;
-        _filtrarProviders(_searchController.text); // Aplica filtro existente
-      });
-      return providers;
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cargar proveedores: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      throw Exception('Error al cargar proveedores: $e');
-    }
-  }
+  String _searchQuery = '';
 
   @override
   void dispose() {
@@ -61,22 +25,15 @@ class _ProviderScreemState extends State<ProviderScreem> {
   }
 
   void _filtrarProviders(String query) {
-    final lowerCaseQuery = query.toLowerCase();
     setState(() {
-      _providersFiltrados = _providersOriginales
-          .where(
-            (provider) =>
-                provider.name.toLowerCase().contains(lowerCaseQuery) ||
-                provider.located.toLowerCase().contains(lowerCaseQuery),
-          )
-          .toList();
+      _searchQuery = query.toLowerCase();
     });
   }
 
   // --- FUNCIÓN DE AGREGAR ---
   void _agregarProvider() {
     final nameController = TextEditingController();
-    final locatedController = TextEditingController(); // 'located'
+    final locatedController = TextEditingController();
 
     showDialog<void>(
       context: context,
@@ -102,29 +59,24 @@ class _ProviderScreemState extends State<ProviderScreem> {
             TextButton(
               onPressed: () async {
                 final name = nameController.text.trim();
-                final located = locatedController.text.trim(); // 'located'
+                final located = locatedController.text.trim();
 
                 if (name.isEmpty) return;
 
                 try {
-                  final newProvider = await _providerService.createProvider(
-                    name: name,
-                    located: located, // 'located'
-                  );
+                  await ref
+                      .read(providersProvider.notifier)
+                      .createProvider(name: name, located: located);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Proveedor "${newProvider.name}" creado'),
+                      content: Text('Proveedor "$name" creado'),
                       backgroundColor: Colors.green,
                     ),
                   );
-
-                  setState(() {
-                    _providersFuture = _fetchProviders();
-                  });
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -145,15 +97,11 @@ class _ProviderScreemState extends State<ProviderScreem> {
   // --- FUNCIÓN DE EDITAR ---
   void _editarProvider(ProviderModel provider) {
     final nameController = TextEditingController(text: provider.name);
-    final locatedController = TextEditingController(
-      text: provider.located,
-    ); // 'located'
-    // Se elimina 'currentStatus' porque el modelo no lo tiene
+    final locatedController = TextEditingController(text: provider.located);
 
     showDialog<void>(
       context: context,
       builder: (context) {
-        // Ya no se necesita StatefulBuilder si no hay Checkbox
         return AlertDialog(
           title: Text('Editar ${provider.name}'),
           content: Column(
@@ -165,7 +113,6 @@ class _ProviderScreemState extends State<ProviderScreem> {
                 controller: locatedController,
                 labelText: 'Ubicación',
               ),
-              // --- SE ELIMINÓ EL CHECKBOX DE ESTADO ---
             ],
           ),
           actions: [
@@ -176,17 +123,18 @@ class _ProviderScreemState extends State<ProviderScreem> {
             TextButton(
               onPressed: () async {
                 final name = nameController.text.trim();
-                final located = locatedController.text.trim(); // 'located'
+                final located = locatedController.text.trim();
 
                 if (name.isEmpty) return;
 
                 try {
-                  await _providerService.updateProvider(
-                    provider.providerId,
-                    name: name,
-                    located: located, // 'located'
-                    // Se eliminó 'status'
-                  );
+                  await ref
+                      .read(providersProvider.notifier)
+                      .updateProvider(
+                        id: provider.id,
+                        newName: name,
+                        located: located,
+                      );
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -197,10 +145,6 @@ class _ProviderScreemState extends State<ProviderScreem> {
                       backgroundColor: Colors.green,
                     ),
                   );
-
-                  setState(() {
-                    _providersFuture = _fetchProviders();
-                  });
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -218,58 +162,6 @@ class _ProviderScreemState extends State<ProviderScreem> {
     );
   }
 
-  // --- FUNCIÓN DE ELIMINAR ---
-  /* void _showDeleteConfirmDialog(ProviderModel provider) {
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar Proveedor'),
-          content: Text(
-              '¿Estás seguro de que deseas eliminar "${provider.name}"? Esta acción no se puede deshacer.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              onPressed: () async {
-                try {
-                  await _providerService.deleteProvider(provider.providerId);
-
-                  if (!mounted) return;
-                  Navigator.of(context).pop();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Proveedor "${provider.name}" eliminado'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-
-                  setState(() {
-                    _providersFuture = _fetchProviders();
-                  });
-                } catch (e) {
-                  if (!mounted) return;
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al eliminar: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-*/
   void _showDeactivateConfirmDialog(ProviderModel provider) {
     showDialog<void>(
       context: context,
@@ -288,26 +180,19 @@ class _ProviderScreemState extends State<ProviderScreem> {
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () async {
                 try {
-                  // 1. Llama al servicio de desactivación
-                  await _providerService.deactivateProvider(
-                    provider.providerId,
-                  );
+                  await ref
+                      .read(providersProvider.notifier)
+                      .deactivateProvider(id: provider.id);
 
                   if (!mounted) return;
-                  Navigator.of(context).pop(); // Cierra el diálogo
+                  Navigator.of(context).pop();
 
-                  // 2. Muestra confirmación
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Proveedor "${provider.name}" desactivado'),
                       backgroundColor: Colors.green,
                     ),
                   );
-
-                  // 3. Recarga la lista
-                  setState(() {
-                    _providersFuture = _fetchProviders();
-                  });
                 } catch (e) {
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -345,7 +230,9 @@ class _ProviderScreemState extends State<ProviderScreem> {
               style: TextButton.styleFrom(foregroundColor: Colors.green),
               onPressed: () async {
                 try {
-                  await _providerService.activateProvider(provider.providerId);
+                  await ref
+                      .read(providersProvider.notifier)
+                      .activateProvider(id: provider.id);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -356,10 +243,6 @@ class _ProviderScreemState extends State<ProviderScreem> {
                       backgroundColor: Colors.green,
                     ),
                   );
-
-                  setState(() {
-                    _providersFuture = _fetchProviders();
-                  });
                 } catch (e) {
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -381,30 +264,32 @@ class _ProviderScreemState extends State<ProviderScreem> {
 
   @override
   Widget build(BuildContext context) {
+    final providersAsyncValue = ref.watch(providersProvider);
+
     return Scaffold(
       appBar: AppBarApp(title: 'Proveedores', iconColor: AppColors.textPrimary),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: FutureBuilder<List<ProviderModel>>(
-            future: _providersFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                );
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          child: providersAsyncValue.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Text(
+                'Error: $error',
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+            data: (providers) {
+              if (providers.isEmpty) {
                 return const Center(
                   child: Text('No se encontraron proveedores.'),
                 );
               }
+
+              final filteredProviders = providers.where((provider) {
+                return provider.name.toLowerCase().contains(_searchQuery) ||
+                    provider.located.toLowerCase().contains(_searchQuery);
+              }).toList();
 
               return Column(
                 children: [
@@ -419,18 +304,17 @@ class _ProviderScreemState extends State<ProviderScreem> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: _providersFiltrados.length,
+                      itemCount: filteredProviders.length,
                       itemBuilder: (context, index) {
-                        final provider = _providersFiltrados[index];
+                        final provider = filteredProviders[index];
 
-                        // --- LISTTILE ACTUALIZADO (Sin Chip de Estado) ---
                         return ListTile(
-                          title: Text(provider.name), // Título simple
+                          title: Text(provider.name),
                           leading: const Icon(
                             Icons.store_mall_directory_outlined,
-                          ), // Icono cambiado
+                          ),
                           subtitle: provider.located.isNotEmpty
-                              ? Text(provider.located) // 'located'
+                              ? Text(provider.located)
                               : null,
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -464,13 +348,6 @@ class _ProviderScreemState extends State<ProviderScreem> {
                                         color: Colors.green,
                                       ),
                                     ),
-                              /*IconButton(
-                                icon: const Icon(Icons.delete,
-                                    color: Colors.red),
-                                tooltip: 'Eliminar',
-                                onPressed: () =>
-                                    _showDeleteConfirmDialog(provider),
-                              ),*/
                             ],
                           ),
                         );
