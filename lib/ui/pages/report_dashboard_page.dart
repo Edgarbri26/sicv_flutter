@@ -32,8 +32,8 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
   static const List<Widget> _mainViews = [
     ResumeView(),
     FinancesView(), // Esta vista contendrá tu código original
-    InventoryView(),
-    ClientsView(),
+    //InventoryView(),
+    //ClientsView(),
   ];
 
   @override
