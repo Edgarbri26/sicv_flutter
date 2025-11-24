@@ -49,13 +49,18 @@ class ProductCard extends StatelessWidget {
                       children: [
                         Text(
                           product.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const Spacer(),
                         InfoChip(
                           text: 'S/ ${product.price.toStringAsFixed(2)}',
+                          color: AppColors.info,
+                        ),
+                        const Spacer(),
+                        InfoChip(
+                          text: 'Stock: ${product.totalStock.toStringAsFixed(2)}',
                           color: AppColors.info,
                         ),
                       ],
