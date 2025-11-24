@@ -8,8 +8,8 @@ import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/models/client_model.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
-import 'package:sicv_flutter/models/sale_item_model.dart';
-import 'package:sicv_flutter/models/sale_model.dart';
+import 'package:sicv_flutter/models/sale/sale_item_model.dart';
+import 'package:sicv_flutter/models/sale/sale_model.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
@@ -371,7 +371,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 */
 
   void showSaleDetail(BuildContext context) {
-    final authState = ref.read(authProvider);
+    ref.read(authProvider);
 
     double total = _itemsForSale.fold(
       0,
@@ -679,11 +679,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       return;
     }
 
-    final SaleModel sale = SaleModel(
+    final SaleModel sale = SaleModel.forCreation(
       clientCi: selectedClient!.clientCi,
       userCi: authState.user!.userCi,
       typePaymentId: _selectedTypePayment!.typePaymentId,
-      saleItems: saleItems,
+      items: saleItems,
     );
 
     try {

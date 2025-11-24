@@ -1,17 +1,15 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/depot/depot_model.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/models/provider_model.dart';
 import 'package:sicv_flutter/models/purchase/purchase_item_controller.dart';
-// IMPORTANTE: Importa solo los modelos nuevos
-import 'package:sicv_flutter/models/purchase/purchase_model.dart';
+import 'package:sicv_flutter/models/purchase/purchase_input_model.dart';
+import 'package:sicv_flutter/models/purchase/purchase_item_input_model.dart';
 import 'package:sicv_flutter/models/purchase/purchase_item_model.dart';
+import 'package:sicv_flutter/models/purchase/purchase_model.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
-import 'package:sicv_flutter/providers/auth_provider.dart'; // Necesitas el auth para el UserCI
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/providers_provider.dart';
 import 'package:sicv_flutter/providers/type_payment_provider.dart';
@@ -20,32 +18,33 @@ import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
-import 'package:sidebarx/sidebarx.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PurchaseScreen extends ConsumerStatefulWidget {
-  // Si usas Sidebar, necesitas pasar el controller
-  final SidebarXController? controller; 
-  const PurchaseScreen({super.key, this.controller});
+  const PurchaseScreen({super.key});
 
   @override
   ConsumerState<PurchaseScreen> createState() => PurchaseScreenState();
 }
 
 class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
+  // final TypePaymentService _typePaymentService = TypePaymentService();
   final DepotService _depotService = DepotService();
   final PurchaseService _purchaseService = PurchaseService();
+  // late List<TypePaymentModel> _allTypePayments = [];
 
   ProviderModel? _selectedProvider;
   TypePaymentModel? _selectedTypePayment;
   bool _isRegistering = false;
 
-  // Carrito de compra (UI Helper)
-  final List<PurchaseDetail> _purchaseItems = [];
-  List<DepotModel> _allDepots = [];
+  // El "carrito" de la compra. Usamos la helper class.
+  final List<PurchaseItemModel> _purchaseItems = [];
+  late List<DepotModel> _allDepots = [];
 
+  // El costo total de la orden
   double _totalCost = 0.0;
+
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -56,6 +55,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
   @override
   void dispose() {
+    // Es MUY importante limpiar los controllers para evitar fugas de memoria
     _searchController.dispose();
     for (var item in _purchaseItems) {
       item.quantityController.dispose();
@@ -65,20 +65,101 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final typePaymentsState = ref.watch(typePaymentProvider);
+    final providersState = ref.watch(providersProvider);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Consumer(
+                      builder: (context, ref, child) {
+                        return providersState.when(
+                          loading: () =>
+                              Center(child: CircularProgressIndicator()),
+                          error: (error, stack) =>
+                              Center(child: Text('Error: $error')),
+                          data: (providers) {
+                            return DropDownApp(
+                              items: providers,
+                              initialValue: _selectedProvider,
+                              onChanged: (newValue) {
+                                // Manejar el cambio de tipo de pago seleccionado
+                                setState(() {
+                                  _selectedProvider = newValue;
+                                });
+                              },
+                              itemToString: (provider) => provider.name,
+                              labelText: 'Seleccionar Proveedor',
+                              prefixIcon: Icons.account_box,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        return typePaymentsState.when(
+                          loading: () =>
+                              Center(child: CircularProgressIndicator()),
+                          error: (error, stack) =>
+                              Center(child: Text('Error: $error')),
+                          data: (typePayments) {
+                            return DropDownApp(
+                              items: typePayments,
+                              initialValue: _selectedTypePayment,
+                              onChanged: (newValue) {
+                                // Manejar el cambio de tipo de pago seleccionado
+                                setState(() {
+                                  _selectedTypePayment = newValue;
+                                });
+                              },
+                              itemToString: (typePayment) => typePayment.name,
+                              labelText: 'Seleccionar Tipo de Pago',
+                              prefixIcon: Icons.payment,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    _buildProductList(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+            _buildSummaryAndSave(),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _loadData() async {
-    try {
-      final depots = await _depotService.getDepots();
-      if (mounted) {
-        setState(() {
-          _allDepots = depots;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error cargando depósitos: $e");
+    final depots = await _depotService.getDepots();
+    // final typePayments = await _typePaymentService.getAll();
+
+    if (mounted) {
+      setState(() {
+        _allDepots = depots;
+        // _allTypePayments = typePayments;
+      });
     }
   }
 
-   /// Recalcula el costo total de la orden
+  /// Recalcula el costo total de la orden
   void _updateTotalCost() {
     double total = 0.0;
     for (var item in _purchaseItems) {
@@ -150,118 +231,94 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     _updateTotalCost(); // Actualiza el total
   }
 
-  /// Guarda la compra (LÓGICA CORREGIDA)
+  /// Guarda la compra (lógica final)
   void _registerPurchase() async {
-    final authState = ref.read(authProvider); // Obtenemos usuario real
-
     setState(() => _isRegistering = true);
-
-    // Validaciones básicas
     if (_selectedProvider == null) {
-      _showError('Por favor, selecciona un proveedor.');
-      return;
-    }
-    if (_selectedTypePayment == null) {
-      _showError('Por favor, selecciona un tipo de pago.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecciona un proveedor.')),
+      );
+      setState(() => _isRegistering = false);
       return;
     }
     if (_purchaseItems.isEmpty) {
-      _showError('No has añadido productos a la orden.');
-      return;
-    }
-    if (authState.user == null) {
-      _showError('Error de sesión. Vuelve a iniciar sesión.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No has añadido productos a la orden.')),
+      );
+      setState(() => _isRegistering = false);
       return;
     }
 
-    // 1. Construir la lista unificada de items
-    final List<PurchaseItemModel> itemsToSend = [];
+    final List<PurchaseItemInputModel> purchaseItemsList = [];
 
     for (var item in _purchaseItems) {
       final amount = int.tryParse(item.quantityController.text) ?? 0;
       final unitCost = double.tryParse(item.costController.text) ?? 0.0;
 
-      if (amount <= 0) {
-        _showError('La cantidad del producto ${item.product.name} debe ser mayor a 0.');
-        return;
-      }
-
-      if (item.selectedDepot == null) {
-        _showError('Selecciona un depósito para ${item.product.name}.');
-        return;
-      }
-
-      DateTime? expirationDate;
-      // Si es perecedero, validamos y parseamos la fecha
-      if (item.product.perishable) {
-        if (item.expirationDateController == null || item.expirationDateController!.text.isEmpty) {
-          _showError('Falta fecha de vencimiento para ${item.product.name}.');
-          return;
-        }
-        expirationDate = DateTime.tryParse(item.expirationDateController!.text);
-        if (expirationDate == null) {
-           _showError('Formato de fecha inválido para ${item.product.name}.');
-           return;
-        }
-      }
-
-      // Agregamos a la lista única (PurchaseItemModel maneja ambos casos)
-      itemsToSend.add(PurchaseItemModel(
+      final purchaseItem = PurchaseItemInputModel(
         productId: item.product.id,
         depotId: item.selectedDepot!.depotId,
         amount: amount,
         unitCost: unitCost,
-        expirationDate: expirationDate, // Será null si no es perecedero
-      ));
+        expirationDate:
+            item.product.perishable &&
+                item.expirationDateController != null &&
+                item.expirationDateController!.text.isNotEmpty
+            // 💡 Mejor usar DateTime.tryParse() para evitar errores si el formato es malo
+            ? DateTime.tryParse(item.expirationDateController!.text)
+            : null,
+      );
+      purchaseItemsList.add(purchaseItem);
     }
 
-    // 2. Crear el objeto PurchaseModel para envío
-    final purchase = PurchaseModel.forCreation(
+    final purchaseInput = PurchaseInputModel(
       providerId: _selectedProvider!.id,
-      userCi: authState.user!.userCi, // Usuario real
+      userCi: '31350493',
+      status: 'Aprobado',
       typePaymentId: _selectedTypePayment!.typePaymentId,
-      items: itemsToSend,
+      items: purchaseItemsList,
     );
 
-    // 3. Enviar al servicio
     try {
-      await _purchaseService.createPurchase(purchase);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compra registrada exitosamente'), backgroundColor: Colors.green),
+      final PurchaseModel response = await _purchaseService.createPurchase(
+        purchaseInput,
       );
 
-      // Limpiar todo
-      _searchController.clear();
-      ref.invalidate(productsProvider); // Recargar productos para actualizar stock
-      
-      setState(() {
-        _purchaseItems.clear();
-        _selectedProvider = null;
-        _selectedTypePayment = null;
-        _totalCost = 0.0;
-        _isRegistering = false;
-      });
-
+      print('Compra registrada con ID: ${response.providerId}');
+      print(response.purchaseId);
     } catch (e) {
-      _showError('Error al registrar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al registrar la compra: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() => _isRegistering = false);
+      return;
     }
-  }
+    _searchController.clear();
 
-  void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+      const SnackBar(
+        content: Text('Compra registrada exitosamente (simulación)'),
+        backgroundColor: Colors.green,
+      ),
     );
-    setState(() => _isRegistering = false);
+
+    ref.invalidate(productsProvider);
+
+    // Limpia la pantalla para una nueva orden
+    setState(() {
+      _purchaseItems.clear();
+      _selectedProvider = null;
+      _selectedTypePayment = null;
+      _totalCost = 0.0;
+      _isRegistering = false;
+    });
   }
 
-  // ... [RESTO DE MÉTODOS DE UI: _buildProductList, etc. IGUALES] ...
-  
-  // Asegúrate de incluir _updateTotalCost, _addProductToPurchase, _removeItem, 
-  // showProductSearchModal, _buildProductList, etc. tal cual los tenías, 
-  // ya que la lógica visual es correcta.
-  // El cambio crítico fue en _registerPurchase y los imports.
-   void showProductSearchModal() {
+  /// Muestra el modal para buscar y añadir productos
+  void showProductSearchModal() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -381,94 +438,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     ); // Limpia el buscador al cerrar el modal
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // ... Tu método build original está bien, solo asegúrate de que
-    // use MySideBar si es necesario o lo quite si solo es un modal.
-    // Aquí te dejo la estructura base de tu build:
-    
-    final typePaymentsState = ref.watch(typePaymentProvider);
-    final providersState = ref.watch(providersProvider);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
-        
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: !isWide ? AppBar(title: const Text("Registrar Compra")) : null,
-          drawer: isWide || widget.controller == null ? null : MySideBar(controller: widget.controller!),
-          floatingActionButton: FloatingActionButton.extended(
-            icon: const Icon(Icons.add),
-            label: const Text('Añadir Producto'),
-            onPressed: showProductSearchModal, // Usa tu método existente
-          ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 800),
-              child: Column(
-                children: [
-                   Expanded(
-                     child: SingleChildScrollView(
-                       padding: const EdgeInsets.all(16),
-                       child: Column(
-                         children: [
-                           // Selectores
-                           _buildProviderSelector(providersState),
-                           const SizedBox(height: 16),
-                           _buildTypePaymentSelector(typePaymentsState),
-                           const Divider(height: 32),
-                           
-                           // Lista de Productos
-                           _buildProductList(),
-                         ],
-                       ),
-                     ),
-                   ),
-                   // Footer con total y botón guardar
-                   _buildSummaryAndSave(),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-    );
-  }
-
-  // Helper para el selector de Proveedores (Extraído para limpieza)
-  Widget _buildProviderSelector(AsyncValue<List<ProviderModel>> state) {
-    return state.when(
-      loading: () => const LinearProgressIndicator(),
-      error: (e, s) => Text("Error proveedores: $e"),
-      data: (providers) => DropDownApp(
-        items: providers,
-        initialValue: _selectedProvider,
-        onChanged: (v) => setState(() => _selectedProvider = v),
-        itemToString: (p) => p.name,
-        labelText: 'Proveedor',
-        prefixIcon: Icons.local_shipping,
-      ),
-    );
-  }
-
-  // Helper para el selector de Pagos
-  Widget _buildTypePaymentSelector(AsyncValue<List<TypePaymentModel>> state) {
-    return state.when(
-      loading: () => const LinearProgressIndicator(),
-      error: (e, s) => Text("Error pagos: $e"),
-      data: (types) => DropDownApp(
-        items: types,
-        initialValue: _selectedTypePayment,
-        onChanged: (v) => setState(() => _selectedTypePayment = v),
-        itemToString: (t) => t.name,
-        labelText: 'Método de Pago',
-        prefixIcon: Icons.payment,
-      ),
-    );
-  }
-  
-  // Copia aquí tus métodos _buildProductList, _buildSummaryAndSave, etc.
+  /// La lista expandible de productos añadidos
   Widget _buildProductList() {
     if (_purchaseItems.isEmpty) {
       return SizedBox(
@@ -497,7 +467,73 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     );
   }
 
-    Widget _buildPurchaseItemTile(
+  /// Construye el campo de fecha de vencimiento con el DatePicker
+  Widget _buildExpirationDateField(TextEditingController? controller) {
+    // Es crucial que el controlador no sea nulo antes de usarlo
+    if (controller == null) return const SizedBox.shrink();
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 160, maxWidth: 160),
+      child: TextFieldApp(
+        controller: controller,
+        labelText: 'F. Vencimiento',
+        prefixIcon: Icons.calendar_today,
+        readOnly: true,
+        onTap: () async {
+          // Implementación del DatePicker
+          final DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(), // Fecha inicial
+            firstDate:
+                DateTime.now(), // No se pueden seleccionar fechas pasadas
+            lastDate: DateTime(2050), // Límite superior
+          );
+
+          if (pickedDate != null) {
+            // Formatea la fecha seleccionada (YYYY-MM-DD es común para APIs)
+            final formattedDate =
+                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+
+            // Actualiza el controlador de texto con la fecha formateada
+            controller.text = formattedDate;
+          }
+        },
+      ),
+      /*TextField(
+        controller: controller,
+        readOnly: true, // Importante: solo se selecciona tocando
+        onTap: () async {
+          // Implementación del DatePicker
+          final DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(), // Fecha inicial
+            firstDate: DateTime.now(), // No se pueden seleccionar fechas pasadas
+            lastDate: DateTime(2050), // Límite superior
+          );
+
+          if (pickedDate != null) {
+            // Formatea la fecha seleccionada (YYYY-MM-DD es común para APIs)
+            final formattedDate =
+                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+            
+            // Actualiza el controlador de texto con la fecha formateada
+            controller.text = formattedDate;
+          }
+        },
+        style: const TextStyle(fontSize: 14.0),
+        decoration: const InputDecoration(
+          labelText: 'F. Vencimiento',
+          prefixIcon: Icon(Icons.calendar_today, size: 20),
+          isDense: true,
+          contentPadding:
+              EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+          // ... (Añade tus estilos de borde aquí si es necesario) ...
+        ),
+      ),*/
+    );
+  }
+
+  Widget _buildPurchaseItemTile(
     PurchaseDetail item,
     int index,
     VoidCallback onRemove,
@@ -602,94 +638,61 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     );
   }
 
-  Widget _buildExpirationDateField(TextEditingController? controller) {
-    // Es crucial que el controlador no sea nulo antes de usarlo
-    if (controller == null) return const SizedBox.shrink();
+  /// La barra inferior que muestra el total y el botón de Guardar
+  Widget _buildSummaryAndSave() {
+    return Card(
+      color: AppColors.secondary,
+      elevation: 0.0,
+      // 2. Define el borde exterior usando 'shape'
+      shape: RoundedRectangleBorder(
+        // Define el radio de las esquinas
+        borderRadius: BorderRadius.circular(8.0),
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 160, maxWidth: 160),
-      child: TextFieldApp(
-        controller: controller,
-        labelText: 'F. Vencimiento',
-        prefixIcon: Icons.calendar_today,
-        readOnly: true,
-        onTap: () async {
-          // Implementación del DatePicker
-          final DateTime? pickedDate = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(), // Fecha inicial
-            firstDate:
-                DateTime.now(), // No se pueden seleccionar fechas pasadas
-            lastDate: DateTime(2050), // Límite superior
-          );
+        // Define el borde (grosor y color)
+        side: BorderSide(
+          color: AppColors.border, // El color del borde
+          width: 3.0, // El grosor del borde
+        ),
+      ),
 
-          if (pickedDate != null) {
-            // Formatea la fecha seleccionada (YYYY-MM-DD es común para APIs)
-            final formattedDate =
-                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-
-            // Actualiza el controlador de texto con la fecha formateada
-            controller.text = formattedDate;
-          }
-        },
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'TOTAL DE LA ORDEN:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    '\$${_totalCost.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            PrimaryButtonApp(
+              text: 'Registrar Compra',
+              icon: Icons.save,
+              isLoading: _isRegistering,
+              onPressed: _registerPurchase,
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
-
-  Widget _buildSummaryAndSave() {
-      return Card(
-        color: AppColors.secondary,
-        elevation: 0.0,
-        // 2. Define el borde exterior usando 'shape'
-        shape: RoundedRectangleBorder(
-          // Define el radio de las esquinas
-          borderRadius: BorderRadius.circular(8.0),
-
-          // Define el borde (grosor y color)
-          side: BorderSide(
-            color: AppColors.border, // El color del borde
-            width: 3.0, // El grosor del borde
-          ),
-        ),
-
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TOTAL DE LA ORDEN:',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      '\$${_totalCost.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              PrimaryButtonApp(
-                text: 'Registrar Compra',
-                icon: Icons.save,
-                isLoading: _isRegistering,
-                onPressed: _registerPurchase,
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      );
-    }
-
-}
+  // --- CONSTRUCCIÓN DE LA UI ---
+}*/

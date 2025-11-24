@@ -1,4 +1,4 @@
-class PurchaseGeneralItemModel {
+/*class PurchaseGeneralItemModel {
   final int productId;
   final int purchaseId;
   final int depotId;
@@ -32,4 +32,4 @@ class PurchaseGeneralItemModel {
       'amount': amount,
     };
   }
-}
+}*/

@@ -1,25 +1,20 @@
-// lib/views/finances_view.dart
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/models/sale/sale_model.dart';
+import 'package:sicv_flutter/services/sale_service.dart'; 
+import 'package:sicv_flutter/providers/finance_provider.dart';
+import 'package:sicv_flutter/ui/widgets/sale_detail_modal.dart'; 
 
-/// FinanzasView
-///
-/// Esta vista contiene la lógica original de tu `ReportPage`.
-/// Se enfoca en mostrar las pestañas de Ventas y Compras.
-///
-/// Sigue siendo un [StatefulWidget] porque necesita manejar
-/// su propio [TabController].
-class FinancesView extends StatefulWidget {
+class FinancesView extends ConsumerStatefulWidget {
   const FinancesView({super.key});
 
   @override
-  _FinancesViewState createState() => _FinancesViewState();
+  ConsumerState<FinancesView> createState() => _FinancesViewState();
 }
 
-class _FinancesViewState extends State<FinancesView>
-    with SingleTickerProviderStateMixin {
-  /// Controlador para las pestañas (Ventas/Compras).
+class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -36,51 +31,36 @@ class _FinancesViewState extends State<FinancesView>
 
   @override
   Widget build(BuildContext context) {
-    // El Scaffold y el AppBar ya no son necesarios aquí,
-    // porque esta vista se muestra DENTRO de ReportDashboardPage.
-    // Simplemente devolvemos el Column con el contenido.
     return Column(
       children: [
-        // --- SECCIÓN DE NAVEGACIÓN (VENTAS/COMPRAS) ---
-        // Usamos Expanded para que esta sección ocupe todo el espacio
-        // restante en la columna.
-        Expanded(
-          child: _buildTabbedNavigationView(),
-        ),
-      ],
-    );
-  }
-
-  /// Construye la vista de navegación "tipo WhatsApp".
-  /// (Este es tu método original, renombrado para claridad).
-  Widget _buildTabbedNavigationView() {
-    return Column(
-      children: [
-        // --- BOTONES DE NAVEGACIÓN (TABS) ---
+        // --- PESTAÑAS ---
         Container(
-          height: 45,
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(25.0),
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: TabBar(
             controller: _tabController,
             indicator: BoxDecoration(
-              borderRadius: BorderRadius.circular(25.0),
-              color: Theme.of(context).primaryColor,
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
+              ],
             ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.black54,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: Colors.grey,
+            dividerColor: Colors.transparent,
             tabs: const [
-              Tab(text: 'Ventas'),
-              Tab(text: 'Compras'),
+              Tab(text: 'Ventas (Ingresos)'),
+              Tab(text: 'Compras (Egresos)'),
             ],
           ),
         ),
 
-        // --- CONTENIDO DE LAS PESTAÑAS ---
+        // --- CONTENIDO ---
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -94,47 +74,225 @@ class _FinancesViewState extends State<FinancesView>
     );
   }
 
-  /// (Tu método original)
+  // --- LISTA DE VENTAS ---
   Widget _buildSalesList() {
-    return ListView.builder(
-      itemCount: 20,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.green[100],
-            child: Icon(Icons.arrow_upward, color: Colors.green[800]),
-          ),
-          title: Text('Venta #${20 - index}'),
-          subtitle: Text('Cliente: Cliente Ejemplo ${index + 1}'),
-          trailing: Text(
-            '+\$${(index + 1) * 50}.00',
-            style:
-                TextStyle(color: Colors.green[800], fontWeight: FontWeight.w600),
-          ),
+    final salesAsync = ref.watch(salesHistoryProvider);
+
+    return salesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("Error: $err")),
+      data: (sales) {
+        if (sales.isEmpty) {
+          return _buildEmptyState("No hay ventas registradas.");
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: sales.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final saleSummary = sales[index];
+            
+            return _TransactionCard(
+              title: "Venta #${saleSummary.saleId ?? '---'}",
+              subtitle: saleSummary.clientName != 'N/A' 
+                ? saleSummary.clientName 
+                : "CI: ${saleSummary.clientCi}",
+              amount: saleSummary.totalUsd, 
+              date: saleSummary.soldAt, 
+              isIncome: true,
+              onTap: () {
+                if (saleSummary.saleId != null) {
+                  _showDetail(context, saleSummary.saleId!);
+                }
+              },
+            );
+          },
         );
       },
     );
   }
 
-  /// (Tu método original)
+  // --- LISTA DE COMPRAS (CORREGIDA) ---
   Widget _buildPurchasesList() {
-    return ListView.builder(
-      itemCount: 15,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.red[100],
-            child: Icon(Icons.arrow_downward, color: Colors.red[800]),
-          ),
-          title: Text('Compra #${15 - index}'),
-          subtitle: Text('Proveedor: Proveedor Ejemplo ${index + 1}'),
-          trailing: Text(
-            '-\$${(index + 1) * 35}.00',
-            style:
-                TextStyle(color: Colors.red[800], fontWeight: FontWeight.w600),
-          ),
+    final purchasesAsync = ref.watch(purchasesHistoryProvider);
+
+    return purchasesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("Error: $err")),
+      data: (purchases) {
+        if (purchases.isEmpty) return _buildEmptyState("No hay compras registradas.");
+        
+        return ListView.separated(
+           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+           itemCount: purchases.length,
+           separatorBuilder: (_, __) => const SizedBox(height: 12),
+           itemBuilder: (context, index) {
+             final purchase = purchases[index];
+             return _TransactionCard(
+               title: "Compra #${purchase.purchaseId}",
+               subtitle: purchase.providerName,
+               amount: purchase.totalUsd,
+               
+               // --- CORRECCIÓN AQUÍ ---
+               // Antes decía purchase.purchasedAt (Error)
+               // Ahora dice purchase.boughtAt (Correcto según tu modelo)
+               date: purchase.boughtAt, 
+               
+               isIncome: false, 
+               onTap: () {}, 
+             );
+           }
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(String msg) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text(msg, style: TextStyle(color: Colors.grey[500])),
+        ],
+      ),
+    );
+  }
+
+  void _showDetail(BuildContext context, int saleId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) {
+            return FutureBuilder<SaleModel>(
+              future: SaleService().getById(saleId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: Center(child: Text("Error al cargar detalle: ${snapshot.error}")),
+                  );
+                }
+                if (snapshot.hasData) {
+                  return SaleDetailModal(sale: snapshot.data!);
+                }
+                return const SizedBox();
+              },
+            );
+          }
+        );
+      },
+    );
+  }
+}
+
+// --- TARJETA REUTILIZABLE ---
+class _TransactionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final double amount;
+  final DateTime date;
+  final bool isIncome;
+  final VoidCallback onTap;
+
+  const _TransactionCard({
+    required this.title,
+    required this.subtitle,
+    required this.amount,
+    required this.date,
+    required this.isIncome,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = NumberFormat.currency(symbol: '\$');
+    final color = isIncome ? Colors.green.shade700 : Colors.red.shade700;
+    final iconBg = isIncome ? Colors.green.shade50 : Colors.red.shade50;
+
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle, 
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "${isIncome ? '+' : '-'}${currency.format(amount)}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 16, 
+                      color: color
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('dd/MM HH:mm').format(date),
+                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

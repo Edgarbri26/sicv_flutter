@@ -1,40 +1,44 @@
 import 'dart:convert';
+import 'dart:io'; // Para SocketException
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/core/exceptions/backend_exception.dart';
-import 'package:sicv_flutter/models/sale_model.dart';
+import 'package:sicv_flutter/models/sale/sale_model.dart';
+import 'package:sicv_flutter/models/sale/sale_summary_model.dart';
 
 class SaleService {
   final String _baseUrl = ApiUrl().url;
+  final Map<String, String> _headers = {'Content-Type': 'application/json'};
 
-  Future<List<SaleModel>> getAllSales() async {
+  /// 1. OBTENER TODAS LAS VENTAS (Resumido)
+  Future<List<SaleSummaryModel>> getAll() async {
     final url = Uri.parse('$_baseUrl/sale');
 
-    try{
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+    try {
+      final response = await http.get(url, headers: _headers);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
         final List<dynamic> jsonList = responseBody['data'];
 
-        return jsonList.map((json) => SaleModel.fromJson(json)).toList();
+        return jsonList.map((json) => SaleSummaryModel.fromJson(json)).toList();
       } else {
-        throw Exception('Failed to load sales (Código: ${response.statusCode})');
+        _handleError(response);
+        throw Exception("Unreachable");
       }
+    } on BackendException {
+      rethrow;
     } catch (e) {
-      throw Exception('Error de conexión: $e');
+      throw _customException(e);
     }
   }
 
-  Future<SaleModel> getSaleById(int id) async {
+  /// 2. OBTENER UNA VENTA POR ID (Detallado)
+  Future<SaleModel> getById(int id) async {
     final url = Uri.parse('$_baseUrl/sale/$id');
 
     try {
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+      final response = await http.get(url, headers: _headers);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
@@ -42,51 +46,73 @@ class SaleService {
 
         return SaleModel.fromJson(saleJson);
       } else {
-        throw Exception('Failed to load sale (Código: ${response.statusCode})');
+        _handleError(response);
+        throw Exception("Unreachable");
       }
+    } on BackendException {
+      rethrow;
     } catch (e) {
-      throw Exception('Error de conexión: $e');
+      throw _customException(e);
     }
   }
 
+  /// 3. CREAR NUEVA VENTA
   Future<SaleModel> createSale(SaleModel sale) async {
     final url = Uri.parse('$_baseUrl/sale');
-    final body = json.encode(sale.toJson());
+
+    // Construcción del JSON directa y limpia
+    final Map<String, dynamic> bodyMap = {
+      'client_ci': sale.clientCi,
+      'user_ci': sale.userCi,             // <--- Directo, sin trucos
+      'type_payment_id': sale.typePaymentId, // <--- Directo, sin trucos
+      'sale_items': sale.saleItems.map((item) => item.toJson()).toList(),
+    };
 
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
+        headers: _headers,
+        body: json.encode(bodyMap),
       );
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
-        final Map<String, dynamic> saleJson = responseBody['data'];
-        return SaleModel.fromJson(saleJson);
+        return SaleModel.fromJson(responseBody['data']);
       } else {
-        // --- AQUÍ ESTÁ LA MAGIA ---
-        
-        // 1. Intentamos decodificar el error que viene del backend
-        String errorMessage;
-        try {
-          final Map<String, dynamic> errorBody = json.decode(response.body);
-          // 2. Buscamos la clave donde el backend manda el mensaje (ej: 'message', 'error', 'detail')
-          errorMessage = errorBody['message'] ?? errorBody['error'] ?? 'Error desconocido del servidor';
-        } catch (e) {
-          // Si el backend devolvió HTML (error 500) o texto plano no JSON
-          errorMessage = 'Error inesperado (${response.statusCode}): ${response.body}';
-        }
-
-        // 3. Lanzamos nuestra excepción personalizada con el mensaje limpio
-        throw BackendException(errorMessage);
+        _handleError(response);
+        throw Exception("Unreachable");
       }
     } on BackendException {
-      // Re-lanzamos la excepción limpia tal cual
       rethrow;
     } catch (e) {
-      // Capturamos cualquier otro error (conexión, timeout, etc.)
-      throw Exception('No se pudo conectar con el servidor. Verifique su internet.');
+      throw _customException(e);
     }
+  }
+
+  // ==========================================
+  // HELPERS PRIVADOS
+  // ==========================================
+
+  void _handleError(http.Response response) {
+    String errorMessage;
+    try {
+      final Map<String, dynamic> errorBody = json.decode(response.body);
+      errorMessage = errorBody['message'] ?? 
+                     errorBody['error'] ?? 
+                     errorBody['detail'] ?? 
+                     'Error desconocido del servidor';
+    } catch (e) {
+      errorMessage = 'Error inesperado (${response.statusCode})';
+    }
+    throw BackendException(errorMessage);
+  }
+
+  Exception _customException(dynamic error) {
+    if (error is SocketException) {
+      return BackendException('Sin conexión a internet. Verifique su red.');
+    }
+    if (error is BackendException) return error;
+    
+    return BackendException('Ocurrió un error inesperado: $error');
   }
 }

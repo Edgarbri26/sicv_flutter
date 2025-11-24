@@ -1,4 +1,4 @@
-class PurchaseLotsItemModel {
+/*class PurchaseLotsItemModel {
   final int productId;
   final int purchaseId;
   final int depotId;
@@ -45,4 +45,4 @@ class PurchaseLotsItemModel {
       'expiration_date': expirationDate.toIso8601String(),
     };
   }
-}
+}*/
