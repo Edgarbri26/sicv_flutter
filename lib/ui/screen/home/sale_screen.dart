@@ -84,6 +84,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
+    final authState = ref.watch(authProvider);
     return Column(
       children: [
         // --- 1. WIDGET DE BÚSQUEDA ---
@@ -360,6 +361,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 */
 
   void showSaleDetail(BuildContext context) {
+    final authState = ref.read(authProvider);
+
     double total = _itemsForSale.fold(
       0,
       (previousValue, element) =>
@@ -444,11 +447,13 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                             style: AppTextStyles.bodyLarge,
                           ),
                           PrimaryButtonApp(
-                            text: "Confirmar", 
+                            text: authState.user == null ? "Cargando..." : "Confirmar", 
                             onPressed: () {
-                              // Lógica para confirmar la venta
-                              _saveSale();
-                            }),
+                              if (authState.user != null) {
+                                _saveSale();
+                              }
+                            },
+                          ),
                         ],
                       ),
                       Expanded(
@@ -569,19 +574,48 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
   void _saveSale() async {
 
-    List<SaleItemModel> saleItems = [];
+    final authState = ref.read(authProvider);
 
-    if (_itemsForSale.isEmpty) {
-      Navigator.of(context).pop();
+    print("authState user: ${authState.user}");
+
+    // 2. VALIDACIÓN PRIMARIA: ¿Hay usuario?
+    // Movemos esto al principio. Si no hay usuario, cancelamos todo de inmediato.
+    if (authState.user == null) {
+      // Nota: Si tienes un diálogo de carga abierto, deja el pop. Si no, quítalo.
+      // Navigator.of(context).pop(); 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('La venta no puede estar vacía.'),
+        const SnackBar(
+          content: Text('Error: No hay sesión de usuario activa.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // 3. Validaciones de la venta
+    if (_itemsForSale.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La venta no puede estar vacía.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    if (selectedClient == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, seleccione un cliente.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    if (_selectedTypePayment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, seleccione un tipo de pago.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    // 4. Procesar items (Solo llegamos aquí si todo lo anterior está bien)
+    List<SaleItemModel> saleItems = [];
     for (var item in _itemsForSale) {
       saleItems.add(
         SaleItemModel(
@@ -593,44 +627,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       );
     }
 
-    if ( selectedClient == null) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Por favor, seleccione un cliente.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if ( _selectedTypePayment == null) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Por favor, seleccione un tipo de pago.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    final authState = ref.watch(authProvider);
-  
-    if (authState.user == null) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al obtener datos del usuario.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
+    // Creación del modelo
     final SaleModel sale = SaleModel(
-      clientCi: selectedClient!.clientCi, 
-      userCi: authState.user!.userCi, 
+      clientCi: selectedClient!.clientCi,
+      userCi: authState.user!.userCi, // Aquí ya estamos seguros de que user no es null
       typePaymentId: _selectedTypePayment!.typePaymentId,
       saleItems: saleItems,
     );
