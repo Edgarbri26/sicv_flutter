@@ -398,11 +398,6 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
           backgroundColor: AppColors.background,
           appBar: !isWide ? AppBar(title: const Text("Registrar Compra")) : null,
           drawer: isWide || widget.controller == null ? null : MySideBar(controller: widget.controller!),
-          floatingActionButton: FloatingActionButton.extended(
-            icon: const Icon(Icons.add),
-            label: const Text('Añadir Producto'),
-            onPressed: showProductSearchModal, // Usa tu método existente
-          ),
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
