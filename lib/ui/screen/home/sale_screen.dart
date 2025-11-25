@@ -647,8 +647,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         SaleItemModel(
           productId: item.id,
           amount: item.quantity,
-          priceUsd: item.price,
-          priceBs: item.price,
+          unitCost: item.price,
           depotId: 1,
         ),
       );
