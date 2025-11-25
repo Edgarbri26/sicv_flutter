@@ -612,21 +612,30 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     // 3. Validaciones de la venta
     if (_itemsForSale.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La venta no puede estar vacía.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('La venta no puede estar vacía.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (selectedClient == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, seleccione un cliente.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Por favor, seleccione un cliente.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (_selectedTypePayment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, seleccione un tipo de pago.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Por favor, seleccione un tipo de pago.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -638,7 +647,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         SaleItemModel(
           productId: item.id,
           amount: item.quantity,
-          unitCost: item.price,
+          priceUsd: item.price,
+          priceBs: item.price,
           depotId: 1,
         ),
       );
