@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/models/purchase/purchase_model.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
+import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart'; 
 import 'package:sicv_flutter/providers/finance_provider.dart';
+import 'package:sicv_flutter/ui/widgets/purchase_detail_modal.dart';
 import 'package:sicv_flutter/ui/widgets/sale_detail_modal.dart'; 
 
 class FinancesView extends ConsumerStatefulWidget {
@@ -114,39 +117,40 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
   }
 
   // --- LISTA DE COMPRAS (CORREGIDA) ---
-  Widget _buildPurchasesList() {
-    final purchasesAsync = ref.watch(purchasesHistoryProvider);
+    Widget _buildPurchasesList() {
+      final purchasesAsync = ref.watch(purchasesHistoryProvider);
 
-    return purchasesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text("Error: $err")),
-      data: (purchases) {
-        if (purchases.isEmpty) return _buildEmptyState("No hay compras registradas.");
-        
-        return ListView.separated(
-           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-           itemCount: purchases.length,
-           separatorBuilder: (_, __) => const SizedBox(height: 12),
-           itemBuilder: (context, index) {
-             final purchase = purchases[index];
-             return _TransactionCard(
-               title: "Compra #${purchase.purchaseId}",
-               subtitle: purchase.providerName,
-               amount: purchase.totalUsd,
-               
-               // --- CORRECCIÓN AQUÍ ---
-               // Antes decía purchase.purchasedAt (Error)
-               // Ahora dice purchase.boughtAt (Correcto según tu modelo)
-               date: purchase.boughtAt, 
-               
-               isIncome: false, 
-               onTap: () {}, 
-             );
-           }
-        );
-      },
-    );
-  }
+      return purchasesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Error: $err")),
+        data: (purchases) {
+          if (purchases.isEmpty) return _buildEmptyState("No hay compras registradas.");
+          
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: purchases.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final purchase = purchases[index];
+              return _TransactionCard(
+                title: "Compra #${purchase.purchaseId}",
+                subtitle: purchase.providerName,
+                amount: purchase.totalUsd,
+                date: purchase.boughtAt, 
+                
+                isIncome: false, 
+                onTap: () {
+                    final id = purchase.purchaseId;
+                    if (id != null) {
+                      _showPurchaseDetail(context, id);
+                    }
+                }, 
+              );
+            }
+          );
+        },
+      );
+    }
 
   Widget _buildEmptyState(String msg) {
     return Center(
@@ -158,6 +162,47 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
           Text(msg, style: TextStyle(color: Colors.grey[500])),
         ],
       ),
+    );
+  }
+
+  // --- NUEVA FUNCIÓN PARA DETALLE DE COMPRA ---
+  void _showPurchaseDetail(BuildContext context, int purchaseId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) {
+            return FutureBuilder<PurchaseModel>(
+              // Llamamos al servicio de compras
+              future: PurchaseService().getById(purchaseId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Container(
+                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                    child: Center(child: Text("Error: ${snapshot.error}")),
+                  );
+                }
+                if (snapshot.hasData) {
+                  // AQUÍ USAMOS EL NUEVO MODAL DE COMPRA
+                  return PurchaseDetailModal(purchase: snapshot.data!);
+                }
+                return const SizedBox();
+              },
+            );
+          }
+        );
+      },
     );
   }
 
