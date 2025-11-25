@@ -55,7 +55,7 @@ class ProductCard extends StatelessWidget {
                         ),
                         const Spacer(),
                         InfoChip(
-                          text: 'S/ ${product.price.toStringAsFixed(2)}',
+                          text: '\$ ${product.price.toStringAsFixed(2)}',
                           color: AppColors.info,
                         ),
                         const Spacer(),
