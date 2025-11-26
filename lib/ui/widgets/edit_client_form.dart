@@ -56,7 +56,7 @@ class EditClientFormState extends State<EditClientForm> {
     setState(() => _isLoading = true);
 
     try {
-      await widget.clientService.updateClient(
+      await widget.clientService.update(
         widget.client.clientCi,
         name: _nameController.text,
         phone: _phoneController.text,

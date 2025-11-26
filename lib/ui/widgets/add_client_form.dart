@@ -56,7 +56,7 @@ class AddClientFormState extends State<AddClientForm> {
     setState(() => _isLoading = true);
 
     try {
-      await widget.clientService.createClient(
+      await widget.clientService.create(
         ci: _ciController.text,
         name: _nameController.text,
         phone: _phoneController.text,
