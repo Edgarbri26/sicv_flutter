@@ -394,7 +394,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void showSaleDetail(BuildContext context) {
-  // ref.read(authProvider); // Si no usas el valor, esto no hace falta aquí.
+   ref.read(authProvider); // Si no usas el valor, esto no hace falta aquí.
 
     showModalBottomSheet(
       context: context,
@@ -411,17 +411,12 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
             return StatefulBuilder(
               builder: (BuildContext context, StateSetter modalSetState) {
-                
-                // --- CORRECCIÓN CLAVE ---
-                // Calculamos el total AQUÍ dentro, para que se actualice 
-                // cada vez que llamamos a modalSetState.
                 double total = _itemsForSale.fold(
                   0,
                   (previousValue, element) =>
                       previousValue + (element.quantity * element.price),
                 );
-                // ------------------------
-
+                
                 return DraggableScrollableSheet(
                   expand: false,
                   initialChildSize: sheetSize,
@@ -546,7 +541,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                                     return;
                                   }
                                   _saveSale();
-                                  Navigator.pop(context); // Cerrar modal tras guardar
                                 },
                               ),
                             ],
@@ -671,28 +665,17 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void _saveSale() async {
-    List<SaleItemModel> saleItems = [];
+    // 1. Validaciones PRIMERO (Sin Navigator.pop)
+    // Si hay error, solo mostramos mensaje y salimos con return.
 
-    if (_itemsForSale.isEmpty) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: No hay sesión de usuario activa.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // 3. Validaciones de la venta
     if (_itemsForSale.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('La venta no puede estar vacía.'),
+          content: Text('La venta no puede estar vacía. Agrega productos.'),
           backgroundColor: Colors.red,
         ),
       );
-      return;
+      return; // Detiene la función aquí, NO cierra la pantalla
     }
 
     if (selectedClient == null) {
@@ -708,41 +691,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     if (_selectedTypePayment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, seleccione un tipo de pago.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // 4. Procesar items (Solo llegamos aquí si todo lo anterior está bien)
-    // List<SaleItemModel> saleItems = [];
-    for (var item in _itemsForSale) {
-      saleItems.add(
-        SaleItemModel(
-          productId: item.id,
-          amount: item.quantity,
-          unitCost: item.price,
-          depotId: 1,
-        ),
-      );
-    }
-
-    if (selectedClient == null) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Por favor, seleccione un cliente.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (_selectedTypePayment == null) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
           content: Text('Por favor, seleccione un tipo de pago.'),
           backgroundColor: Colors.red,
         ),
@@ -753,16 +701,27 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     final authState = ref.watch(authProvider);
 
     if (authState.user == null) {
-      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al obtener datos del usuario.'),
+        const SnackBar(
+          content: Text('Error: No hay sesión de usuario activa.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // 2. Preparar los datos
+    // Mapeamos los items directamente
+    List<SaleItemModel> saleItems = _itemsForSale.map((item) {
+      return SaleItemModel(
+        productId: item.id,
+        amount: item.quantity,
+        unitCost: item.price,
+        depotId: 1, // Asegúrate que este ID sea dinámico si manejas varios almacenes
+      );
+    }).toList();
+
+    // 3. Crear el objeto venta
     final SaleModel sale = SaleModel.forCreation(
       clientCi: selectedClient!.clientCi,
       userCi: authState.user!.userCi,
@@ -770,31 +729,48 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       items: saleItems,
     );
 
+    // 4. Enviar al Backend
     try {
-      await SaleService().createSale(sale);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Venta registrada exitosamente.'),
-          duration: Duration(seconds: 2),
-        ),
+      // Opcional: Mostrar un indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      Navigator.of(context).pop();
+      await SaleService().createSale(sale);
 
-      setState(() {
-        _itemsForSale.clear();
-        selectedClient = null;
-        _selectedTypePayment = null;
-      });
+      // Cerrar el indicador de carga
+      if (mounted) Navigator.of(context).pop(); 
+
+      // 5. ÉXITO: Aquí SÍ cerramos el modal de ventas y limpiamos
+      if (mounted) {
+        Navigator.of(context).pop(); // Cierra el modal de "Confirmar Venta"
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Venta registrada exitosamente.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        setState(() {
+          _itemsForSale.clear();
+          selectedClient = null;
+          _selectedTypePayment = null;
+        });
+      }
+
     } on BackendException catch (e) {
-      Navigator.of(context).pop();
+      // Si hubo loading, hay que cerrarlo primero
+      if (mounted) Navigator.of(context).pop(); 
 
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Error al procesar'),
-          content: Text(e.message), // <--- "Stock insuficiente", etc.
+          content: Text(e.message),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -804,10 +780,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         ),
       );
     } catch (e) {
-      Navigator.of(context).pop();
+      // Si hubo loading, hay que cerrarlo primero
+      if (mounted) Navigator.of(context).pop();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        SnackBar(content: Text('Error inesperado: $e'), backgroundColor: Colors.red),
       );
     }
   }
