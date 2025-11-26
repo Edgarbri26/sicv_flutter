@@ -20,9 +20,10 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
-  late TabController _tabController; 
+  late TabController _tabController;
   final double breakpoint = 600.0;
   int _currentIndex = 0;
 
@@ -38,9 +39,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     'Gestión del Inventario',
   ];
 
-  final GlobalKey<PurchaseScreenState> _purchaseScreenKey = GlobalKey<PurchaseScreenState>();
-  final GlobalKey<InventoryDatatableScreenState> _inventoryScreenKey = GlobalKey<InventoryDatatableScreenState>();
-  final GlobalKey<SaleScreenState> _saleScreenKey = GlobalKey<SaleScreenState>();
+  final GlobalKey<PurchaseScreenState> _purchaseScreenKey =
+      GlobalKey<PurchaseScreenState>();
+  final GlobalKey<InventoryDatatableScreenState> _inventoryScreenKey =
+      GlobalKey<InventoryDatatableScreenState>();
+  final GlobalKey<SaleScreenState> _saleScreenKey =
+      GlobalKey<SaleScreenState>();
 
   @override
   void initState() {
@@ -59,6 +63,43 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _pageController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: !isWide
+              ? AppBar(
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  title: Text(
+                    _screenTitles[_currentIndex],
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  toolbarHeight: 64.0,
+                  actions: [const SizedBox(width: 16)],
+                  iconTheme: IconThemeData(color: AppColors.textPrimary),
+                )
+              : null,
+
+          drawer: isWide ? null : MySideBar(controller: widget.controller),
+          body: isWide
+              ? _buildWideLayout(_tabController)
+              : _buildNarrowLayout(),
+          bottomNavigationBar: isWide ? null : _buildBottomNavBar(),
+          floatingActionButton: _buildFloatingActionButton(),
+        );
+      },
+    );
   }
 
   // 5. Esta función se llama CUANDO SE HACE SWIPE (solo móvil)
@@ -93,8 +134,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
-  
-
   List<Widget> get _screens => [
     SaleScreen(key: _saleScreenKey),
     PurchaseScreen(key: _purchaseScreenKey),
@@ -128,7 +167,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         children: [
                           Expanded(
                             child: TabBarView(
-                              controller: tabController, 
+                              controller: tabController,
                               physics:
                                   const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
                               children: _screens,
@@ -151,7 +190,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget _buildBottomNavBar() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
-      onTap: _navigateToPage, 
+      onTap: _navigateToPage,
       backgroundColor: AppColors.background,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textSecondary,
@@ -193,11 +232,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
-  
   /// [context] El BuildContext para mostrar el diálogo.
   /// [item] El item cuya cantidad se está modificando (asumo que tiene .cantidad).
   /// [onConfirm] Callback que se ejecuta con la nueva cantidad si se confirma.
-  
+
   Widget _buildDesktopNavigationRail() {
     return NavigationRail(
       labelType: NavigationRailLabelType.all,
@@ -214,43 +252,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         ),
       ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: !isWide
-              ? AppBar(
-                  backgroundColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  title: Text(
-                    _screenTitles[_currentIndex],
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  toolbarHeight: 64.0,
-                  actions: [const SizedBox(width: 16)],
-                  iconTheme: IconThemeData(color: AppColors.textPrimary),
-                )
-              : null,
-
-          drawer: isWide ? null : MySideBar(controller: widget.controller),
-          body: isWide
-              ? _buildWideLayout(_tabController)
-              : _buildNarrowLayout(),
-          bottomNavigationBar: isWide ? null : _buildBottomNavBar(),
-          floatingActionButton: _buildFloatingActionButton(),
-        );
-      },
     );
   }
 }

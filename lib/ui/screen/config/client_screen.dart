@@ -285,7 +285,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
               onPressed: () async {
                 try {
                   // 1. Llama al servicio de desactivación
-                  await _clientService.deactivateClient(client.clientCi);
+                  await _clientService.deactivate(client.clientCi);
 
                   if (!mounted) return;
                   Navigator.of(context).pop(); // Cierra el diálogo
@@ -339,7 +339,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
               style: TextButton.styleFrom(foregroundColor: Colors.green),
               onPressed: () async {
                 try {
-                  await _clientService.activateClient(client.clientCi);
+                  await _clientService.activate(client.clientCi);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();

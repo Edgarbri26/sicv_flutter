@@ -32,7 +32,7 @@ class ClientService {
   }
 
   // --- OBTENER UN CLIENTE POR CI (ID) ---
-  Future<ClientModel> getClientById(String ci) async {
+  Future<ClientModel> getById(String ci) async {
     final url = Uri.parse('$_baseUrl/client/$ci');
     try {
       final response = await http.get(url);
@@ -49,7 +49,7 @@ class ClientService {
   }
 
   // --- CREAR UN NUEVO CLIENTE (Sin Email) ---
-  Future<ClientModel> createClient({
+  Future<ClientModel> create({
     required String ci,
     required String name,
     required String phone,
@@ -82,7 +82,7 @@ class ClientService {
   }
 
   // --- ACTUALIZAR UN CLIENTE (Sin Email) ---
-  Future<ClientModel> updateClient(
+  Future<ClientModel> update(
     String ci, {
     required String name,
     required String phone,
@@ -116,7 +116,7 @@ class ClientService {
   }
 
   // --- ELIMINAR UN CLIENTE ---
-  Future<void> deleteClient(String ci) async {
+  Future<void> delete(String ci) async {
     final url = Uri.parse('$_baseUrl/client/$ci');
     try {
       final response = await http.delete(
@@ -133,7 +133,7 @@ class ClientService {
     }
   }
 
-  Future<void> deactivateClient(String ci) async {
+  Future<void> deactivate(String ci) async {
     final url = Uri.parse('$_baseUrl/client/$ci/deactivate');
 
     try {
@@ -150,7 +150,7 @@ class ClientService {
     }
   }
   
-  Future<void> activateClient(String ci) async {
+  Future<void> activate(String ci) async {
     final url = Uri.parse('$_baseUrl/client/$ci/activate');
 
     try {

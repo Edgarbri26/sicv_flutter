@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // <T> será el Modelo (ProviderModel)
 // <S> será el Servicio que implementa CrudInterface
-abstract class BaseCrudNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
+abstract class BaseNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
   final ServicesInterface<T> _service;
 
-  BaseCrudNotifier(this._service) : super(const AsyncValue.loading()) {
+  BaseNotifier(this._service) : super(const AsyncValue.loading()) {
     loadItems();
   }
 
