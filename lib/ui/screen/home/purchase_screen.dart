@@ -255,13 +255,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     setState(() => _isRegistering = false);
   }
 
-  // ... [RESTO DE MÉTODOS DE UI: _buildProductList, etc. IGUALES] ...
-  
-  // Asegúrate de incluir _updateTotalCost, _addProductToPurchase, _removeItem, 
-  // showProductSearchModal, _buildProductList, etc. tal cual los tenías, 
-  // ya que la lógica visual es correcta.
-  // El cambio crítico fue en _registerPurchase y los imports.
-   void showProductSearchModal() {
+  void showProductSearchModal() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -396,7 +390,6 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: !isWide ? AppBar(title: const Text("Registrar Compra")) : null,
           drawer: isWide || widget.controller == null ? null : MySideBar(controller: widget.controller!),
           body: Center(
             child: ConstrainedBox(
