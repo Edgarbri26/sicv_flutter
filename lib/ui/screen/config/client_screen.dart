@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 // --- Asegúrate de que estas rutas de importación sean correctas ---
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/widgets/add_client_form.dart';
+import 'package:sicv_flutter/ui/widgets/edit_client_form.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
@@ -16,10 +16,10 @@ class ClientManagementPage extends StatefulWidget {
   const ClientManagementPage({super.key});
 
   @override
-  _ClientManagementPageState createState() => _ClientManagementPageState();
+  ClientManagementPageState createState() => ClientManagementPageState();
 }
 
-class _ClientManagementPageState extends State<ClientManagementPage> {
+class ClientManagementPageState extends State<ClientManagementPage> {
   final ClientService _clientService = ClientService();
   late Future<List<ClientModel>> _clientsFuture; // Usa ClientModel
 
@@ -199,7 +199,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addNewClient,
+        onPressed: addNewClient,
         tooltip: 'Agregar Cliente',
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -592,7 +592,7 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext modalContext) {
-        return _EditClientForm(client: client, clientService: _clientService);
+        return EditClientForm(client: client, clientService: _clientService);
       },
     );
 
@@ -611,13 +611,13 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
     }
   }
 
-  void _addNewClient() async {
+  void addNewClient() async {
     final bool? clientWasAdded = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext modalContext) {
-        return _AddClientForm(clientService: _clientService);
+        return AddClientForm(clientService: _clientService);
       },
     );
 
@@ -634,389 +634,5 @@ class _ClientManagementPageState extends State<ClientManagementPage> {
         _clientsFuture = _fetchClients();
       });
     }
-  }
-}
-
-// =======================================================================
-// --- WIDGET PARA EL MODAL DE AGREGAR CLIENTE (Sin Email) ---
-// =======================================================================
-class _AddClientForm extends StatefulWidget {
-  final ClientService clientService;
-  const _AddClientForm({required this.clientService});
-
-  @override
-  _AddClientFormState createState() => _AddClientFormState();
-}
-
-class _AddClientFormState extends State<_AddClientForm> {
-  late TextEditingController _ciController;
-  late TextEditingController _nameController;
-  late TextEditingController _phoneController;
-  late TextEditingController _addressController;
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _ciController = TextEditingController();
-    _nameController = TextEditingController();
-    _phoneController = TextEditingController();
-    _addressController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _ciController.dispose();
-    _nameController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submitForm() async {
-    if (_ciController.text.isEmpty ||
-        _nameController.text.isEmpty ||
-        _phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, llena todos los campos marcados con *'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      await widget.clientService.createClient(
-        ci: _ciController.text,
-        name: _nameController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-      );
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al crear: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.person_add, color: AppColors.primary, size: 24),
-                SizedBox(width: 8),
-                Text(
-                  'Registrar Nuevo Cliente',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Completa los datos del nuevo cliente',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            TextFieldApp(
-              controller: _ciController,
-              labelText: 'CI / RUC *',
-              prefixIcon: Icons.badge,
-              keyboardType: TextInputType.text,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _nameController,
-              labelText: 'Nombre Completo o Razón Social *',
-              prefixIcon: Icons.person,
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _phoneController,
-              labelText: 'Teléfono *',
-              prefixIcon: Icons.phone,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _addressController,
-              labelText: 'Dirección (Opcional)',
-              prefixIcon: Icons.location_on,
-              maxLines: 2,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () => Navigator.of(context).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      side: const BorderSide(color: AppColors.primary),
-                    ),
-                    child: const Text(
-                      'Cancelar',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PrimaryButtonApp(
-                    text: 'Guardar',
-                    icon: Icons.save,
-                    isLoading: _isLoading,
-                    onPressed: _submitForm,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// =======================================================================
-// --- WIDGET PARA EL MODAL DE EDITAR CLIENTE (Sin Email) ---
-// =======================================================================
-class _EditClientForm extends StatefulWidget {
-  final ClientModel client; // Usa ClientModel
-  final ClientService clientService;
-  const _EditClientForm({required this.client, required this.clientService});
-
-  @override
-  _EditClientFormState createState() => _EditClientFormState();
-}
-
-class _EditClientFormState extends State<_EditClientForm> {
-  late TextEditingController _ciController;
-  late TextEditingController _nameController;
-  late TextEditingController _phoneController;
-  late TextEditingController _addressController;
-  late bool _currentStatus;
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final client = widget.client;
-    _ciController = TextEditingController(text: client.clientCi);
-    _nameController = TextEditingController(text: client.name);
-    _phoneController = TextEditingController(text: client.phone);
-    _addressController = TextEditingController(text: client.address);
-    _currentStatus = client.status;
-  }
-
-  @override
-  void dispose() {
-    _ciController.dispose();
-    _nameController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submitForm() async {
-    if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, llena todos los campos marcados con *'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      await widget.clientService.updateClient(
-        widget.client.clientCi,
-        name: _nameController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
-        status: _currentStatus,
-      );
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al actualizar: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.edit_note, color: AppColors.primary, size: 24),
-                SizedBox(width: 8),
-                Text(
-                  'Editar Cliente',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            TextFieldApp(
-              controller: _ciController,
-              labelText: 'CI / RUC',
-              prefixIcon: Icons.badge,
-              enabled: false,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _nameController,
-              labelText: 'Nombre Completo *',
-              prefixIcon: Icons.person,
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _phoneController,
-              labelText: 'Teléfono *',
-              prefixIcon: Icons.phone,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _addressController,
-              labelText: 'Dirección (Opcional)',
-              prefixIcon: Icons.location_on,
-              maxLines: 2,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () => Navigator.of(context).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      side: const BorderSide(color: AppColors.primary),
-                    ),
-                    child: const Text(
-                      'Cancelar',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PrimaryButtonApp(
-                    text: 'Actualizar',
-                    icon: Icons.save,
-                    isLoading: _isLoading,
-                    onPressed: _submitForm,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
   }
 }

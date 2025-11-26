@@ -20,6 +20,7 @@ import 'package:sicv_flutter/providers/type_payment_provider.dart';
 import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
+import 'package:sicv_flutter/ui/widgets/add_client_form.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -370,14 +371,30 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 */
 
-  void showSaleDetail(BuildContext context) {
-    ref.read(authProvider);
-
-    double total = _itemsForSale.fold(
-      0,
-      (previousValue, element) =>
-          previousValue + (element.quantity * element.price),
+  void addNewClient() async {
+    final bool? clientWasAdded = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext modalContext) {
+        return AddClientForm(clientService: ClientService());
+      },
     );
+
+    if (clientWasAdded == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Cliente agregado correctamente'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  void showSaleDetail(BuildContext context) {
+  // ref.read(authProvider); // Si no usas el valor, esto no hace falta aquí.
 
     showModalBottomSheet(
       context: context,
@@ -394,6 +411,17 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
             return StatefulBuilder(
               builder: (BuildContext context, StateSetter modalSetState) {
+                
+                // --- CORRECCIÓN CLAVE ---
+                // Calculamos el total AQUÍ dentro, para que se actualice 
+                // cada vez que llamamos a modalSetState.
+                double total = _itemsForSale.fold(
+                  0,
+                  (previousValue, element) =>
+                      previousValue + (element.quantity * element.price),
+                );
+                // ------------------------
+
                 return DraggableScrollableSheet(
                   expand: false,
                   initialChildSize: sheetSize,
@@ -405,55 +433,93 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // ... (Tu código de la barra superior y título sigue igual) ...
                           Center(
                             child: Container(
-                              width: 40,
-                              height: 5,
-                              margin: const EdgeInsets.only(bottom: 15),
-                              decoration: BoxDecoration(
-                                color: AppColors.border,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                              width: 40, height: 5, margin: const EdgeInsets.only(bottom: 15),
+                              decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
                           Center(
-                            child: Text(
-                              textAlign: TextAlign.center,
-                              "Detalles de la Venta",
-                              style: AppTextStyles.headlineLarge,
-                            ),
+                            child: Text("Detalles de la Venta", textAlign: TextAlign.center, style: AppTextStyles.headlineLarge),
                           ),
+                          
                           const SizedBox(height: 10),
-                          DropDownApp(
-                            items: _allClients,
-                            initialValue: selectedClient,
-                            onChanged: (newValue) {
-                              // Manejar el cambio de cliente seleccionado
-                              setState(() {
-                                selectedClient = newValue;
-                              });
-                            },
-                            itemToString: (client) => client.name,
-                            labelText: 'Seleccionar Cliente',
-                            prefixIcon: Icons.person,
+                          
+                          // Selección de Cliente y Botón Nuevo
+                          Row(
+                            children: [
+                              Expanded( // <-- RECOMENDACIÓN: Envuelve en Expanded si DropDownApp no tiene ancho fijo
+                                child: DropDownApp(
+                                  items: _allClients,
+                                  initialValue: selectedClient,
+                                  onChanged: (newValue) {
+                                    // Usamos modalSetState para que el dropdown cambie visualmente
+                                    modalSetState(() {
+                                      selectedClient = newValue;
+                                    });
+                                    // Opcional: Si necesitas que la pantalla padre también se entere:
+                                    // setState(() => selectedClient = newValue); 
+                                  },
+                                  itemToString: (client) => client.name,
+                                  labelText: 'Seleccionar Cliente',
+                                  prefixIcon: Icons.person,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              PrimaryButtonApp(
+                                text: "Nuevo",
+                                onPressed: () async {
+                                  // 1. Abrimos el modal directamente AQUÍ
+                                      final bool? clientWasAdded = await showModalBottomSheet<bool>(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent, 
+                                        builder: (ctx) => AddClientForm( // <--- Asegúrate de importar este widget
+                                          clientService: ClientService(), // O tu instancia de servicio
+                                        ),
+                                      );
+
+                                      // 2. Si se agregó, refrescamos la lista
+                                      if (clientWasAdded == true) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Cliente agregado correctamente'), 
+                                            backgroundColor: Colors.green
+                                          ),
+                                        );
+
+                                        final clientServiceTemp = ClientService(); 
+                                        final newClients = await clientServiceTemp.getAll(); // O .getAll() según como se llame tu método
+                                        
+                                        modalSetState(() {
+                                          _allClients = newClients;
+                                          if (newClients.isNotEmpty) {
+                                            selectedClient = newClients.last;
+                                          }
+                                        });
+                                      }
+                                },  
+                              ),
+                            ],
                           ),
+
                           const SizedBox(height: 20),
 
+                          // Tipos de Pago (Riverpod)
                           typePaymentsState.when(
                             loading: () => const CategoryLoadingSkeleton(),
-                            error: (error, stack) =>
-                                Center(child: Text('Error: $error')),
+                            error: (error, stack) => Center(child: Text('Error: $error')),
                             data: (typePayments) {
                               return DropDownApp(
                                 items: typePayments,
                                 initialValue: _selectedTypePayment,
                                 onChanged: (newValue) {
-                                  // Manejar el cambio de tipo de pago seleccionado
-                                  setState(() {
+                                  modalSetState(() {
                                     _selectedTypePayment = newValue;
                                   });
                                 },
-                                itemToString: (typePayment) => typePayment.name,
+                                itemToString: (tp) => tp.name,
                                 labelText: 'Seleccionar Tipo de Pago',
                                 prefixIcon: Icons.payment,
                               );
@@ -461,56 +527,65 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                           ),
 
                           const SizedBox(height: 20),
+
+                          // Total y Botón Confirmar
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              // Ahora este texto SÍ cambiará cuando edites items
                               Text(
-                                "Total: \$${total.toStringAsFixed(2)}",
-                                style: AppTextStyles.bodyLarge,
+                                "Total: \$${total.toStringAsFixed(2)}", 
+                                style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
                               ),
                               PrimaryButtonApp(
                                 text: "Confirmar",
                                 onPressed: () {
-                                  // Lógica para confirmar la venta
+                                  // Validaciones antes de guardar
+                                  if (selectedClient == null) {
+                                    // Mostrar error
+                                    return;
+                                  }
                                   _saveSale();
+                                  Navigator.pop(context); // Cerrar modal tras guardar
                                 },
                               ),
                             ],
                           ),
+
+                          const SizedBox(height: 10),
+                          const Divider(),
+
+                          // Lista de Productos
                           Expanded(
-                            child: ListView.builder(
-                              controller: scrollController,
-                              itemCount: _itemsForSale.length,
-                              itemBuilder: (context, index) {
-                                final item = _itemsForSale[index];
-                                return DetailProductCart(
-                                  item: item,
-                                  onTap: () {
-                                    _mostrarDialogoEditarCantidad(
-                                      context,
-                                      item,
-                                      (nuevaCantidad) {
-                                        modalSetState(() {
-                                          item.quantity = nuevaCantidad;
-                                        });
-                                      },
-                                    );
-                                  },
-                                  onDelete: () {
-                                    modalSetState(() {
-                                      _itemsForSale.removeAt(index);
-                                    });
-                                  },
-                                  trailing: Row(
-                                    children: [
-                                      // ... (Iconos de añadir/quitar)
-                                      // Nota: Estos botones también deberían usar modalSetState
-                                      // si quieres que actualicen la UI en tiempo real.
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                            child: _itemsForSale.isEmpty 
+                              ? const Center(child: Text("No hay artículos agregados"))
+                              : ListView.builder(
+                                controller: scrollController, // Importante para DraggableScrollableSheet
+                                itemCount: _itemsForSale.length,
+                                itemBuilder: (context, index) {
+                                  final item = _itemsForSale[index];
+                                  return DetailProductCart(
+                                    item: item,
+                                    onTap: () {
+                                      _mostrarDialogoEditarCantidad(
+                                        context,
+                                        item,
+                                        (nuevaCantidad) {
+                                          // Actualizamos el estado DEL MODAL
+                                          modalSetState(() {
+                                            item.quantity = nuevaCantidad;
+                                          });
+                                        },
+                                      );
+                                    },
+                                    onDelete: () {
+                                      modalSetState(() {
+                                        _itemsForSale.removeAt(index);
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
                           ),
                         ],
                       ),
@@ -523,7 +598,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         );
       },
     );
-  }
+  } 
 
   void _mostrarDialogoEditarCantidad(
     BuildContext context,
