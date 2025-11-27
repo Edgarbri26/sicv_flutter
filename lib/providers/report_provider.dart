@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sicv_flutter/services/report_service.dart';
 
 // Definimos el provider globalmente para Riverpod
 final reportProvider = ChangeNotifierProvider<ReportProvider>((ref) {
@@ -10,59 +11,71 @@ final reportProvider = ChangeNotifierProvider<ReportProvider>((ref) {
 class ReportProvider extends ChangeNotifier {
   // --- ESTADO ---
   bool _isLoading = false;
-  String _selectedFilter = 'Esta Semana';
-  
-  List<FlSpot> _ventasData = [];
-  List<FlSpot> _comprasData = [];
+  String _selectedFilter =
+      'week'; // Default to 'week' as per API likely expectation
 
-  final List<String> _filterOptions = [
-    'Hoy',
-    'Esta Semana',
-    'Este Mes',
-    'Este Año'
-  ];
+  List<FlSpot> _salesData = [];
+  List<FlSpot> _purchasesData = []; // Still mock or need another endpoint?
+  List<String> _labels = [];
+  double _totalSales = 0;
+  double _totalPurchases = 0;
+
+  final List<String> _filterOptions = ['today', 'week', 'month', 'year'];
+
+  // Map for display labels if needed
+  final Map<String, String> _filterLabels = {
+    'today': 'Hoy',
+    'week': 'Esta Semana',
+    'month': 'Este Mes',
+    'year': 'Este Año',
+  };
 
   // --- GETTERS ---
   bool get isLoading => _isLoading;
   String get selectedFilter => _selectedFilter;
+  String get selectedFilterLabel =>
+      _filterLabels[_selectedFilter] ?? _selectedFilter;
   List<String> get filterOptions => _filterOptions;
-  List<FlSpot> get ventasData => _ventasData;
-  List<FlSpot> get comprasData => _comprasData;
+  List<FlSpot> get salesData => _salesData;
+  List<FlSpot> get purchasesData => _purchasesData;
+  List<String> get labels => _labels;
+  double get totalSales => _totalSales;
+  double get totalPurchases => _totalPurchases;
+
+  final ReportService _reportService = ReportService();
 
   ReportProvider() {
-    _loadMockData();
+    loadData();
   }
 
   void setFilter(String newFilter) {
     _selectedFilter = newFilter;
-    _loadMockData();
+    loadData();
   }
 
-  Future<void> _loadMockData() async {
+  Future<void> loadData() async {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final reportSpots = await _reportService.getSalesDatesStats(
+        _selectedFilter,
+      );
 
-    if (_selectedFilter == 'Esta Semana') {
-      _ventasData = [
-        const FlSpot(0, 3), const FlSpot(1, 1), const FlSpot(2, 4),
-        const FlSpot(3, 3), const FlSpot(4, 6), const FlSpot(5, 4), const FlSpot(6, 8),
-      ];
-      _comprasData = [
-        const FlSpot(0, 1), const FlSpot(1, 2), const FlSpot(2, 1),
-        const FlSpot(3, 4), const FlSpot(4, 2), const FlSpot(5, 3), const FlSpot(6, 2),
-      ];
-    } else {
-      _ventasData = [
-        const FlSpot(0, 5), const FlSpot(1, 7), const FlSpot(2, 6), const FlSpot(3, 9),
-      ];
-      _comprasData = [
-        const FlSpot(0, 2), const FlSpot(1, 3), const FlSpot(2, 2), const FlSpot(3, 4),
-      ];
+      _labels = reportSpots.labels;
+      _salesData = reportSpots.spots
+          .map((spot) => FlSpot(spot.x, spot.y))
+          .toList();
+
+      // For now, keep comprasData empty or mock until we have an endpoint
+      _purchasesData = [];
+    } catch (e) {
+      print("Error loading report data: $e");
+      // Handle error state if necessary
+      _salesData = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 }
