@@ -550,9 +550,9 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
     final nameController = TextEditingController(text: isEditing ? productToEdit.name : '');
     final descriptionController = TextEditingController(text: isEditing ? productToEdit.description : '');
     final priceController = TextEditingController(text: isEditing ? productToEdit.price.toString() : '');
-    // Nota: Para stock, en edición usualmente se maneja en "Ajustar Stock", pero aquí permitimos editarlo si es la lógica deseada.
     final skuController = TextEditingController(text: isEditing ? productToEdit.sku : '');
     final minStockController = TextEditingController(text: isEditing ? productToEdit.minStock.toString() : '');
+    bool isPerishable = isEditing ? productToEdit.perishable : false;
     
 
     // 3. Inicializamos la categoría
@@ -610,6 +610,8 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                 imageToShow = NetworkImage(productToEdit.imageUrl!);
               }
 
+              void refresh() => setStateModal(() {});
+
               return Container(
                 height: MediaQuery.of(context).size.height * 0.85,
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
@@ -659,6 +661,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                               controller: nameController,
                               labelText: 'Nombre del Producto',
                               prefixIcon: Icons.shopping_bag_outlined,
+                              onChanged: (_) => refresh(),
                             ),
                             const SizedBox(height: 16),
                             TextFieldApp(
@@ -666,6 +669,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                               labelText: 'SKU / Código',
                               prefixIcon: Icons.qr_code,
                               keyboardType: TextInputType.text,
+                              onChanged: (_) => refresh(),
                             ),
                             const SizedBox(height: 16),
                             DropDownApp(
@@ -678,6 +682,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                 setStateModal(() {
                                   selectedCategory = newValue!;
                                 });
+                                refresh();
                               },
                             ),
                             const SizedBox(height: 16),
@@ -689,6 +694,8 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                     labelText: 'Precio',
                                     prefixIcon: Icons.attach_money,
                                     keyboardType: TextInputType.number,
+                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    onChanged: (_) => refresh(),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -701,6 +708,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                     prefixIcon: Icons.store_mall_directory,
                                     keyboardType: TextInputType.number,
                                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    onChanged: (_) => refresh(),
                                   ),
                                 ),
                               ],
@@ -710,6 +718,19 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                               controller: descriptionController,
                               labelText: 'Descripción (Opcional)',
                               maxLines: 3,
+                              prefixIcon: Icons.description_outlined,
+                              onChanged: (_) => refresh(),
+                            ),
+                            const SizedBox(height: 16),
+                            SwitchListTile(
+                              title: const Text('Producto Perecible'),
+                              value: isPerishable,
+                              onChanged: (bool value) {
+                                setStateModal(() {
+                                  isPerishable = value;
+                                });
+                                refresh();
+                              },
                             ),
                             const SizedBox(height: 24),
                           ],
@@ -734,7 +755,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),
                             // Validación básica
-                            onPressed: (nameController.text.isEmpty || skuController.text.isEmpty)
+                            onPressed: (nameController.text.isEmpty || skuController.text.isEmpty || selectedCategory == null || priceController.text.isEmpty || (!isEditing && minStockController.text.isEmpty) || descriptionController.text.isEmpty)
                                 ? null
                                 : () async {
                                     Uint8List? imageBytesToSend;

@@ -158,7 +158,7 @@ class ResumeView extends ConsumerWidget {
           ),
         ),
         ChartContainer(
-          title: "GRafico de barras",
+          title: "Grafico de barras",
           child: AppBarChart(
             labels: provider.labels,
             barChartData: [
