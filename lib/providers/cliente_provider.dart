@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:sicv_flutter/core/base/base_notifier.dart';
 import 'package:sicv_flutter/models/client_model.dart';
 import 'package:sicv_flutter/services/client_service.dart';
 
