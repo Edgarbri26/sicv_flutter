@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/services/report_service.dart';
 
-// Definimos el provider globalmente para Riverpod
+
 final reportProvider = ChangeNotifierProvider<ReportProvider>((ref) {
   return ReportProvider();
 });

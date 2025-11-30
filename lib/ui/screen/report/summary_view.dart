@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <--- Riverpod
 import 'package:sicv_flutter/providers/report_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/app_bar_Chart.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/app_line_chart.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/app_line_chart_data.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/chart_container.dart';
 
 // Cambiamos a ConsumerWidget para usar Riverpod
 class ResumeView extends ConsumerWidget {
@@ -143,13 +147,38 @@ class ResumeView extends ConsumerWidget {
   Widget _buildMobileLayout(BuildContext context, ReportProvider provider) {
     return Column(
       children: [
-        _ChartContainer(
+        ChartContainer(
           title: "Balance Financiero",
           subtitle: "Ventas vs Compras",
-          child: _LineChartWidget(provider: provider),
+          child: AppLineChart(
+            lineChartBarData: [
+              AppLineChartData(data: provider.salesData, color: Colors.green),
+            ],
+            labels: provider.labels,
+          ),
+        ),
+        ChartContainer(
+          title: "GRafico de barras",
+          child: AppBarChart(
+            labels: provider.labels,
+            barChartData: [
+              ...provider.salesData.map(
+                (spot) => BarChartGroupData(
+                  x: spot.x.toInt(),
+                  barRods: [
+                    BarChartRodData(
+                      toY: spot.y,
+                      color: Colors.green,
+                      width: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 20),
-        _ChartContainer(title: "Top Productos", child: _PieChartWidget()),
+        ChartContainer(title: "Top Productos", child: _PieChartWidget()),
       ],
     );
   }
@@ -160,16 +189,21 @@ class ResumeView extends ConsumerWidget {
       children: [
         Expanded(
           flex: 2,
-          child: _ChartContainer(
+          child: ChartContainer(
             title: "Balance Financiero",
             height: 450,
-            child: _LineChartWidget(provider: provider),
+            child: AppLineChart(
+              lineChartBarData: [
+                AppLineChartData(data: provider.salesData, color: Colors.green),
+              ],
+              labels: provider.labels,
+            ),
           ),
         ),
         const SizedBox(width: 20),
         Expanded(
           flex: 1,
-          child: _ChartContainer(
+          child: ChartContainer(
             title: "Top Productos",
             height: 450,
             child: _PieChartWidget(),
@@ -183,58 +217,6 @@ class ResumeView extends ConsumerWidget {
 // --- WIDGETS DE ESTILO Y GRÁFICOS (Copia el resto del archivo anterior aquí) ---
 // (Incluye _ChartContainer, _KpiCard, _LineChartWidget, _PieChartWidget, etc.)
 // Asegúrate de que _LineChartWidget reciba 'provider' y use sus datos.
-
-class _ChartContainer extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final Widget child;
-  final double height;
-
-  const _ChartContainer({
-    required this.title,
-    this.subtitle,
-    required this.child,
-    this.height = 320,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-            ),
-          ],
-          const SizedBox(height: 20),
-          Expanded(child: child),
-        ],
-      ),
-    );
-  }
-}
 
 class _KpiData {
   final String title;
@@ -322,69 +304,6 @@ class _KpiCard extends StatelessWidget {
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LineChartWidget extends StatelessWidget {
-  final ReportProvider provider;
-  const _LineChartWidget({required this.provider});
-
-  @override
-  Widget build(BuildContext context) {
-    if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (provider.salesData.isEmpty) {
-      return const Center(child: Text("Sin datos disponibles"));
-    }
-
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(show: true, drawVerticalLine: false),
-        titlesData: FlTitlesData(
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              interval: 1,
-              showTitles: true,
-              getTitlesWidget: (value, meta) => Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  provider.labels[value.toInt()],
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ),
-            ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          LineChartBarData(
-            preventCurveOverShooting: true,
-            spots: provider.salesData,
-            isCurved: true,
-            color: Colors.green,
-            barWidth: 3,
-            dotData: FlDotData(show: false),
-            belowBarData: BarAreaData(
-              show: true,
-              color: Colors.green.withOpacity(0.15),
-            ),
-          ),
-          // Add comprasData if available
-          if (provider.purchasesData.isNotEmpty)
-            LineChartBarData(
-              spots: provider.purchasesData,
-              isCurved: true,
-              color: Colors.redAccent,
-              barWidth: 3,
-              dotData: FlDotData(show: false),
-            ),
         ],
       ),
     );
