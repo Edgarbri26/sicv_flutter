@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
 import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
+import 'package:sicv_flutter/ui/screen/report/employee_view.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sidebarx/sidebarx.dart';
@@ -30,8 +31,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
   static const List<Widget> _mainViews = [
     ResumeView(),
     FinancesView(), // Esta vista contendrá tu código original
-    //InventoryView(),
-    //ClientsView(),
+    EmployeeReportView(),
   ];
 
   @override
@@ -109,14 +109,9 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
           label: Text('Finanzas'),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.inventory_2_outlined),
-          selectedIcon: Icon(Icons.inventory_2),
-          label: Text('Inventario'),
-        ),
-        NavigationRailDestination(
           icon: Icon(Icons.people_outline),
           selectedIcon: Icon(Icons.people),
-          label: Text('Clientes'),
+          label: Text('Empleados'),
         ),
       ],
     );
@@ -153,6 +148,11 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
           icon: Icon(Icons.people_outline),
           activeIcon: Icon(Icons.people),
           label: 'Clientes',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people_outline),
+          activeIcon: Icon(Icons.people),
+          label: 'Empleados',
         ),
       ],
     );
