@@ -1,9 +1,13 @@
 // lib/pages/report_dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/screen/report/anality_review.dart';
+import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
 import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
+import 'package:sicv_flutter/ui/screen/report/provider_view.dart';
 import 'package:sicv_flutter/ui/screen/report/summary_view.dart';
 import 'package:sicv_flutter/ui/screen/report/employee_view.dart';
+import 'package:sicv_flutter/ui/screen/report/inventory_view.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sidebarx/sidebarx.dart';
@@ -31,7 +35,11 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
   static const List<Widget> _mainViews = [
     ResumeView(),
     FinancesView(), // Esta vista contendrá tu código original
+    InventoryReportView(),
     EmployeeReportView(),
+    ClientReportView(),
+    SupplierReportView(),
+    AnalyticsReportView(),
   ];
 
   @override
@@ -109,9 +117,29 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
           label: Text('Finanzas'),
         ),
         NavigationRailDestination(
+          icon: Icon(Icons.inventory_2_outlined),
+          selectedIcon: Icon(Icons.inventory_2),
+          label: Text('Inventario'),
+        ),
+        NavigationRailDestination(
           icon: Icon(Icons.people_outline),
           selectedIcon: Icon(Icons.people),
           label: Text('Empleados'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: Text('Clientes'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.local_shipping_outlined),
+          selectedIcon: Icon(Icons.local_shipping),
+          label: Text('Proveedores'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.analytics_outlined),
+          selectedIcon: Icon(Icons.analytics),
+          label: Text('Análisis'),
         ),
       ],
     );
@@ -147,12 +175,22 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
         BottomNavigationBarItem(
           icon: Icon(Icons.people_outline),
           activeIcon: Icon(Icons.people),
+          label: 'Empleados',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
           label: 'Clientes',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          activeIcon: Icon(Icons.people),
-          label: 'Empleados',
+          icon: Icon(Icons.local_shipping_outlined),
+          activeIcon: Icon(Icons.local_shipping),
+          label: 'Proveedores',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.analytics_outlined),
+          activeIcon: Icon(Icons.analytics),
+          label: 'Análisis',
         ),
       ],
     );
