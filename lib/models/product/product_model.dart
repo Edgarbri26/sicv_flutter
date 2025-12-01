@@ -17,7 +17,7 @@ class ProductModel {
   final List<StockGeneralModel> stockGenerals;
   final List<StockLotsModel> stockLots;
   final String? sku;
-  int quantity;
+  int quantity; // Nota: Si usas copyWith, idealmente esto debería ser final también.
 
   ProductModel({
     required this.priceBs,
@@ -37,16 +37,56 @@ class ProductModel {
     this.quantity = 0,
   });
 
+  // ==========================================
+  //  MÉTODO COPYWITH (AÑADIDO AQUÍ)
+  // ==========================================
+  ProductModel copyWith({
+    int? id,
+    String? name,
+    String? description,
+    CategoryModel? category,
+    double? price,
+    double? priceBs,
+    int? minStock,
+    bool? perishable,
+    bool? status,
+    String? imageUrl,
+    int? totalStock,
+    List<StockGeneralModel>? stockGenerals,
+    List<StockLotsModel>? stockLots,
+    String? sku,
+    int? quantity,
+  }) {
+    return ProductModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      price: price ?? this.price,
+      priceBs: priceBs ?? this.priceBs,
+      minStock: minStock ?? this.minStock,
+      perishable: perishable ?? this.perishable,
+      status: status ?? this.status,
+      imageUrl: imageUrl ?? this.imageUrl,
+      totalStock: totalStock ?? this.totalStock,
+      // Nota: Aquí pasamos la referencia de la lista. 
+      // Si la lista es nueva, la reemplaza. Si es null, mantiene la vieja.
+      stockGenerals: stockGenerals ?? this.stockGenerals,
+      stockLots: stockLots ?? this.stockLots,
+      sku: sku ?? this.sku,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      // Nota: Es buena práctica usar condicionales (?) por si la lista viene nula
       stockGenerals: json['stock_generals'] != null 
           ? StockGeneralModel.fromJsonList(json['stock_generals']) 
           : [],
       stockLots: json['stock_lots'] != null 
           ? StockLotsModel.fromJsonList(json['stock_lots']) 
           : [],
-      priceBs: double.tryParse(json['price_bs'].toString()) ?? 0.0, // tryParse es más seguro
+      priceBs: double.tryParse(json['price_bs'].toString()) ?? 0.0,
       minStock: json['min_stock'] ?? 0,
       perishable: json['perishable'] ?? false,
       status: json['status'] ?? false,
@@ -57,8 +97,6 @@ class ProductModel {
       imageUrl: json['image_url'],
       totalStock: json['total_stock'] ?? 0,
       category: CategoryModel.fromJson(json['category']),
-      
-      // --- ¡AQUÍ FALTABA ESTA LÍNEA! ---
       sku: json['sku'], 
     );
   }
@@ -75,7 +113,7 @@ class ProductModel {
       'perishable': perishable,
       'status': status,
       'total_stock': totalStock,
-      'stock_generals': stockGenerals, // Asegúrate de que estos objetos tengan su propio toJson() si los envías
+      'stock_generals': stockGenerals,
       'stock_lots': stockLots,
       'sku': sku,
       'category': category.toJson(),

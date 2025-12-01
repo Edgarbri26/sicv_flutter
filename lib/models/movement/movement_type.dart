@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 enum MovementType {
   venta('Venta', Icons.arrow_downward, Colors.red),
   compra('Compra', Icons.arrow_upward, Colors.green),
-  ajustePositivo('Ajuste (+)', Icons.add_circle_outline, Colors.blue),
-  ajusteNegativo('Ajuste (-)', Icons.remove_circle_outline, Colors.orange),
+  ajustePositivo('Ajuste Positivo', Icons.add_circle_outline, Colors.blue),
+  ajusteNegativo('Ajuste Negativo', Icons.remove_circle_outline, Colors.orange),
   devolucionCliente('Dev. Cliente', Icons.undo, Colors.lightGreen),
   devolucionProveedor('Dev. Proveedor', Icons.redo, Colors.deepOrange);
 

@@ -1,14 +1,15 @@
-// lib/ui/screen/movements_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/models/movement_model.dart';
-import 'package:sicv_flutter/models/movement_type.dart';
+import 'package:sicv_flutter/models/movement/movement_model.dart'; 
+import 'package:sicv_flutter/models/movement/movement_summary_model.dart';
+import 'package:sicv_flutter/models/movement/movement_type.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:flutter/services.dart';
+import 'package:sicv_flutter/providers/auth_provider.dart';
+import 'package:sicv_flutter/providers/movement_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/services/movement_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
@@ -24,22 +25,21 @@ class MovementsPage extends ConsumerStatefulWidget {
 
 class MovementsPageState extends ConsumerState<MovementsPage> {
   // --- Estado ---
-  bool _isLoading = true; // <--- NUEVO: Control de carga
-  List<MovementModel> _allMovements = [];
-  List<MovementModel> _filteredMovements = [];
+  bool _isLoading = true;
+  
+  // Lista ligera para la tabla
+  List<MovementSummaryModel> _allMovements = [];
+  List<MovementSummaryModel> _filteredMovements = [];
+  
   final TextEditingController _searchController = TextEditingController();
+  
+  // Lista de productos para el modal (se llena con Riverpod)
   List<ProductModel> _allProducts = [];
 
   // Filtros
   MovementType? _selectedMovementType;
   String _selectedDateRange = 'Últimos 7 días';
-  final List<String> _dateRangeOptions = [
-    'Hoy',
-    'Ayer',
-    'Últimos 7 días',
-    'Este mes',
-    'Todos',
-  ];
+  final List<String> _dateRangeOptions = ['Hoy', 'Ayer', 'Últimos 7 días', 'Este mes', 'Todos'];
   
   // Ordenamiento
   int? _sortColumnIndex;
@@ -50,7 +50,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
   void initState() {
     super.initState();
     _searchController.addListener(_runFilter);
-    // Usamos microtask para cargar datos después del primer frame
+    // Cargar movimientos al inicio
     Future.microtask(() => _loadMovements());
   }
 
@@ -61,37 +61,33 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
   }
 
   Future<void> _loadMovements() async {
-    setState(() => _isLoading = true); // Activa loading
+    setState(() => _isLoading = true);
 
     try {
-      final movements = await MovementService().getAll();
+      final movements = await MovementService().getAll(); 
       
       if (!mounted) return;
 
       setState(() {
         _allMovements = movements;
-        // Orden por defecto: Fecha descendente
         _allMovements.sort((a, b) => b.movedAt.compareTo(a.movedAt));
         _filteredMovements = _allMovements;
-        _isLoading = false; // Desactiva loading
+        _isLoading = false;
       });
       
       _runFilter();
     } catch (e) {
-      print("Error cargando movimientos: $e");
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      debugPrint("Error cargando movimientos: $e");
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _runFilter() {
-    List<MovementModel> results = _allMovements;
+    List<MovementSummaryModel> results = _allMovements;
     String searchText = _searchController.text.toLowerCase();
     final now = DateTime.now();
     DateTime startDate;
 
-    // 1. Filtrar por Rango de Fechas
     switch (_selectedDateRange) {
       case 'Hoy':
         startDate = DateTime(now.year, now.month, now.day);
@@ -99,7 +95,6 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
       case 'Ayer':
         final yesterday = now.subtract(const Duration(days: 1));
         startDate = DateTime(yesterday.year, yesterday.month, yesterday.day);
-        // Caso especial ayer: Rango específico de 24h pasadas
         results = results.where((m) => 
           m.movedAt.isAfter(startDate) && 
           m.movedAt.isBefore(DateTime(now.year, now.month, now.day))
@@ -121,45 +116,33 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
       results = results.where((m) => m.movedAt.isAfter(startDate)).toList();
     }
 
-    // 2. Filtrar por Tipo
     if (_selectedMovementType != null) {
       results = results.where((m) => m.type == _selectedMovementType!.displayName).toList();
     }
 
-    // 3. Filtrar por Usuario
     if (_selectedUser != null && _selectedUser!.isNotEmpty) {
-      results = results.where((m) => m.user?.name == _selectedUser).toList();
+      results = results.where((m) => m.userName == _selectedUser).toList();
     }
 
-    // 4. Búsqueda Texto
     if (searchText.isNotEmpty) {
       results = results.where((m) {
-        final productName = m.product?.name.toLowerCase() ?? '';
+        final prod = m.productName.toLowerCase();
         final obs = m.observation.toLowerCase();
-        return productName.contains(searchText) || obs.contains(searchText);
+        return prod.contains(searchText) || obs.contains(searchText);
       }).toList();
     }
 
-    // 5. Ordenamiento
     if (_sortColumnIndex != null) {
       results.sort((a, b) {
         dynamic aValue, bValue;
-        
         switch (_sortColumnIndex) {
-          case 0: // Fecha
-            aValue = a.movedAt; bValue = b.movedAt; break;
-          case 1: // Producto
-            aValue = a.product?.name ?? ''; bValue = b.product?.name ?? ''; break;
-          case 2: // Tipo
-            aValue = a.type; bValue = b.type; break;
-          case 3: // Cantidad
-            aValue = a.amount; bValue = b.amount; break;
-          case 4: // Usuario
-            aValue = a.user?.name ?? ''; bValue = b.user?.name ?? ''; break;
-          default:
-            return 0;
+          case 0: aValue = a.movedAt; bValue = b.movedAt; break;
+          case 1: aValue = a.productName; bValue = b.productName; break;
+          case 2: aValue = a.type; bValue = b.type; break;
+          case 3: aValue = a.amount; bValue = b.amount; break;
+          case 4: aValue = a.userName; bValue = b.userName; break;
+          default: return 0;
         }
-        
         final comparison = aValue.compareTo(bValue);
         return _sortAscending ? comparison : -comparison;
       });
@@ -170,14 +153,12 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
     });
   }
 
-  // --- Widgets de Filtros ---
+  // --- Widgets Auxiliares ---
 
   Widget _buildDateRangeFilter() {
     return DropdownButton<String>(
       value: _selectedDateRange,
-      items: _dateRangeOptions.map((range) {
-        return DropdownMenuItem(value: range, child: Text(range));
-      }).toList(),
+      items: _dateRangeOptions.map((range) => DropdownMenuItem(value: range, child: Text(range))).toList(),
       onChanged: (v) {
         if (v != null) {
           setState(() => _selectedDateRange = v);
@@ -215,8 +196,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
 
   Widget _buildUserFilter() {
     final uniqueUsers = _allMovements
-        .map((m) => m.user?.name)
-        .whereType<String>()
+        .map((m) => m.userName)
         .where((n) => n.isNotEmpty)
         .toSet().toList();
 
@@ -238,8 +218,6 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
     );
   }
 
-  // --- Tablas y Listas ---
-
   void _onSort(int columnIndex, bool ascending) {
     setState(() {
       _sortColumnIndex = columnIndex;
@@ -248,15 +226,15 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
     });
   }
 
+  // --- Tabla y Lista ---
+
   Widget _buildMovementsDataTable() {
     final dateFormat = DateFormat('dd/MM/yy HH:mm');
 
-    // SOLUCIÓN DE SCROLL: 
-    // Scroll Vertical externo + Scroll Horizontal interno para la tabla
     return SingleChildScrollView(
-      scrollDirection: Axis.vertical, // Permite bajar si la lista es larga
+      scrollDirection: Axis.vertical,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal, // Permite mover a la derecha si es ancha
+        scrollDirection: Axis.horizontal,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: DataTable(
@@ -284,27 +262,17 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
               return DataRow(
                 cells: [
                   DataCell(Text(dateFormat.format(movement.movedAt))),
-                  DataCell(
-                    Tooltip(
-                      message: 'SKU: ${movement.product ?? 'N/A'}',
-                      child: Text(movement.product?.name ?? 'Producto desconocido'),
-                    ),
-                  ),
+                  DataCell(Tooltip(message: 'ID: ${movement.movementId ?? 'Nuevo'}', child: Text(movement.productName))),
                   DataCell(Text(movement.type)),
                   DataCell(Text(
-                    '${isPositive && movement.amount > 0 ? '+' : ''}${movement.amount}',
+                    '${isPositive && movement.amount > 0 ? '+' : ''}${movement.amount.toStringAsFixed(0)}',
                     style: TextStyle(color: qtyColor, fontWeight: FontWeight.bold),
                   )),
-                  DataCell(Text(movement.user?.name ?? 'N/A')),
-                  DataCell(
-                    Tooltip(
-                      message: movement.observation,
-                      child: SizedBox(
-                        width: 150, // Limita el ancho de la observación
-                        child: Text(movement.observation, overflow: TextOverflow.ellipsis),
-                      ),
-                    ),
-                  ),
+                  DataCell(Text(movement.userName)),
+                  DataCell(Tooltip(
+                    message: movement.observation,
+                    child: SizedBox(width: 150, child: Text(movement.observation, overflow: TextOverflow.ellipsis)),
+                  )),
                 ],
               );
             }).toList(),
@@ -316,9 +284,8 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
 
   Widget _buildMovementsListView() {
     final dateFormat = DateFormat('dd/MM/yy HH:mm');
-    // ScrollView directo, sin Center
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 80), // Espacio para el FAB
+      padding: const EdgeInsets.only(bottom: 80),
       itemCount: _filteredMovements.length,
       itemBuilder: (context, index) {
         final movement = _filteredMovements[index];
@@ -334,24 +301,17 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
           child: ListTile(
-            leading: Icon(
-              Icons.circle, 
-              size: 12, 
-              color: isPositive ? Colors.green : Colors.orange
-            ),
-            title: Text(
-              movement.product?.name ?? 'Desconocido',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            leading: Icon(Icons.circle, size: 12, color: isPositive ? Colors.green : Colors.orange),
+            title: Text(movement.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Text('${dateFormat.format(movement.movedAt)} • ${movement.user?.name}'),
+                 Text('${dateFormat.format(movement.movedAt)} • ${movement.userName}'),
                  Text('Ref: ${movement.observation}', maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
             trailing: Text(
-              '${isPositive && movement.amount > 0 ? '+' : ''}${movement.amount}',
+              '${isPositive && movement.amount > 0 ? '+' : ''}${movement.amount.toStringAsFixed(0)}',
               style: TextStyle(color: qtyColor, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
@@ -363,12 +323,18 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
   // --- Modal y Guardado ---
 
   void _showAddMovementModal(BuildContext context) {
+    // Si no hay productos, mostramos alerta
+    if (_allProducts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cargando productos, intente de nuevo...')));
+      // Intentamos recargar forzadamente si está vacío
+      ref.refresh(productsProvider);
+      return;
+    }
+
     final quantityController = TextEditingController();
     final reasonController = TextEditingController();
     MovementType selectedAdjustmentType = MovementType.ajustePositivo;
     ProductModel? selectedProduct;
-    
-    // Lista segura
     final List<ProductModel> productsForSelection = _allProducts;
 
     showModalBottomSheet(
@@ -407,12 +373,9 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                             DropdownButtonFormField<MovementType>(
                               value: selectedAdjustmentType,
                               items: [MovementType.ajustePositivo, MovementType.ajusteNegativo].map((t) => DropdownMenuItem(
-                                value: t,
-                                child: Text(t.displayName),
+                                value: t, child: Text(t.displayName),
                               )).toList(),
-                              onChanged: (v) {
-                                if(v!=null) setStateDialog(() => selectedAdjustmentType = v);
-                              },
+                              onChanged: (v) { if(v!=null) setStateDialog(() => selectedAdjustmentType = v); },
                               decoration: _inputDecoration('Tipo de Ajuste'),
                             ),
                             const SizedBox(height: 16),
@@ -440,6 +403,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                           onPressed: () => Navigator.pop(dialogContext),
                         ),
                         const SizedBox(width: 8),
+                        // --- SOLUCIÓN AL ERROR DE ANCHO INFINITO ---
                         ElevatedButton.icon(
                           icon: const Icon(Icons.save),
                           label: const Text('GUARDAR'),
@@ -447,6 +411,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                             backgroundColor: Theme.of(context).colorScheme.primary,
                             foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            minimumSize: const Size(0, 45), // <--- ESTA LÍNEA ARREGLA EL CRASH
                           ),
                           onPressed: selectedProduct == null 
                             ? null 
@@ -488,63 +453,101 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
     MovementType type, 
     TextEditingController qtyCtrl, 
     TextEditingController reasonCtrl
-  ) {
+  ) async {
+    // 1. OBTENER EL USUARIO DEL PROVIDER
+    // Usamos ref.read porque estamos dentro de una función (no en el build)
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+
+    // Validación de seguridad (opcional pero recomendada)
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: No hay usuario logueado')),
+      );
+      return;
+    }
+
+    // 2. Validaciones de Inputs (Tu código actual)
     final quantity = int.tryParse(qtyCtrl.text);
     if (quantity == null || quantity <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cantidad inválida'), backgroundColor: Colors.orange));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cantidad inválida')));
       return;
     }
 
     final signedQuantity = (type == MovementType.ajustePositivo) ? quantity : -quantity;
-    final stockAfter = product.totalStock + signedQuantity;
+    final currentStock = product.totalStock; 
+    final stockAfter = currentStock + signedQuantity;
 
     if (stockAfter < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock no puede ser negativo ($stockAfter)'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock insuficiente. Quedaría en $stockAfter'), backgroundColor: Colors.red));
       return;
     }
 
-    // Aquí simulas la creación. En producción, esto viene del Backend
-    final newMovement = MovementModel(
-      movementId: 0,
+    // 3. Crear el Modelo COMPLETO usando los datos del usuario real
+    final newMovement = MovementModel.forCreation(
       depotId: 1,
-      movedAt: DateTime.now(),
-      productId: product.id,
+      product: product,
       type: type.displayName,
-      amount: signedQuantity,
-      userCi: "31350493", // Hardcoded temporalmente
-      observation: reasonCtrl.text.isEmpty ? 'Ajuste manual' : reasonCtrl.text,
-      status: true,
-      // IMPORTANTE: Asegúrate de pasar el objeto product aquí para que la tabla lo lea
-      // product: ProductSummaryModel(...) si usas el DTO, o el product mismo si usas el modelo completo
-    );
-
-    setState(() {
-      // Simulación de actualización local optimista
-      _allMovements.insert(0, newMovement);
+      amount: signedQuantity.toDouble(),
+      userCi: user.userCi, // O user.id.toString(), depende de tu modelo
       
-      // Actualizar stock localmente (Opcional, idealmente recargarías de la API)
-      final index = _allProducts.indexWhere((p) => p.id == product.id);
-      if (index != -1) {
-        _allProducts[index].quantity = stockAfter; // O el campo que uses para stock
+      observation: reasonCtrl.text.isEmpty ? 'Ajuste manual' : reasonCtrl.text,
+    );
+    
+    try {
+      // Esto llama al API y refresca la lista automáticamente
+      await ref.read(movementsProvider.notifier).createMovement(newMovement);
+      
+      // (Opcional) Refrescar productos para que se actualice el stock en el dropdown
+      ref.refresh(productsProvider); 
+
+      if (mounted) {
+          Navigator.pop(dialogContext);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guardado!'), backgroundColor: Colors.green));
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    }
+    // 4. Actualizar Estado (Tu código actual)
+    setState(() {
+      _allMovements = [newMovement, ..._allMovements];
+      
+      final List<ProductModel> updatedProducts = List.from(_allProducts);
+      final index = updatedProducts.indexWhere((p) => p.id == product.id);
+      if (index != -1) {
+        updatedProducts[index] = updatedProducts[index].copyWith(totalStock: stockAfter);
+      }
+      _allProducts = updatedProducts;
+      
       _runFilter();
     });
-
-    Navigator.pop(dialogContext);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ajuste guardado'), backgroundColor: Colors.green));
   }
 
   @override
   Widget build(BuildContext context) {
-    // Escuchar cambios en productos
+    // 1. CARGA SEGURA DE PRODUCTOS
+    // 'ref.watch' obtiene el valor inicial o actual
+    final productsAsync = ref.watch(productsProvider);
+
+    // 'ref.listen' reacciona a cambios posteriores
     ref.listen(productsProvider, (previous, next) {
-      next.whenData((products) => setState(() => _allProducts = products));
+      next.whenData((products) {
+        // Solo actualizamos si realmente cambiaron o si nuestra lista estaba vacía
+        if (_allProducts.isEmpty || _allProducts != products) {
+          setState(() => _allProducts = products);
+        }
+      });
     });
+
+    // 2. INICIALIZACIÓN (Si ya hay datos, los cargamos de una vez)
+    if (_allProducts.isEmpty && productsAsync.hasValue) {
+       _allProducts = productsAsync.value!;
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
-        print(  'isWide: $isWide');
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -555,28 +558,22 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                   elevation: 0,
                   title: Text(
                     'Movimientos de Inventario',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary),
                   ),
                   toolbarHeight: 64.0,
-                  actions: [const SizedBox(width: 16)],
                   iconTheme: IconThemeData(color: AppColors.textPrimary),
                 )
               : null,
           drawer: isWide ? null : MySideBar(controller: widget.controller),
-
           floatingActionButton: FloatingActionButton.extended(
             icon: const Icon(Icons.add),
             label: const Text('Ajuste'),
+            // Validamos que haya productos antes de dejar abrir
             onPressed: () => _showAddMovementModal(context),
           ),
           body: Center(
             child: Column(
               children: [
-                // --- Header y Filtros ---
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: ConstrainedBox(
@@ -600,11 +597,9 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-            
-                // --- Cuerpo (Loading / Empty / Data) ---
                 Expanded(
                   child: _isLoading 
-                    ? const Center(child: CircularProgressIndicator()) // LOADING STATE
+                    ? const Center(child: CircularProgressIndicator())
                     : _filteredMovements.isEmpty
                       ? const Center(child: Text('No se encontraron movimientos.'))
                       : LayoutBuilder(
@@ -622,5 +617,4 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
       },
     );
   }
-  
 }
