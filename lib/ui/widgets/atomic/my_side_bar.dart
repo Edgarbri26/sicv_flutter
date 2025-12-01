@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/models/destinations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/providers/role_provider.dart';
+import 'package:sicv_flutter/providers/user_permissions_provider.dart';
 import 'package:sicv_flutter/providers/user_provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 
@@ -16,6 +17,11 @@ class MySideBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userPermissions = ref.watch(userPermissionsProvider);
+    final hasAccessMoviments = userPermissions.contains('all:permissions');
+
+    print("🧐 PERMISOS EN MEMORIA: $userPermissions");
+
     return SidebarX(
       controller: controller,
       theme: SidebarXTheme(
@@ -90,15 +96,46 @@ class MySideBar extends ConsumerWidget {
         );
       },
       items: [
-        ...destinationsPages.map(
-          (destination) => SidebarXItem(
-            icon: destination.icon,
-            label: destination.label,
-            onTap: () {
-              Navigator.pushReplacementNamed(context, destination.route!);
-            },
-          ),
+        SidebarXItem(
+          icon: Icons.home,
+          label: 'Inicio',
+          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
         ),
+        SidebarXItem(
+          icon: Icons.point_of_sale,
+          label: 'Ventas',
+          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.sales),
+        ),
+        SidebarXItem(
+          icon: Icons.shopping_cart,
+          label: 'Compras',
+          onTap: () =>
+              Navigator.pushReplacementNamed(context, AppRoutes.purchase),
+        ),
+
+        SidebarXItem(
+          icon: Icons.inventory,
+          label: 'Inventario',
+          onTap: () =>
+              Navigator.pushReplacementNamed(context, AppRoutes.inventory),
+        ),
+        SidebarXItem(
+          icon: Icons.assessment,
+          label: 'Reportes',
+          onTap: () => Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.reportDashboard,
+          ),
+          selectable: false,
+        ),
+
+        if (hasAccessMoviments)
+          SidebarXItem(
+            icon: Icons.compare_arrows,
+            label: 'Movimientos',
+            onTap: () =>
+                Navigator.pushReplacementNamed(context, AppRoutes.movements),
+          ),
       ],
 
       footerItems: [
@@ -106,7 +143,7 @@ class MySideBar extends ConsumerWidget {
           icon: Icons.settings,
           label: 'Configuración',
           onTap: () {
-            Navigator.pushNamed(context, AppRoutes.settings);
+            Navigator.pushReplacementNamed(context, AppRoutes.settings);
           },
         ),
 

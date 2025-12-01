@@ -21,6 +21,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _checkLoginStatus() async {
     // A. Recuperamos lo básico de SharedPreferences (Solo ID)
     final user = await _authService.getLoggedInUser();
+    
 
     if (user != null) {
       // B. Estado intermedio: Tenemos usuario, pero falta el rol completo
@@ -37,6 +38,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(user: null, isLoading: false);
     }
   }
+
+
+
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {

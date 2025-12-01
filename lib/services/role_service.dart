@@ -169,4 +169,35 @@ class RoleService {
       throw Exception('Error de conexión al eliminar el rol.');
     }
   }
+
+  //verificar si el rol tiene el permiso solicitado
+  Future<bool> hasPermission(int roleId, String permissionCode) async {
+    final uri = Uri.parse('$_baseUrl/rol/check_permission');
+
+    try {
+      final response = await _client.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          //
+        },
+        body: json.encode({'role_id': roleId, 'permission_code': permissionCode}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+        final bool hasPermission =
+            responseData['data']['has_permission'] as bool;
+        return hasPermission;
+      } else {
+        throw Exception(
+          'Error al verificar el permiso (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
+      print('Error verificando permiso: $e');
+      return false;
+    }
+  }
 }

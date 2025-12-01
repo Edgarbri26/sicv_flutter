@@ -37,7 +37,9 @@ class PermissionService {
 
         // 3. Mapeamos la lista, y aquí es donde se usa tu modelo
         return permissionListJson
-            .map((json) => PermissionModel.fromJson(json as Map<String, dynamic>))
+            .map(
+              (json) => PermissionModel.fromJson(json as Map<String, dynamic>),
+            )
             .toList();
       } else {
         throw Exception(
@@ -49,4 +51,53 @@ class PermissionService {
       throw Exception('Error de conexión al obtener los permisos.');
     }
   }
+
+  Future<List<PermissionModel>> getPermissionsByRole(int roleId) async {
+    final uri = Uri.parse(
+      '$_baseUrl/role/$roleId/permissions',
+    ); // Endpoint de permisos por rol
+
+    try {
+      final response = await _client.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': 'Bearer TU_TOKEN_JWT',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Manejar la respuesta exitosa
+        print('Permisos obtenidos correctamente para el rol $roleId');
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+        final List<dynamic> permissionListJson =
+            responseData['data'] as List<dynamic>;
+
+        return permissionListJson
+            .map(
+              (json) => PermissionModel.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      } else {
+        throw Exception(
+          'Error al cargar los permisos por rol (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
+      print(e.toString());
+      throw Exception('Error de conexión al obtener los permisos por rol.');
+    }
+  }
+
+  // //autentifica el usuario tiene el rol con el permiso solicitado
+  // Future<bool> hasPermission(int roleId, int permissionId) async {
+  //   try {
+  //     final permissions = await getPermissionsByRole(roleId);
+  //     return permissions.any((perm) => perm.permissionId == permissionId);
+  //   } catch (e) {
+  //     print('Error verificando permiso: $e');
+  //     return false;
+  //   }
+  // }
 }

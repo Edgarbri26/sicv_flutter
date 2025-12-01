@@ -12,6 +12,11 @@ final permissionServiceProvider = Provider<PermissionService>((ref) {
 class PermissionsNotifier extends StateNotifier<AsyncValue<List<PermissionModel>>> {
   final PermissionService _service;
 
+  List<PermissionModel> permissionsAll = [];
+  List<PermissionModel> permissionsByRole = [];
+
+
+
   PermissionsNotifier(this._service) : super(const AsyncValue.loading()) {
     loadPermissionsByRole();
   }

@@ -92,6 +92,16 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
       throw e;
     }
   }
+
+  Future<bool> hasPermission(int roleId, String permissionCode) async {
+    try {
+      final hasPerm = await _service.hasPermission(roleId, permissionCode);
+      return hasPerm;
+    } catch (e) {
+      print("Error obteniendo permiso: $e");
+      return false;
+    }
+  }
 }
 
 // 3. El Proveedor Global
