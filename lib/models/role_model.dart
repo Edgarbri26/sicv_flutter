@@ -9,7 +9,7 @@ import 'permission_model.dart';
 class RoleModel {
   final int rolId;
   final String name;
-  final List<Permission> permissions;
+  final List<PermissionModel> permissions;
 
   RoleModel({
     this.rolId = 0,
@@ -23,7 +23,7 @@ class RoleModel {
     // Parseamos la lista de permisos: robusto contra null.
     var permissionsList = (json['permissions'] as List<dynamic>?)
         ?.map((permJson) =>
-            Permission.fromJson(permJson as Map<String, dynamic>))
+            PermissionModel.fromJson(permJson as Map<String, dynamic>))
         .toList() ??
         [];
 

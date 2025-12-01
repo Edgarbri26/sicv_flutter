@@ -12,7 +12,7 @@ class PermissionService {
   PermissionService({http.Client? client}) : _client = client ?? http.Client();
 
   /// Obtiene una lista de TODOS los permisos disponibles en el sistema.
-  Future<List<Permission>> getAllPermissions() async {
+  Future<List<PermissionModel>> getAllPermissions() async {
     final uri = Uri.parse(
       '$_baseUrl/permission',
     ); // Endpoint de todos los permisos
@@ -37,7 +37,7 @@ class PermissionService {
 
         // 3. Mapeamos la lista, y aquí es donde se usa tu modelo
         return permissionListJson
-            .map((json) => Permission.fromJson(json as Map<String, dynamic>))
+            .map((json) => PermissionModel.fromJson(json as Map<String, dynamic>))
             .toList();
       } else {
         throw Exception(

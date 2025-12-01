@@ -2,14 +2,14 @@
 
 import 'dart:convert';
 
-class Permission {
+class PermissionModel {
   final int permissionId;
   final String code;
   final String name;
   final String description;
   bool status;
 
-  Permission({
+  PermissionModel({
     required this.permissionId,
     required this.code,
     required this.name,
@@ -18,8 +18,8 @@ class Permission {
   });
 
   /// Factory constructor para crear una instancia de Permission desde un Map (JSON).
-  factory Permission.fromJson(Map<String, dynamic> json) {
-    return Permission(
+  factory PermissionModel.fromJson(Map<String, dynamic> json) {
+    return PermissionModel(
       // Mapeamos 'permission_id' del JSON a 'permissionId' en Dart.
       permissionId: json['permission_id'] as int,
       code: json['code'] as String,
