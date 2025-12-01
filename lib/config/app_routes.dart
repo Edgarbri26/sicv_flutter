@@ -23,4 +23,6 @@ class AppRoutes {
   static const String depot = 'DepotScreen';
   static const String provider = 'ProviderScreen';
   static const String typePayment = 'TypePaymentScreen';
+  static const String sales = 'SalesPage';
+  static const String inventory = 'InventoryPage';
 }
