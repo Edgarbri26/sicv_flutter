@@ -4,12 +4,14 @@ class ReportSpots {
   final List<SpotModel> spots;
   final int total;
   final List<String> labels;
+  final List<String> labelsShort;
   final String filter;
 
   ReportSpots({
     required this.spots,
     required this.total,
     required this.labels,
+    required this.labelsShort,
     required this.filter,
   });
 
@@ -20,51 +22,8 @@ class ReportSpots {
       ),
       total: (json['total'] as num).toInt(),
       labels: List<String>.from(json['labels'].map((x) => x)),
+      labelsShort: List<String>.from(json['labelsShort'].map((x) => x)),
       filter: json['filter'],
     );
   }
 }
-
-// {
-//         "filter": "week",
-//         "labels": [
-//             "Lun",
-//             "Mar",
-//             "Mié",
-//             "Jue",
-//             "Vie",
-//             "Sáb",
-//             "Dom"
-//         ],
-//         "spots": [
-//             {
-//                 "index": 0,
-//                 "values": 5
-//             },
-//             {
-//                 "index": 1,
-//                 "values": 0
-//             },
-//             {
-//                 "index": 2,
-//                 "values": 0
-//             },
-//             {
-//                 "index": 3,
-//                 "values": 0
-//             },
-//             {
-//                 "index": 4,
-//                 "values": 0
-//             },
-//             {
-//                 "index": 5,
-//                 "values": 0
-//             },
-//             {
-//                 "index": 6,
-//                 "values": 0
-//             }
-//         ],
-//         "total": 5
-//     }

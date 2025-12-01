@@ -6,10 +6,11 @@ import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/ui/screen/home/inventory_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 
 // Importaciones requeridas por tu widget 'Menu'
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
+import 'package:sicv_flutter/ui/widgets/side_naviation_menu.dart';
+import 'package:sicv_flutter/ui/widgets/wide_layuout.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,12 +26,12 @@ class _HomePageState extends State<HomePage>
   late PageController _pageController;
   late TabController _tabController;
   final double breakpoint = 600.0;
-  int _currentIndex = 0;
+  int _selectedIndex = 0;
 
-  final List<IconMenu> _pageMenuItems = [
-    IconMenu(icon: Icons.point_of_sale, label: 'Venta', index: 0),
-    IconMenu(icon: Icons.shopping_cart, label: 'Compra', index: 1),
-    IconMenu(icon: Icons.inventory, label: 'Inventario', index: 2),
+  final List<MenuItemData> _pageMenuItems = [
+    MenuItemData(icon: Icons.point_of_sale, label: 'Venta', index: 0),
+    MenuItemData(icon: Icons.shopping_cart, label: 'Compra', index: 1),
+    MenuItemData(icon: Icons.inventory, label: 'Inventario', index: 2),
   ];
 
   final List<String> _screenTitles = [
@@ -49,12 +50,12 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
+    _pageController = PageController(initialPage: _selectedIndex);
 
     _tabController = TabController(
       length: _screens.length,
       vsync: this,
-      initialIndex: _currentIndex,
+      initialIndex: _selectedIndex,
     );
   }
 
@@ -78,7 +79,7 @@ class _HomePageState extends State<HomePage>
                   surfaceTintColor: Colors.transparent,
                   elevation: 0,
                   title: Text(
-                    _screenTitles[_currentIndex],
+                    _screenTitles[_selectedIndex],
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
@@ -93,7 +94,23 @@ class _HomePageState extends State<HomePage>
 
           drawer: isWide ? null : MySideBar(controller: widget.controller),
           body: isWide
-              ? _buildWideLayout(_tabController)
+              ? WideLayout(
+                  controller: widget.controller,
+                  appbartitle: _screenTitles[_selectedIndex],
+                  sideNavigationMenu: SideNavigationMenu(
+                    selectedIndex: _selectedIndex,
+                    // onDestinationSelected: _navigateToPage,
+                    tabController: _tabController,
+                    pageController: _pageController,
+                    menuItems: _pageMenuItems,
+                  ),
+                  chilld: TabBarView(
+                    controller: _tabController,
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
+                    children: _screens,
+                  ),
+                )
               : _buildNarrowLayout(),
           bottomNavigationBar: isWide ? null : _buildBottomNavBar(),
           floatingActionButton: _buildFloatingActionButton(),
@@ -102,21 +119,11 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  // 5. Esta función se llama CUANDO SE HACE SWIPE (solo móvil)
-  void _onPageChanged(int index) {
-    if (_currentIndex == index) return;
-    setState(() {
-      _currentIndex = index;
-    });
-    _tabController.animateTo(index);
-  }
-
-  // 6. Esta es la nueva función "maestra" para NAVEGAR CON CLIC
   void _navigateToPage(int index) {
-    if (_currentIndex == index) return;
+    if (_selectedIndex == index) return;
 
     setState(() {
-      _currentIndex = index;
+      _selectedIndex = index;
     });
 
     //gracias a esto se soluciona el error de que no sincroniza el tabcontroller con el pageview y no se petatea
@@ -144,52 +151,15 @@ class _HomePageState extends State<HomePage>
   Widget _buildNarrowLayout() {
     return PageView(
       controller: _pageController,
-      onPageChanged: _onPageChanged,
+      onPageChanged: _navigateToPage,
       children: _screens,
     );
   }
-
-  /// El layout para pantallas anchas (desktop/tablet).
-  Widget _buildWideLayout(TabController tabController) {
-    return Row(
-      children: [
-        MySideBar(controller: widget.controller),
-        Expanded(
-          child: Row(
-            children: [
-              _buildDesktopNavigationRail(),
-              Expanded(
-                child: Column(
-                  children: [
-                    AppBarApp(title: _screenTitles[_currentIndex]),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TabBarView(
-                              controller: tabController,
-                              physics:
-                                  const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
-                              children: _screens,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
+  
   /// Construye el BottomNavigationBar (solo para modo angosto).
   Widget _buildBottomNavBar() {
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
+      currentIndex: _selectedIndex,
       onTap: _navigateToPage,
       backgroundColor: AppColors.background,
       selectedItemColor: AppColors.primary,
@@ -207,7 +177,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget? _buildFloatingActionButton() {
-    switch (_currentIndex) {
+    switch (_selectedIndex) {
       case 0:
         return FloatingActionButton(
           onPressed: () => _saleScreenKey.currentState?.showSaleDetail(context),
@@ -230,28 +200,5 @@ class _HomePageState extends State<HomePage>
       default:
         return null;
     }
-  }
-
-  /// [context] El BuildContext para mostrar el diálogo.
-  /// [item] El item cuya cantidad se está modificando (asumo que tiene .cantidad).
-  /// [onConfirm] Callback que se ejecuta con la nueva cantidad si se confirma.
-
-  Widget _buildDesktopNavigationRail() {
-    return NavigationRail(
-      labelType: NavigationRailLabelType.all,
-      groupAlignment: 0,
-      backgroundColor: AppColors.background,
-      selectedIndex: _currentIndex,
-      onDestinationSelected: _navigateToPage,
-      destinations: [
-        ..._pageMenuItems.map(
-          (item) => NavigationRailDestination(
-            icon: Icon(item.icon),
-            selectedIcon: Icon(item.icon),
-            label: Text(item.label),
-          ),
-        ),
-      ],
-    );
   }
 }
