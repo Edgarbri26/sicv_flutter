@@ -64,6 +64,7 @@ class MovementModel extends MovementSummaryModel {
     required double amount,
     required String userCi,
     String observation = '',
+    String? e,
   }) {
     return MovementModel(
       // -- Placeholders visuales para la UI inmediata --

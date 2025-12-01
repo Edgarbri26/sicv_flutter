@@ -15,7 +15,7 @@ class ProductModel {
   final String? imageUrl;
   final int totalStock;
   final List<StockGeneralModel> stockGenerals;
-  final List<StockLotsModel> stockLots;
+  final List<StockLotModel> stockLots;
   final String? sku;
   int quantity; // Nota: Si usas copyWith, idealmente esto debería ser final también.
 
@@ -53,7 +53,7 @@ class ProductModel {
     String? imageUrl,
     int? totalStock,
     List<StockGeneralModel>? stockGenerals,
-    List<StockLotsModel>? stockLots,
+    List<StockLotModel>? stockLots,
     String? sku,
     int? quantity,
   }) {
@@ -84,7 +84,7 @@ class ProductModel {
           ? StockGeneralModel.fromJsonList(json['stock_generals']) 
           : [],
       stockLots: json['stock_lots'] != null 
-          ? StockLotsModel.fromJsonList(json['stock_lots']) 
+          ? StockLotModel.fromJsonList(json['stock_lots']) 
           : [],
       priceBs: double.tryParse(json['price_bs'].toString()) ?? 0.0,
       minStock: json['min_stock'] ?? 0,

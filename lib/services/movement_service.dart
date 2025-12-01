@@ -72,8 +72,24 @@ class MovementService {
     }
   }
 
-  Future<MovementModel> create(MovementModel movement) async {
-    final uri = Uri.parse('$baseUrl/movement');
+  Future<MovementModel> createAdjustment(MovementModel movement, {Map<String, dynamic>? extraData}) async {
+    
+    // 1. Decidir el Endpoint según el tipo
+    // Asegúrate que estos strings coincidan EXACTAMENTE con lo que guardas en type
+    final isPositive = movement.type == 'Ajuste Positivo' || movement.type == 'Entrada'; 
+    
+    final String endpoint = isPositive 
+        ? '/movement/ajust_positive' 
+        : '/movement/ajust_negative'; // <--- Asumo que esta es tu ruta para negativos
+
+    final uri = Uri.parse('$baseUrl$endpoint');
+
+    // 2. Fusionar los datos (Merge)
+    // Usamos el operador spread (...) para unir el mapa del modelo con los datos extra
+    final Map<String, dynamic> requestBody = {
+      ...movement.toJson(), // Los datos base (product_id, amount, etc.)
+      ...?extraData,        // Los datos extra (date_expiration o stock_lot_id)
+    };
 
     try {
       final response = await http.post(
@@ -81,22 +97,23 @@ class MovementService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: json.encode(movement.toJson()),
+        body: json.encode(requestBody), // Enviamos el mapa fusionado
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
-        final Map<String, dynamic> movementJson = responseData['data'] as Map<String, dynamic>;
+        
+        // Ajusta esto según si tu backend devuelve "data" o el objeto directo
+        final movementJson = responseData['data'] ?? responseData; 
 
         return MovementModel.fromJson(movementJson);
       } else {
-        throw Exception(
-          'Error al crear el movimiento (Código: ${response.statusCode})',
-        );
+        // Leemos el mensaje de error del backend si existe
+        final errorBody = json.decode(response.body);
+        throw Exception(errorBody['message'] ?? 'Error al crear ajuste (${response.statusCode})');
       }
     } catch (e) {
-      print(e.toString());
-      throw Exception('Error de conexión al crear el movimiento.');
+      throw Exception('Error en servicio: $e');
     }
   }
 }

@@ -1,4 +1,4 @@
-class StockLotsModel { 
+class StockLotModel { 
   final int stockLotId;
   final int productId;
   final int depotId;
@@ -7,7 +7,7 @@ class StockLotsModel {
   final double costLot;
   final bool status;
 
-  StockLotsModel({
+  StockLotModel({
     required this.stockLotId,
     required this.productId,
     required this.depotId,
@@ -17,8 +17,8 @@ class StockLotsModel {
     required this.status,
   });
 
-  factory StockLotsModel.fromJson(Map<String, dynamic> json ) {
-    return StockLotsModel(
+  factory StockLotModel.fromJson(Map<String, dynamic> json ) {
+    return StockLotModel(
       stockLotId: json['stock_lot_id'], 
       productId: json['product_id'], 
       depotId: json['depot_id'], 
@@ -28,9 +28,9 @@ class StockLotsModel {
       status: json['status']);
   }
 
-  static List<StockLotsModel> fromJsonList(List<dynamic> jsonList) {
+  static List<StockLotModel> fromJsonList(List<dynamic> jsonList) {
     return jsonList 
-      .map((json) => StockLotsModel.fromJson(json))
+      .map((json) => StockLotModel.fromJson(json))
       .toList();
   }
 
@@ -44,5 +44,11 @@ class StockLotsModel {
       'cost_lot': costLot,
       'status': status,
     };
+  }
+
+  String get displayLabel {
+    final dateStr = "${expirationDate.day}/${expirationDate.month}/${expirationDate.year}";
+    // FEFO: First Expired, First Out
+    return "Vence: $dateStr (Disp: ${amount.toStringAsFixed(0)})";
   }
 }

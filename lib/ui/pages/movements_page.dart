@@ -8,11 +8,15 @@ import 'package:sicv_flutter/models/movement/movement_summary_model.dart';
 import 'package:sicv_flutter/models/movement/movement_type.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:flutter/services.dart';
+import 'package:sicv_flutter/models/product/stock_lots_model.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/movement_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/services/movement_service.dart';
+import 'package:sicv_flutter/services/stock_lot_service.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/wide_layuout.dart';
 import 'package:sidebarx/sidebarx.dart';
 
@@ -322,80 +326,244 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
   }
 
   // --- Modal y Guardado ---
-
-  void _showAddMovementModal(BuildContext context) {
-    // Si no hay productos, mostramos alerta
+void _showAddMovementModal(BuildContext context) {
+    // 1. Verificación inicial de seguridad
     if (_allProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cargando productos, intente de nuevo...')));
-      // Intentamos recargar forzadamente si está vacío
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cargando productos, intente de nuevo...')));
       ref.refresh(productsProvider);
       return;
     }
 
+    // 2. Instancias y Controladores
+    final stockLotService = StockLotService(); // Instancia del servicio
     final quantityController = TextEditingController();
     final reasonController = TextEditingController();
+    final dateController = TextEditingController(); // Para mostrar la fecha seleccionada
+
+    // 3. Variables de Estado Iniciales
     MovementType selectedAdjustmentType = MovementType.ajustePositivo;
     ProductModel? selectedProduct;
-    final List<ProductModel> productsForSelection = _allProducts;
+    
+    // Variables para lógica de perecederos
+    DateTime? selectedExpirationDate;
+    int? selectedLotId;
+    List<StockLotModel> availableLots = [];
+    bool isLoadingLots = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (BuildContext dialogContext) {
         return Padding(
           padding: MediaQuery.of(dialogContext).viewInsets,
           child: StatefulBuilder(
             builder: (context, setStateDialog) {
+              
+              // --- HELPERS INTERNOS ---
+
+              // A. Función para obtener lotes desde el Backend
+              Future<void> fetchLotsForProduct(int productId) async {
+                setStateDialog(() {
+                  isLoadingLots = true;
+                  availableLots = [];
+                  selectedLotId = null; // Limpiamos selección anterior
+                });
+
+                try {
+                  // Llamada al API
+                  final lots = await stockLotService.getByProduct(productId);
+                  
+                  // Ordenamiento FEFO (First Expired, First Out) visual
+                  lots.sort((a, b) => a.expirationDate.compareTo(b.expirationDate));
+
+                  if (mounted) {
+                    setStateDialog(() {
+                      availableLots = lots;
+                      isLoadingLots = false;
+                    });
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    setStateDialog(() => isLoadingLots = false);
+                    debugPrint("Error cargando lotes: $e");
+                  }
+                }
+              }
+
+              // B. Selector de Fecha
+              Future<void> pickDate() async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100),
+                );
+                if (picked != null) {
+                  setStateDialog(() {
+                    selectedExpirationDate = picked;
+                    // Formato YYYY-MM-DD
+                    dateController.text = "${picked.year}-${picked.month.toString().padLeft(2,'0')}-${picked.day.toString().padLeft(2,'0')}";
+                  });
+                }
+              }
+
+              // C. Helper para refrescar validaciones
+              void refresh() => setStateDialog(() {});
+
+              // Lógica booleana simple
+              final isPerishable = selectedProduct?.perishable ?? false;
+
               return Container(
-                height: MediaQuery.of(context).size.height * 0.75,
+                height: MediaQuery.of(context).size.height * 0.85,
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Registrar Ajuste Manual', style: Theme.of(context).textTheme.headlineSmall),
+                    // --- CABECERA ---
+                    Text(
+                      'Registrar Ajuste de Inventario',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
                     const Divider(height: 24),
+                    
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            DropdownButtonFormField<ProductModel>(
-                              value: selectedProduct,
-                              hint: const Text('Selecciona Producto...'),
-                              isExpanded: true,
-                              items: productsForSelection.map((p) => DropdownMenuItem(
-                                value: p,
-                                child: Text('${p.name} (Stock: ${p.totalStock})'),
-                              )).toList(),
-                              onChanged: (v) => setStateDialog(() => selectedProduct = v),
-                              decoration: _inputDecoration('Producto'),
+                            
+                            // 1. SELECCIÓN DE PRODUCTO
+                            DropDownApp<ProductModel>(
+                              labelText: 'Producto',
+                              prefixIcon: Icons.shopping_bag_outlined,
+                              initialValue: selectedProduct,
+                              items: _allProducts,
+                              itemToString: (p) => '${p.name} (Total: ${p.totalStock})',
+                              onChanged: (ProductModel? p) {
+                                if (p == null) return;
+                                setStateDialog(() {
+                                  selectedProduct = p;
+                                  // Reseteamos dependencias
+                                  selectedExpirationDate = null;
+                                  dateController.clear();
+                                  selectedLotId = null;
+                                  availableLots = [];
+                                });
+
+                                // Si es perecedero, buscamos sus lotes inmediatamente
+                                if (p.perishable) {
+                                  fetchLotsForProduct(p.id);
+                                }
+                              },
                             ),
                             const SizedBox(height: 16),
-                            DropdownButtonFormField<MovementType>(
-                              value: selectedAdjustmentType,
-                              items: [MovementType.ajustePositivo, MovementType.ajusteNegativo].map((t) => DropdownMenuItem(
-                                value: t, child: Text(t.displayName),
-                              )).toList(),
-                              onChanged: (v) { if(v!=null) setStateDialog(() => selectedAdjustmentType = v); },
-                              decoration: _inputDecoration('Tipo de Ajuste'),
+
+                            // 2. TIPO DE AJUSTE
+                            DropDownApp<MovementType>(
+                              labelText: 'Tipo de Ajuste',
+                              prefixIcon: Icons.swap_vert,
+                              initialValue: selectedAdjustmentType,
+                              items: const [MovementType.ajustePositivo, MovementType.ajusteNegativo],
+                              itemToString: (t) => t.displayName,
+                              onChanged: (t) {
+                                if (t != null) {
+                                  setStateDialog(() {
+                                    selectedAdjustmentType = t;
+                                    // Limpiamos selecciones específicas
+                                    selectedLotId = null;
+                                    selectedExpirationDate = null;
+                                    dateController.clear();
+                                  });
+                                }
+                              },
                             ),
                             const SizedBox(height: 16),
-                            TextField(
+
+                            // 3. LÓGICA CONDICIONAL (PERECEDEROS)
+                            if (isPerishable) ...[
+                              
+                              // CASO A: Entrada (Ajuste Positivo) -> Pide Fecha
+                              if (selectedAdjustmentType == MovementType.ajustePositivo) 
+                                GestureDetector(
+                                  onTap: pickDate,
+                                  child: AbsorbPointer(
+                                    child: TextFieldApp(
+                                      controller: dateController,
+                                      labelText: 'Fecha de Vencimiento',
+                                      prefixIcon: Icons.calendar_today,
+                                    ),
+                                  ),
+                                ),
+
+                              // CASO B: Salida (Ajuste Negativo) -> Pide Lote
+                              if (selectedAdjustmentType == MovementType.ajusteNegativo)
+                                if (isLoadingLots)
+                                  const Center(child: Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: CircularProgressIndicator(),
+                                  ))
+                                else if (availableLots.isEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.orange)
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(Icons.warning_amber, color: Colors.orange),
+                                        SizedBox(width: 8),
+                                        Expanded(child: Text("Este producto no tiene lotes con stock disponible.")),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  DropDownApp<int>(
+                                    labelText: 'Seleccionar Lote a Descontar',
+                                    prefixIcon: Icons.layers_outlined,
+                                    initialValue: selectedLotId,
+                                    items: availableLots.map((l) => l.stockLotId).toList(),
+                                    itemToString: (id) {
+                                      // Buscamos el lote para mostrar su etiqueta bonita
+                                      final lot = availableLots.firstWhere((l) => l.stockLotId == id, orElse: () => availableLots.first);
+                                      return lot.displayLabel; // "Vence: ... (Disp: ...)"
+                                    },
+                                    onChanged: (val) {
+                                      setStateDialog(() => selectedLotId = val);
+                                    },
+                                  ),
+                              
+                              const SizedBox(height: 16),
+                            ],
+
+                            // 4. CANTIDAD
+                            TextFieldApp(
                               controller: quantityController,
+                              labelText: 'Cantidad',
+                              prefixIcon: Icons.numbers,
                               keyboardType: TextInputType.number,
                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                              decoration: _inputDecoration('Cantidad', icon: Icons.numbers),
+                              onChanged: (_) => refresh(),
                             ),
                             const SizedBox(height: 16),
-                            TextField(
+
+                            // 5. RAZÓN
+                            TextFieldApp(
                               controller: reasonController,
+                              labelText: 'Motivo (Opcional)',
+                              prefixIcon: Icons.comment_outlined,
                               maxLines: 2,
-                              decoration: _inputDecoration('Razón (Opcional)'),
                             ),
                           ],
                         ),
                       ),
                     ),
+
+                    // --- BOTONES DE ACCIÓN ---
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -404,7 +572,7 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                           onPressed: () => Navigator.pop(dialogContext),
                         ),
                         const SizedBox(width: 8),
-                        // --- SOLUCIÓN AL ERROR DE ANCHO INFINITO ---
+                        
                         ElevatedButton.icon(
                           icon: const Icon(Icons.save),
                           label: const Text('GUARDAR'),
@@ -412,11 +580,33 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                             backgroundColor: Theme.of(context).colorScheme.primary,
                             foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            minimumSize: const Size(0, 45), // <--- ESTA LÍNEA ARREGLA EL CRASH
+                            minimumSize: const Size(0, 45),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          onPressed: selectedProduct == null 
-                            ? null 
-                            : () => _handleSaveAdjustment(context, dialogContext, selectedProduct!, selectedAdjustmentType, quantityController, reasonController),
+                          // VALIDACIÓN DE BOTÓN (Habilitar/Deshabilitar)
+                          onPressed: () {
+                            // 1. Validaciones básicas
+                            if (selectedProduct == null) return null;
+                            if (quantityController.text.isEmpty) return null;
+                            
+                            // 2. Validaciones Peredeceros
+                            if (isPerishable) {
+                              if (selectedAdjustmentType == MovementType.ajustePositivo && selectedExpirationDate == null) return null;
+                              if (selectedAdjustmentType == MovementType.ajusteNegativo && selectedLotId == null) return null;
+                            }
+
+                            // Retornamos la función
+                            return () => _handleSaveAdjustment(
+                              context, 
+                              dialogContext, 
+                              selectedProduct!, 
+                              selectedAdjustmentType, 
+                              quantityController, 
+                              reasonController,
+                              expirationDate: selectedExpirationDate,
+                              stockLotId: selectedLotId
+                            );
+                          }(), 
                         ),
                       ],
                     )
@@ -430,101 +620,83 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
     ).whenComplete(() {
       quantityController.dispose();
       reasonController.dispose();
+      dateController.dispose();
     });
   }
 
-  InputDecoration _inputDecoration(String label, {IconData? icon}) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: icon != null ? Icon(icon, size: 18) : null,
-      filled: true,
-      fillColor: AppColors.secondary,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.border, width: 2),
-      ),
-    );
-  }
-
-  void _handleSaveAdjustment(
-    BuildContext context, 
-    BuildContext dialogContext, 
-    ProductModel product, 
-    MovementType type, 
-    TextEditingController qtyCtrl, 
-    TextEditingController reasonCtrl
-  ) async {
-    // 1. OBTENER EL USUARIO DEL PROVIDER
-    // Usamos ref.read porque estamos dentro de una función (no en el build)
+ void _handleSaveAdjustment(
+    BuildContext context,
+    BuildContext dialogContext,
+    ProductModel product,
+    MovementType type,
+    TextEditingController qtyCtrl,
+    TextEditingController reasonCtrl, {
+    DateTime? expirationDate,
+    int? stockLotId,
+  }) async {
+    
+    // 1. Obtener Usuario
     final authState = ref.read(authProvider);
     final user = authState.user;
 
-    // Validación de seguridad (opcional pero recomendada)
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: No hay usuario logueado')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error: Usuario no autenticado')));
       return;
     }
 
-    // 2. Validaciones de Inputs (Tu código actual)
+    // 2. Validar Cantidad
     final quantity = int.tryParse(qtyCtrl.text);
     if (quantity == null || quantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cantidad inválida')));
       return;
     }
 
-    final signedQuantity = (type == MovementType.ajustePositivo) ? quantity : -quantity;
-    final currentStock = product.totalStock; 
-    final stockAfter = currentStock + signedQuantity;
-
-    if (stockAfter < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock insuficiente. Quedaría en $stockAfter'), backgroundColor: Colors.red));
-      return;
-    }
-
-    // 3. Crear el Modelo COMPLETO usando los datos del usuario real
+    // 3. Crear Objeto Movimiento
+    // Nota: El backend espera amount positivo. Él decidirá si suma o resta según el type.
     final newMovement = MovementModel.forCreation(
-      depotId: 1,
+      depotId: 1, // Puedes hacerlo dinámico si manejas múltiples depósitos en la app
       product: product,
       type: type.displayName,
-      amount: signedQuantity.toDouble(),
-      userCi: user.userCi, // O user.id.toString(), depende de tu modelo
-      
-      observation: reasonCtrl.text.isEmpty ? 'Ajuste manual' : reasonCtrl.text,
+      amount: quantity.toDouble(),
+      userCi: user.userCi,
+      observation: reasonCtrl.text.isEmpty ? 'Ajuste Manual' : reasonCtrl.text,
     );
-    
+
     try {
-      // Esto llama al API y refresca la lista automáticamente
-      await ref.read(movementsProvider.notifier).createMovement(newMovement);
+      // Indicador visual de carga
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Guardando ajuste...'), duration: Duration(milliseconds: 800)),
+      );
+
+      // 4. Llamar al Provider
+      // Se pasan los datos extra en un Map 'extraData'
+      await ref.read(movementsProvider.notifier).createMovement(
+        newMovement,
+        extraData: {
+          if (expirationDate != null) 'date_expiration': expirationDate.toIso8601String(),
+          if (stockLotId != null) 'stock_lot_id': stockLotId,
+        },
+      );
       
-      // (Opcional) Refrescar productos para que se actualice el stock en el dropdown
-      ref.refresh(productsProvider); 
+      // 5. Refrescar Datos
+      // Es vital refrescar los productos para que el stock total se actualice en la lista
+      ref.refresh(productsProvider);
 
       if (mounted) {
-          Navigator.pop(dialogContext);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guardado!'), backgroundColor: Colors.green));
+        Navigator.pop(dialogContext); // Cerrar modal
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ajuste realizado correctamente'), backgroundColor: Colors.green),
+        );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
-    }
-    // 4. Actualizar Estado (Tu código actual)
-    setState(() {
-      _allMovements = [newMovement, ..._allMovements];
-      
-      final List<ProductModel> updatedProducts = List.from(_allProducts);
-      final index = updatedProducts.indexWhere((p) => p.id == product.id);
-      if (index != -1) {
-        updatedProducts[index] = updatedProducts[index].copyWith(totalStock: stockAfter);
-      }
-      _allProducts = updatedProducts;
-      
-      _runFilter();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ajuste guardado'), backgroundColor: Colors.green));
-  }
 
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // 1. CARGA SEGURA DE PRODUCTOS
@@ -583,9 +755,10 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
                           padding: const EdgeInsets.all(16),
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 400),
-                            child: TextField(
+                            child: TextFieldApp(
                               controller: _searchController,
-                              decoration: _inputDecoration('Buscar producto...', icon: Icons.search),
+                              labelText: 'Buscar producto o referencia',
+                              prefixIcon: Icons.search,
                             ),
                           ),
                         ),

@@ -121,24 +121,17 @@ class MovementsNotifier extends StateNotifier<AsyncValue<List<MovementSummaryMod
   }
 
   // C. CREAR MOVIMIENTO (Lo que pediste)
-  Future<void> createMovement(MovementModel newMovement) async {
+  Future<void> createMovement(MovementModel newMovement, {Map<String, dynamic>? extraData}) async {
     try {
-      // 1. Enviamos al backend
-      // Asumimos que tu service tiene un método create(MovementModel m)
-      await _service.create(newMovement); 
+      // 1. Llamamos al método inteligente del servicio
+      await _service.createAdjustment(newMovement, extraData: extraData);
       
-      // 2. Opción A: Refrescar todo (Más seguro, trae ID real y fecha del server)
+      // 2. Refrescamos la lista para traer los datos actualizados del servidor
       await refresh();
 
-      // 2. Opción B: Optimista (Más rápido, inserta localmente)
-      // Si usas esto, recuerda que el ID será null hasta que refresques
-      /*
-      state.whenData((currentList) {
-        state = AsyncValue.data([newMovement, ...currentList]);
-      });
-      */
     } catch (e) {
-      throw e; // Re-lanzamos para que la UI muestre el SnackBar de error
+      // Re-lanzamos el error para que el UI (SnackBar) lo capture
+      throw e; 
     }
   }
 }
