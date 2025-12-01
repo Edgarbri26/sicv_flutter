@@ -31,6 +31,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       // D. Estado final: Usuario + Rol completo
       state = AuthState(user: user, fullRole: roleData, isLoading: false);
+
+      print('Usuario cargado: ${user.name}, Rol completo: $roleData');
     } else {
       state = AuthState(user: null, isLoading: false);
     }
