@@ -78,7 +78,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
                     menuItems: _pageMenuItems,
                   ),
                   appbartitle: 'Dashboard de Reportes',
-                  chilld: _mainViews[_selectedIndex],
+                  child: _mainViews[_selectedIndex],
                 )
               : _mainViews[_selectedIndex],
 

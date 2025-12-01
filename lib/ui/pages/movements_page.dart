@@ -13,6 +13,7 @@ import 'package:sicv_flutter/providers/movement_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/services/movement_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
+import 'package:sicv_flutter/ui/widgets/wide_layuout.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class MovementsPage extends ConsumerStatefulWidget {
@@ -571,48 +572,51 @@ class MovementsPageState extends ConsumerState<MovementsPage> {
             // Validamos que haya productos antes de dejar abrir
             onPressed: () => _showAddMovementModal(context),
           ),
-          body: Center(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: _inputDecoration('Buscar producto...', icon: Icons.search),
+          body: isWide ?
+            WideLayout(
+              controller: widget.controller,
+                appbartitle: 'Movimientos de Inventario',
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: _inputDecoration('Buscar producto...', icon: Icons.search),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 8,
+                            children: [
+                              _buildDateRangeFilter(),
+                              _buildMovementTypeFilter(),
+                              _buildUserFilter(),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: _isLoading 
+                            ? const Center(child: CircularProgressIndicator())
+                            : _filteredMovements.isEmpty
+                              ? const Center(child: Text('No se encontraron movimientos.'))
+                              : LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return _buildMovementsDataTable();
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    children: [
-                      _buildDateRangeFilter(),
-                      _buildMovementTypeFilter(),
-                      _buildUserFilter(),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: _isLoading 
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredMovements.isEmpty
-                      ? const Center(child: Text('No se encontraron movimientos.'))
-                      : LayoutBuilder(
-                          builder: (context, constraints) {
-                            return constraints.maxWidth > 700
-                                ? _buildMovementsDataTable()
-                                : _buildMovementsListView();
-                          },
-                        ),
-                ),
-              ],
-            ),
-          ),
+            ) :  _buildMovementsListView(),
         );
       },
     );

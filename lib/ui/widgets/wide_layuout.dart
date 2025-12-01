@@ -8,13 +8,13 @@ class WideLayout extends StatelessWidget {
   final SideNavigationMenu? sideNavigationMenu;
   final SidebarXController controller;
   final String appbartitle;
-  final Widget chilld;
+  final Widget child;
   const WideLayout({
     super.key,
     required this.controller,
     this.sideNavigationMenu,
     required this.appbartitle,
-    required this.chilld,
+    required this.child,
   });
 
   @override
@@ -30,7 +30,7 @@ class WideLayout extends StatelessWidget {
                 child: Column(
                   children: [
                     AppBarApp(title: appbartitle),
-                    Expanded(child: chilld),
+                    Expanded(child: child),
                   ],
                 ),
               ),

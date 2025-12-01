@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage>
                     pageController: _pageController,
                     menuItems: _pageMenuItems,
                   ),
-                  chilld: TabBarView(
+                  child: TabBarView(
                     controller: _tabController,
                     physics:
                         const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
