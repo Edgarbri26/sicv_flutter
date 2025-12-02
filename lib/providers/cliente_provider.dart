@@ -3,6 +3,13 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/client_model.dart';
 import 'package:sicv_flutter/services/client_service.dart';
 
+final clientProvider =
+    StateNotifierProvider<ClienteProvider, AsyncValue<List<ClientModel>>>((
+      ref,
+    ) {
+      return ClienteProvider(ClientService());
+    });
+
 class ClienteProvider extends StateNotifier<AsyncValue<List<ClientModel>>> {
   final ClientService _service;
 

@@ -5,10 +5,10 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/purchase/purchase_model.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
 import 'package:sicv_flutter/services/purchase_service.dart';
-import 'package:sicv_flutter/services/sale_service.dart'; 
+import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/providers/finance_provider.dart';
 import 'package:sicv_flutter/ui/widgets/purchase_detail_modal.dart';
-import 'package:sicv_flutter/ui/widgets/sale_detail_modal.dart'; 
+import 'package:sicv_flutter/ui/widgets/sale_detail_modal.dart';
 
 class FinancesView extends ConsumerStatefulWidget {
   const FinancesView({super.key});
@@ -17,7 +17,8 @@ class FinancesView extends ConsumerStatefulWidget {
   ConsumerState<FinancesView> createState() => _FinancesViewState();
 }
 
-class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerProviderStateMixin {
+class _FinancesViewState extends ConsumerState<FinancesView>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -38,27 +39,60 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
       children: [
         // --- PESTAÑAS ---
         Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(4),
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFFF3F4F6), // Cool grey
+            borderRadius: BorderRadius.circular(24),
           ),
           child: TabBar(
             controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             labelColor: AppColors.primary,
-            unselectedLabelColor: Colors.grey,
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              letterSpacing: 0.3,
+            ),
+            unselectedLabelColor: Colors.grey.shade600,
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
             dividerColor: Colors.transparent,
+            splashBorderRadius: BorderRadius.circular(20),
             tabs: const [
-              Tab(text: 'Ventas (Ingresos)'),
-              Tab(text: 'Compras (Egresos)'),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.trending_up, size: 18),
+                    SizedBox(width: 8),
+                    Text('Ventas'),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.trending_down, size: 18),
+                    SizedBox(width: 8),
+                    Text('Compras'),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -67,10 +101,7 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: [
-              _buildSalesList(),
-              _buildPurchasesList(),
-            ],
+            children: [_buildSalesList(), _buildPurchasesList()],
           ),
         ),
       ],
@@ -86,80 +117,176 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
       error: (err, stack) => Center(child: Text("Error: $err")),
       data: (sales) {
         if (sales.isEmpty) {
-          return _buildEmptyState("No hay ventas registradas.");
+          return _buildEmptyState(
+            "No hay ventas registradas",
+            Icons.sell_outlined,
+          );
         }
 
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: sales.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final saleSummary = sales[index];
-            
-            return _TransactionCard(
-              title: "Venta #${saleSummary.saleId ?? '---'}",
-              subtitle: saleSummary.clientName != 'N/A' 
-                ? saleSummary.clientName 
-                : "CI: ${saleSummary.clientCi}",
-              amount: saleSummary.totalUsd, 
-              date: saleSummary.soldAt, 
-              isIncome: true,
-              onTap: () {
-                if (saleSummary.saleId != null) {
-                  _showDetail(context, saleSummary.saleId!);
-                }
-              },
-            );
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return GridView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 400,
+                  mainAxisExtent: 100,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: sales.length,
+                itemBuilder: (context, index) {
+                  final saleSummary = sales[index];
+                  return _TransactionCard(
+                    title: saleSummary.sellerName,
+                    amount: saleSummary.totalUsd,
+                    amountBs: saleSummary.totalVes,
+                    date: saleSummary.soldAt,
+                    isIncome: true,
+                    onTap: () {
+                      if (saleSummary.saleId != null) {
+                        _showDetail(context, saleSummary.saleId!);
+                      }
+                    },
+                  );
+                },
+              );
+            } else {
+              return ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                itemCount: sales.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final saleSummary = sales[index];
+                  return _TransactionCard(
+                    title: "Vendido por ${saleSummary.sellerName}",
+                    amount: saleSummary.totalUsd,
+                    amountBs: saleSummary.totalVes,
+                    date: saleSummary.soldAt,
+                    isIncome: true,
+                    onTap: () {
+                      if (saleSummary.saleId != null) {
+                        _showDetail(context, saleSummary.saleId!);
+                      }
+                    },
+                  );
+                },
+              );
+            }
           },
         );
       },
     );
   }
 
-  // --- LISTA DE COMPRAS (CORREGIDA) ---
-    Widget _buildPurchasesList() {
-      final purchasesAsync = ref.watch(purchasesHistoryProvider);
+  // --- LISTA DE COMPRAS ---
+  Widget _buildPurchasesList() {
+    final purchasesAsync = ref.watch(purchasesHistoryProvider);
 
-      return purchasesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
-        data: (purchases) {
-          if (purchases.isEmpty) return _buildEmptyState("No hay compras registradas.");
-          
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: purchases.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final purchase = purchases[index];
-              return _TransactionCard(
-                title: "Compra #${purchase.purchaseId}",
-                subtitle: purchase.providerName,
-                amount: purchase.totalUsd,
-                date: purchase.boughtAt, 
-                
-                isIncome: false, 
-                onTap: () {
-                    final id = purchase.purchaseId;
-                    if (id != null) {
-                      _showPurchaseDetail(context, id);
-                    }
-                }, 
+    return purchasesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("Error: $err")),
+      data: (purchases) {
+        if (purchases.isEmpty)
+          return _buildEmptyState(
+            "No hay compras registradas",
+            Icons.shopping_bag_outlined,
+          );
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth > 600) {
+              return GridView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 400,
+                  mainAxisExtent: 100,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: purchases.length,
+                itemBuilder: (context, index) {
+                  final purchase = purchases[index];
+                  return _TransactionCard(
+                    title: "Compra #${purchase.purchaseId}",
+                    amount: purchase.totalUsd,
+                    amountBs: purchase.totalVes,
+                    date: purchase.boughtAt,
+                    isIncome: false,
+                    onTap: () {
+                      final id = purchase.purchaseId;
+                      if (id != null) {
+                        _showPurchaseDetail(context, id);
+                      }
+                    },
+                  );
+                },
+              );
+            } else {
+              return ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                itemCount: purchases.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final purchase = purchases[index];
+                  return _TransactionCard(
+                    title: purchase.providerName,
+                    amount: purchase.totalUsd,
+                    amountBs: purchase.totalVes,
+                    date: purchase.boughtAt,
+                    isIncome: false,
+                    onTap: () {
+                      final id = purchase.purchaseId;
+                      if (id != null) {
+                        _showPurchaseDetail(context, id);
+                      }
+                    },
+                  );
+                },
               );
             }
-          );
-        },
-      );
-    }
+          },
+        );
+      },
+    );
+  }
 
-  Widget _buildEmptyState(String msg) {
+  Widget _buildEmptyState(String msg, IconData icon) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[300]),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 48, color: Colors.grey.shade300),
+          ),
           const SizedBox(height: 16),
-          Text(msg, style: TextStyle(color: Colors.grey[500])),
+          Text(
+            msg,
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -169,7 +296,7 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
   void _showPurchaseDetail(BuildContext context, int purchaseId) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, 
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return DraggableScrollableSheet(
@@ -183,13 +310,23 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(
-                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
                     child: const Center(child: CircularProgressIndicator()),
                   );
                 }
                 if (snapshot.hasError) {
                   return Container(
-                    decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
                     child: Center(child: Text("Error: ${snapshot.error}")),
                   );
                 }
@@ -200,7 +337,7 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
                 return const SizedBox();
               },
             );
-          }
+          },
         );
       },
     );
@@ -209,7 +346,7 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
   void _showDetail(BuildContext context, int saleId) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, 
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return DraggableScrollableSheet(
@@ -224,7 +361,9 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -233,9 +372,13 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
-                    child: Center(child: Text("Error al cargar detalle: ${snapshot.error}")),
+                    child: Center(
+                      child: Text("Error al cargar detalle: ${snapshot.error}"),
+                    ),
                   );
                 }
                 if (snapshot.hasData) {
@@ -244,7 +387,7 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
                 return const SizedBox();
               },
             );
-          }
+          },
         );
       },
     );
@@ -254,16 +397,16 @@ class _FinancesViewState extends ConsumerState<FinancesView> with SingleTickerPr
 // --- TARJETA REUTILIZABLE ---
 class _TransactionCard extends StatelessWidget {
   final String title;
-  final String subtitle;
   final double amount;
+  final double amountBs;
   final DateTime date;
   final bool isIncome;
   final VoidCallback onTap;
 
   const _TransactionCard({
     required this.title,
-    required this.subtitle,
     required this.amount,
+    required this.amountBs,
     required this.date,
     required this.isIncome,
     required this.onTap,
@@ -272,69 +415,96 @@ class _TransactionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(symbol: '\$');
-    final color = isIncome ? Colors.green.shade700 : Colors.red.shade700;
-    final iconBg = isIncome ? Colors.green.shade50 : Colors.red.shade50;
+    final currencyBs = NumberFormat.currency(symbol: 'Bs. ');
+    final color = isIncome
+        ? const Color(0xFF2E7D32)
+        : const Color(0xFFC62828); // Green 800 / Red 800
+    final iconBg = isIncome
+        ? const Color(0xFFE8F5E9)
+        : const Color(0xFFFFEBEE); // Green 50 / Red 50
+    final icon = isIncome
+        ? Icons.arrow_upward_rounded
+        : Icons.arrow_downward_rounded;
 
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade200),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  shape: BoxShape.circle,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                child: Icon(
-                  isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                  color: color,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat('dd MMM, HH:mm').format(date),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 4),
                     Text(
-                      subtitle, 
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      "${isIncome ? '+' : '-'}${currency.format(amount)}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: color,
+                      ),
                     ),
+                    Text(
+                      "${isIncome ? '+' : '-'}${currencyBs.format(amountBs)}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "${isIncome ? '+' : '-'}${currency.format(amount)}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold, 
-                      fontSize: 16, 
-                      color: color
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    DateFormat('dd/MM HH:mm').format(date),
-                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

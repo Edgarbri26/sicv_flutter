@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/exceptions/backend_exception.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/category_model.dart';
@@ -69,13 +68,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     setState(() {});
   }
 
-  /*
-  void allTypePayments() async {
-    _allTypePayments = await TypePaymentService().getAll();
-    print("Tipos de pago cargados: ${_allTypePayments.length}");
-    setState(() {});
-  }*/
-
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
@@ -92,7 +84,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     return Column(
       children: [
         // --- 1. WIDGET DE BÚSQUEDA ---
-        if (isWide) AppBarApp(title:  'Punto de Venta'),
+        if (isWide) AppBarApp(title: 'Punto de Venta'),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextFieldApp(
@@ -106,12 +98,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
         // --- 3. CUADRÍCULA DE PRODUCTOS ---
         Expanded(
-            child: productsState.when(
+          child: productsState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(child: Text('Error: $error')),
             data: (products) {
               final filteredProducts = ref.watch(filteredProductsProvider);
-              
 
               return filteredProducts.isEmpty
                   ? Center(child: Text('No se encontraron productos.'))
@@ -139,7 +130,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                         );
                       },
                     );
-
             },
           ),
         ),
@@ -399,7 +389,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void showSaleDetail(BuildContext context) {
-   ref.read(authProvider); // Si no usas el valor, esto no hace falta aquí.
+    ref.read(authProvider); // Si no usas el valor, esto no hace falta aquí.
 
     showModalBottomSheet(
       context: context,
@@ -421,7 +411,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                   (previousValue, element) =>
                       previousValue + (element.quantity * element.price),
                 );
-                
+
                 return DraggableScrollableSheet(
                   expand: false,
                   initialChildSize: sheetSize,
@@ -436,20 +426,30 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                           // ... (Tu código de la barra superior y título sigue igual) ...
                           Center(
                             child: Container(
-                              width: 40, height: 5, margin: const EdgeInsets.only(bottom: 15),
-                              decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(10)),
+                              width: 40,
+                              height: 5,
+                              margin: const EdgeInsets.only(bottom: 15),
+                              decoration: BoxDecoration(
+                                color: AppColors.border,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           ),
                           Center(
-                            child: Text("Detalles de la Venta", textAlign: TextAlign.center, style: AppTextStyles.headlineLarge),
+                            child: Text(
+                              "Detalles de la Venta",
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.headlineLarge,
+                            ),
                           ),
-                          
+
                           const SizedBox(height: 10),
-                          
+
                           // Selección de Cliente y Botón Nuevo
                           Row(
                             children: [
-                              Expanded( // <-- RECOMENDACIÓN: Envuelve en Expanded si DropDownApp no tiene ancho fijo
+                              Expanded(
+                                // <-- RECOMENDACIÓN: Envuelve en Expanded si DropDownApp no tiene ancho fijo
                                 child: DropDownApp(
                                   items: _allClients,
                                   initialValue: selectedClient,
@@ -459,7 +459,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                                       selectedClient = newValue;
                                     });
                                     // Opcional: Si necesitas que la pantalla padre también se entere:
-                                    // setState(() => selectedClient = newValue); 
+                                    // setState(() => selectedClient = newValue);
                                   },
                                   itemToString: (client) => client.name,
                                   labelText: 'Seleccionar Cliente',
@@ -471,35 +471,41 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                                 text: "Nuevo",
                                 onPressed: () async {
                                   // 1. Abrimos el modal directamente AQUÍ
-                                      final bool? clientWasAdded = await showModalBottomSheet<bool>(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.transparent, 
-                                        builder: (ctx) => AddClientForm( // <--- Asegúrate de importar este widget
-                                          clientService: ClientService(), // O tu instancia de servicio
+                                  final bool?
+                                  clientWasAdded = await showModalBottomSheet<bool>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (ctx) => AddClientForm(
+                                      // <--- Asegúrate de importar este widget
+                                      clientService:
+                                          ClientService(), // O tu instancia de servicio
+                                    ),
+                                  );
+
+                                  // 2. Si se agregó, refrescamos la lista
+                                  if (clientWasAdded == true) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Cliente agregado correctamente',
                                         ),
-                                      );
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
 
-                                      // 2. Si se agregó, refrescamos la lista
-                                      if (clientWasAdded == true) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Cliente agregado correctamente'), 
-                                            backgroundColor: Colors.green
-                                          ),
-                                        );
+                                    final clientServiceTemp = ClientService();
+                                    final newClients = await clientServiceTemp
+                                        .getAll(); // O .getAll() según como se llame tu método
 
-                                        final clientServiceTemp = ClientService(); 
-                                        final newClients = await clientServiceTemp.getAll(); // O .getAll() según como se llame tu método
-                                        
-                                        modalSetState(() {
-                                          _allClients = newClients;
-                                          if (newClients.isNotEmpty) {
-                                            selectedClient = newClients.last;
-                                          }
-                                        });
+                                    modalSetState(() {
+                                      _allClients = newClients;
+                                      if (newClients.isNotEmpty) {
+                                        selectedClient = newClients.last;
                                       }
-                                },  
+                                    });
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -509,7 +515,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                           // Tipos de Pago (Riverpod)
                           typePaymentsState.when(
                             loading: () => const CategoryLoadingSkeleton(),
-                            error: (error, stack) => Center(child: Text('Error: $error')),
+                            error: (error, stack) =>
+                                Center(child: Text('Error: $error')),
                             data: (typePayments) {
                               return DropDownApp(
                                 items: typePayments,
@@ -534,8 +541,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                             children: [
                               // Ahora este texto SÍ cambiará cuando edites items
                               Text(
-                                "Total: \$${total.toStringAsFixed(2)}", 
-                                style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.bold),
+                                "Total: \$${total.toStringAsFixed(2)}",
+                                style: AppTextStyles.bodyLarge.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               PrimaryButtonApp(
                                 text: "Confirmar",
@@ -556,35 +565,38 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
                           // Lista de Productos
                           Expanded(
-                            child: _itemsForSale.isEmpty 
-                              ? const Center(child: Text("No hay artículos agregados"))
-                              : ListView.builder(
-                                controller: scrollController, // Importante para DraggableScrollableSheet
-                                itemCount: _itemsForSale.length,
-                                itemBuilder: (context, index) {
-                                  final item = _itemsForSale[index];
-                                  return DetailProductCart(
-                                    item: item,
-                                    onTap: () {
-                                      _mostrarDialogoEditarCantidad(
-                                        context,
-                                        item,
-                                        (nuevaCantidad) {
-                                          // Actualizamos el estado DEL MODAL
+                            child: _itemsForSale.isEmpty
+                                ? const Center(
+                                    child: Text("No hay artículos agregados"),
+                                  )
+                                : ListView.builder(
+                                    controller:
+                                        scrollController, // Importante para DraggableScrollableSheet
+                                    itemCount: _itemsForSale.length,
+                                    itemBuilder: (context, index) {
+                                      final item = _itemsForSale[index];
+                                      return DetailProductCart(
+                                        item: item,
+                                        onTap: () {
+                                          _mostrarDialogoEditarCantidad(
+                                            context,
+                                            item,
+                                            (nuevaCantidad) {
+                                              // Actualizamos el estado DEL MODAL
+                                              modalSetState(() {
+                                                item.quantity = nuevaCantidad;
+                                              });
+                                            },
+                                          );
+                                        },
+                                        onDelete: () {
                                           modalSetState(() {
-                                            item.quantity = nuevaCantidad;
+                                            _itemsForSale.removeAt(index);
                                           });
                                         },
                                       );
                                     },
-                                    onDelete: () {
-                                      modalSetState(() {
-                                        _itemsForSale.removeAt(index);
-                                      });
-                                    },
-                                  );
-                                },
-                              ),
+                                  ),
                           ),
                         ],
                       ),
@@ -597,7 +609,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         );
       },
     );
-  } 
+  }
 
   void _mostrarDialogoEditarCantidad(
     BuildContext context,
@@ -673,32 +685,44 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     // 1. Validaciones PRIMERO
     if (_itemsForSale.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La venta no puede estar vacía. Agrega productos.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('La venta no puede estar vacía. Agrega productos.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (selectedClient == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, seleccione un cliente.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Por favor, seleccione un cliente.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (_selectedTypePayment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, seleccione un tipo de pago.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Por favor, seleccione un tipo de pago.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     // --- CORRECCIÓN AQUÍ ---
     // Usamos .value porque authProvider ahora es un AsyncValue
-    final user = ref.read(authProvider).value; 
+    final user = ref.read(authProvider).value;
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: No hay sesión de usuario activa.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Error: No hay sesión de usuario activa.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -736,8 +760,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
       // 5. ÉXITO
       if (mounted) {
-        Navigator.of(context).pop(); // Cierra el modal de confirmación si existe
-        
+        Navigator.of(
+          context,
+        ).pop(); // Cierra el modal de confirmación si existe
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Venta registrada exitosamente.'),
@@ -752,7 +778,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
           _selectedTypePayment = null;
         });
       }
-
     } on Exception catch (e) {
       // Manejo genérico de excepciones
       if (mounted && Navigator.canPop(context)) {
@@ -773,5 +798,5 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         ),
       );
     }
-}
+  }
 }

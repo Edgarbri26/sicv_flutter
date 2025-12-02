@@ -44,10 +44,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
     required List<int> permissionIds, // Lista de IDs de permisos seleccionados
   }) async {
     try {
-      await _service.createRole(
-        name, 
-        permissionIds
-        );
+      await _service.createRole(name, permissionIds);
       // Recargamos la lista para ver el nuevo rol
       await refresh();
     } catch (e) {
@@ -62,11 +59,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
     required List<int> permissionIds,
   }) async {
     try {
-      await _service.updateRole(
-        id,
-        name,
-        permissionIds,
-      );
+      await _service.updateRole(id, name, permissionIds);
       await refresh();
     } catch (e) {
       throw e;
@@ -105,7 +98,8 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
 }
 
 // 3. El Proveedor Global
-final rolesProvider = StateNotifierProvider<RolesNotifier, AsyncValue<List<RoleModel>>>((ref) {
-  final service = ref.watch(roleServiceProvider);
-  return RolesNotifier(service);
-});
+final rolesProvider =
+    StateNotifierProvider<RolesNotifier, AsyncValue<List<RoleModel>>>((ref) {
+      final service = ref.watch(roleServiceProvider);
+      return RolesNotifier(service);
+    });
