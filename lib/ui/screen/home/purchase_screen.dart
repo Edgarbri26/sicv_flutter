@@ -18,6 +18,7 @@ import 'package:sicv_flutter/providers/purchase_provider.dart';
 import 'package:sicv_flutter/providers/type_payment_provider.dart';
 import 'package:sicv_flutter/services/depot_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
@@ -260,6 +261,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
+
   void showProductSearchModal() {
     showModalBottomSheet(
       context: context,
@@ -395,6 +397,9 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         
         return Scaffold(
           backgroundColor: AppColors.background,
+          appBar: isWide ? AppBarApp(
+            title: 'Registrar Compra',
+          ) : null,
           drawer: isWide || widget.controller == null ? null : MySideBar(controller: widget.controller!),
           body: Center(
             child: ConstrainedBox(

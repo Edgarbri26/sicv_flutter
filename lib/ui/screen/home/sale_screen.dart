@@ -21,6 +21,7 @@ import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/add_client_form.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -87,9 +88,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
+    final bool isWide = MediaQuery.of(context).size.width >= 800;
     return Column(
       children: [
         // --- 1. WIDGET DE BÚSQUEDA ---
+        if (isWide) AppBarApp(title:  'Punto de Venta'),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextFieldApp(
@@ -103,11 +106,12 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
         // --- 3. CUADRÍCULA DE PRODUCTOS ---
         Expanded(
-          child: productsState.when(
+            child: productsState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(child: Text('Error: $error')),
             data: (products) {
               final filteredProducts = ref.watch(filteredProductsProvider);
+              
 
               return filteredProducts.isEmpty
                   ? Center(child: Text('No se encontraron productos.'))
@@ -135,6 +139,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                         );
                       },
                     );
+
             },
           ),
         ),
