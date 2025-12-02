@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/services/permission_service.dart';
 
 // Servicio inyectado
@@ -36,8 +35,7 @@ class CurrentUserPermissionsNotifier extends StateNotifier<Set<String>> {
 
   /// Helper para verificar en la UI
   bool can(String permissionCode) {
-    return state.contains(permissionCode) ||
-        state.contains(AppPermissions.allPermissions);
+    return state.contains(permissionCode);
   }
 }
 

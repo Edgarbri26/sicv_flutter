@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sicv_flutter/config/app_permissions.dart';
+import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 // Imports internos (Asegúrate de que las rutas sean correctas en tu proyecto)
@@ -50,9 +52,13 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
     // Escuchamos el proveedor de productos (Fuente de la verdad)
     final productsState = ref.watch(productsProvider);
 
+    final userPermissions = ref.watch(currentUserPermissionsProvider);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
+
+        final hasAccessProducts = userPermissions.can(AppPermissions.createProduct);
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -80,12 +86,12 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
           drawer: isWide ? null : MySideBar(controller: widget.controller),
 
           // FAB conectado al formulario de creación
-          floatingActionButton: FloatingActionButton.extended(
+          floatingActionButton: hasAccessProducts ? FloatingActionButton.extended(
             onPressed: () => showProductForm(),
             backgroundColor: AppColors.primary,
             icon: const Icon(Icons.add, color: Colors.white),
             label: const Text('Nuevo Producto', style: TextStyle(color: Colors.white)),
-          ),
+          ) : null,
 
           // Cuerpo de la aplicación
           body: productsState.when(
@@ -445,6 +451,12 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
   }
 
   Widget _buildDataTable(List<ProductModel> products) {
+    final userPermissions = ref.watch(currentUserPermissionsProvider);
+    final hasAccessUpdateProducts = userPermissions.can(AppPermissions.updateProduct);
+    final hasAccessDeleteProducts = userPermissions.can(AppPermissions.deleteProduct);
+
+    final showActions = hasAccessUpdateProducts || hasAccessDeleteProducts;
+
     return DataTable(
       horizontalMargin: 15.0,
       columnSpacing: 20.0,
@@ -482,14 +494,18 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
           numeric: true,
           onSort: _onSort,
         ),
-        const DataColumn(
-          label: Row(
-            children: [
-              SizedBox(width: 15.0),
-              Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold)),
-            ],
+        if (showActions)
+          DataColumn(
+            label: SizedBox(
+              width: 80, // Ancho FIJO para asegurar alineación
+              child: Center(
+                child: Text(
+                  'Acciones',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
           ),
-        ),
       ],
       rows: products.map((product) {
         final stockColor = ColorStock().getColor(
@@ -527,32 +543,42 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                 ),
               ),
             ),
-            DataCell(Text('\$${product.price.toStringAsFixed(2)}')),
-            DataCell(
-              Row(
-                children: [
-                  const SizedBox(width: 15.0),
-                  IconButton(
-                    icon: Icon(
-                      Icons.edit,
-                      size: 20,
-                      color: Colors.blue.shade700,
-                    ),
-                    tooltip: 'Editar Producto',
-                    onPressed: () => _editProduct(product),
+            DataCell(Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text('\$${product.price.toStringAsFixed(2)}'),
+            )),
+            if (showActions)
+              DataCell(
+                SizedBox(
+                  width: 80, // MISMO Ancho FIJO que el header
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // Centramos los botones en ese ancho
+                    children: [
+                      if (hasAccessUpdateProducts)
+                        IconButton(
+                          icon: Icon(Icons.edit, size: 20, color: Colors.blue.shade700),
+                          tooltip: 'Editar Producto',
+                          // Visual adjustment: IconButtons have internal padding, reducing it helps alignment
+                          padding: EdgeInsets.zero, 
+                          constraints: const BoxConstraints(), // Optional: makes button compact
+                          onPressed: () => _editProduct(product),
+                        ),
+                      
+                      if (hasAccessUpdateProducts && hasAccessDeleteProducts)
+                        const SizedBox(width: 15.0), // Un poco más de aire entre iconos
+
+                      if (hasAccessDeleteProducts)
+                        IconButton(
+                          icon: Icon(Icons.delete, size: 20, color: Colors.red.shade700),
+                          tooltip: 'Eliminar Producto',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => _deleteProduct(product),
+                        ),
+                    ],
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete,
-                      size: 20,
-                      color: Colors.red.shade700,
-                    ),
-                    tooltip: 'Eliminar Producto',
-                    onPressed: () => _deleteProduct(product),
-                  ),
-                ],
+                ),
               ),
-            ),
           ],
         );
       }).toList(),
