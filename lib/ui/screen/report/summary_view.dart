@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <--- Riverpod
-import 'package:sicv_flutter/providers/report/report_provider.dart';
+import 'package:sicv_flutter/providers/report/summary_report_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:sicv_flutter/ui/widgets/kpiCard.dart';
 import 'package:sicv_flutter/ui/widgets/rerport/app_bar_Chart.dart';
@@ -15,7 +15,7 @@ class ResumeView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // LEEMOS EL PROVIDER AQUÍ (Riverpod Style)
-    final provider = ref.watch(reportProvider);
+    final provider = ref.watch(summaryReportProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
@@ -42,7 +42,10 @@ class ResumeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderAndFilter(BuildContext context, ReportProvider provider) {
+  Widget _buildHeaderAndFilter(
+    BuildContext context,
+    SummaryReportProvider provider,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -89,7 +92,7 @@ class ResumeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildKpiGrid(BuildContext context, ReportProvider provider) {
+  Widget _buildKpiGrid(BuildContext context, SummaryReportProvider provider) {
     final kpis = [
       KpiData(
         "Ventas Totales",
@@ -107,7 +110,7 @@ class ResumeView extends ConsumerWidget {
       ),
       KpiData(
         "Ganancia Neta",
-        "\$800.00",
+        "\$ ${provider.totalProfit}",
         Icons.account_balance_wallet_outlined,
         Colors.purple,
         "+8%",
@@ -143,7 +146,10 @@ class ResumeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, ReportProvider provider) {
+  Widget _buildMobileLayout(
+    BuildContext context,
+    SummaryReportProvider provider,
+  ) {
     return Column(
       children: [
         ChartContainer(
@@ -182,7 +188,10 @@ class ResumeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildDesktopLayout(BuildContext context, ReportProvider provider) {
+  Widget _buildDesktopLayout(
+    BuildContext context,
+    SummaryReportProvider provider,
+  ) {
     print(provider.salesData);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
