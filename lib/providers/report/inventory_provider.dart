@@ -8,7 +8,7 @@ import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 // --- CLASES DE DATOS ---
 class CategoryData {
   final String name;
-  final double value; // Aquí guardaremos el PORCENTAJE para el gráfico
+  final double value;
   final Color color;
   CategoryData(this.name, this.value, this.color);
 }
@@ -33,12 +33,12 @@ class InventoryState {
   final List<InventoryEfficiencyPoint> efficiencyData;
   final String totalInventoryValue;
   final int totalItems;
-  final List<CategoryData> categoryDistribution; // AHORA ES REAL
+  final List<CategoryData> categoryDistribution;
+  final List<ProductMetric> topProducts; // <--- AHORA ES REAL
   
   // Datos Mock (Pendientes de endpoint)
   final int lowStockAlerts;
   final String monthlyTurnover;
-  final List<ProductMetric> topProducts;
   final List<StockAlert> lowStockItems;
 
   InventoryState({
@@ -46,9 +46,9 @@ class InventoryState {
     required this.totalInventoryValue,
     required this.totalItems,
     required this.categoryDistribution,
+    required this.topProducts,
     this.lowStockAlerts = 5,
     this.monthlyTurnover = "18%",
-    this.topProducts = const [],
     this.lowStockItems = const [],
   });
 }
@@ -61,21 +61,23 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref)
   final filter = ref.watch(inventoryFilterProvider);
   final service = ReportService();
 
-  // EJECUTAMOS 4 PETICIONES EN PARALELO
+  // EJECUTAMOS 5 PETICIONES EN PARALELO
   final results = await Future.wait([
-    service.getInventoryEfficiency(filter), // [0]
-    service.getInventoryValue(),            // [1]
-    service.getTotalItems(),                // [2]
-    service.getInventoryByCategory(),       // [3] NUEVO
+    service.getInventoryEfficiency(filter),   // [0] Scatter Chart
+    service.getInventoryValue(),              // [1] Valor USD
+    service.getTotalItems(),                  // [2] Total Items
+    service.getInventoryByCategory(),         // [3] Pie Chart
+    service.getTopSellingProducts(filter),    // [4] NUEVO: Top List
   ]);
 
-  // Extraemos resultados
+  // 1. Extraemos resultados
   final efficiencyData = results[0] as List<InventoryEfficiencyPoint>;
   final inventoryValue = results[1] as double;
   final totalItems = results[2] as int;
   final categoryRawData = results[3] as List<Map<String, dynamic>>;
+  final topProductsRawData = results[4] as List<Map<String, dynamic>>; // <--- NUEVO
 
-  // Helper para convertir Hex String (#RRGGBB) a Color
+  // 2. Procesamiento de Colores para Categorías
   Color parseColor(String hexString) {
     final buffer = StringBuffer();
     if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
@@ -83,12 +85,20 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref)
     return Color(int.parse(buffer.toString(), radix: 16));
   }
 
-  // Mapeamos la respuesta del backend a CategoryData
   final categoryDistribution = categoryRawData.map((item) {
     return CategoryData(
       item['name'] as String,
-      (item['percentage'] as num).toDouble(), // Usamos el porcentaje para el gráfico
+      (item['percentage'] as num).toDouble(),
       parseColor(item['color'] as String),
+    );
+  }).toList();
+
+  // 3. Procesamiento de Top Productos (NUEVO)
+  final topProducts = topProductsRawData.map((item) {
+    return ProductMetric(
+      item['name'] as String,
+      item['soldCount'] as int,
+      (item['percentage'] as num).toDouble(), // Aseguramos que sea double (0.0 - 1.0)
     );
   }).toList();
 
@@ -98,14 +108,10 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref)
     efficiencyData: efficiencyData,
     totalInventoryValue: currencyFormat.format(inventoryValue),
     totalItems: totalItems,
-    categoryDistribution: categoryDistribution, // Datos reales inyectados
+    categoryDistribution: categoryDistribution,
+    topProducts: topProducts, // <--- Inyectamos datos reales
     
-    // Mocks restantes
-    topProducts: [
-      ProductMetric("Laptop Dell G15", 120, 0.9),
-      ProductMetric("iPhone 13 Pro", 95, 0.75),
-      ProductMetric("Monitor LG 24'", 80, 0.6),
-    ],
+    // Mocks restantes (Solo falta el de Alertas de Stock)
     lowStockItems: [
       StockAlert("Adaptador HDMI", 2, "Crítico"),
       StockAlert("Funda iPhone 13", 4, "Bajo"),

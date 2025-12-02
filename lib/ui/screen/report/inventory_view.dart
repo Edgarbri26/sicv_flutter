@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-// 1. IMPORTA EL MODELO DE EFICIENCIA
+// 1. IMPORTA TU MODELO DE EFICIENCIA
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
+
+// 2. IMPORTA TU PROVIDER (Donde están InventoryState, ProductMetric, etc.)
 import 'package:sicv_flutter/providers/report/inventory_provider.dart'; 
 
 class InventoryReportView extends ConsumerWidget {
@@ -11,6 +13,7 @@ class InventoryReportView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Escuchamos el estado del provider
     final inventoryStateAsync = ref.watch(inventoryReportProvider);
     final currentFilter = ref.watch(inventoryFilterProvider);
 
@@ -20,9 +23,6 @@ class InventoryReportView extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: Colors.blue),
         ),
-        // /////////////////////////////////////////////
-        //   WIDGET DE ERROR PERSONALIZADO
-        /////////////////////////////////////////////////
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -51,19 +51,24 @@ class InventoryReportView extends ConsumerWidget {
               _buildHeader(context, ref, currentFilter),
               const SizedBox(height: 32),
               
-              // Grid de KPIs
+              // Grid de KPIs (Valor Real, Items Reales)
               _buildKpiGrid(context, data),
               
               const SizedBox(height: 24),
 
-              // --- GRÁFICO DE EFICIENCIA ---
+              // --- GRÁFICO DE EFICIENCIA (DATOS REALES) ---
               _ChartContainer(
                 title: "Matriz Rentabilidad vs Volumen",
                 subtitle: "Estrellas (Verde), Vacas (Azul), Interrogantes (Naranja), Perros (Rojo)",
                 child: SizedBox(
                   height: 350,
                   child: data.efficiencyData.isEmpty
-                      ? const Center(child: Text("No hay datos de ventas en este periodo"))
+                      ? const Center(
+                          child: Text(
+                            "No hay datos de ventas en este periodo.",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
                       : _InventoryEfficiencyChart(points: data.efficiencyData),
                 ),
               ),
@@ -103,7 +108,7 @@ class InventoryReportView extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Análisis de eficiencia, valoración y stock",
+              "Valoración, eficiencia y niveles de stock",
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
           ],
@@ -137,7 +142,7 @@ class InventoryReportView extends ConsumerWidget {
     );
   }
 
-  // --- Grid KPIs ---
+  // --- Grid de KPIs ---
   Widget _buildKpiGrid(BuildContext context, InventoryState data) {
     final kpis = [
       _KpiInfo("Valor Inventario", "\$${data.totalInventoryValue}", Icons.monetization_on_outlined, Colors.teal),
@@ -175,8 +180,8 @@ class InventoryReportView extends ConsumerWidget {
             children: [
               _ChartContainer(
                 title: "Distribución por Categoría",
-                child: data.categoryDistribution.isEmpty 
-                  ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay datos de categorías")))
+                child: data.categoryDistribution.isEmpty
+                  ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("Sin datos de categorías")))
                   : Row(
                       children: [
                         Expanded(
@@ -208,6 +213,7 @@ class InventoryReportView extends ConsumerWidget {
           flex: 3,
           child: _ChartContainer(
             title: "Top Productos Vendidos",
+            // AQUÍ SE USA EL WIDGET ACTUALIZADO
             child: _TopProductsList(products: data.topProducts),
           ),
         ),
@@ -221,7 +227,7 @@ class InventoryReportView extends ConsumerWidget {
         _ChartContainer(
           title: "Distribución por Categoría",
           child: data.categoryDistribution.isEmpty 
-            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay datos de categorías")))
+            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("Sin datos de categorías")))
             : Column(
                 children: [
                   AspectRatio(
@@ -236,6 +242,7 @@ class InventoryReportView extends ConsumerWidget {
         const SizedBox(height: 24),
         _ChartContainer(
           title: "Top Productos Vendidos",
+          // AQUÍ SE USA EL WIDGET ACTUALIZADO
           child: _TopProductsList(products: data.topProducts),
         ),
         const SizedBox(height: 24),
@@ -251,6 +258,76 @@ class InventoryReportView extends ConsumerWidget {
 // ==========================================
 // 4. WIDGETS AUXILIARES
 // ==========================================
+
+class _TopProductsList extends StatelessWidget {
+  final List<ProductMetric> products;
+  const _TopProductsList({required this.products});
+
+  @override
+  Widget build(BuildContext context) {
+    // VALIDACIÓN: Si la lista está vacía (no hay ventas)
+    if (products.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            "Aún no hay productos vendidos en este periodo.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final prod = products[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Expanded para que el nombre no rompa si es muy largo
+                  Expanded(
+                    child: Text(
+                      prod.name, 
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "${prod.soldCount} Unds.", 
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: prod.percentage, // Este valor viene del backend (0.0 a 1.0)
+                  minHeight: 8,
+                  backgroundColor: Colors.grey[100],
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    // Gradiente de colores para el ranking (1ro Morado, 2do Azul...)
+                    index == 0 ? const Color(0xFF6366F1) : Colors.blue.withOpacity(0.8 - (index * 0.1)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
 class _InventoryEfficiencyChart extends StatelessWidget {
   final List<InventoryEfficiencyPoint> points;
@@ -274,10 +351,7 @@ class _InventoryEfficiencyChart extends StatelessWidget {
 
     return ScatterChart(
       ScatterChartData(
-        minX: 0,
-        maxX: maxX, 
-        minY: 0,
-        maxY: maxY, 
+        minX: 0, maxX: maxX, minY: 0, maxY: maxY, 
         gridData: FlGridData(
           show: true,
           drawVerticalLine: true,
@@ -290,19 +364,11 @@ class _InventoryEfficiencyChart extends StatelessWidget {
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             axisNameWidget: const Text("Cantidad Vendida", style: TextStyle(fontSize: 10)),
-            sideTitles: SideTitles(
-              showTitles: true, 
-              reservedSize: 30,
-              getTitlesWidget: (val, meta) => Text("${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ),
+            sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (val, meta) => Text("${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey))),
           ),
           leftTitles: AxisTitles(
             axisNameWidget: const Text("Ganancia (\$)", style: TextStyle(fontSize: 10)),
-            sideTitles: SideTitles(
-              showTitles: true, 
-              reservedSize: 45,
-              getTitlesWidget: (val, meta) => Text(val >= 1000 ? "${(val/1000).toStringAsFixed(1)}k" : "${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ),
+            sideTitles: SideTitles(showTitles: true, reservedSize: 45, getTitlesWidget: (val, meta) => Text(val >= 1000 ? "${(val/1000).toStringAsFixed(1)}k" : "${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey))),
           ),
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -312,20 +378,14 @@ class _InventoryEfficiencyChart extends StatelessWidget {
           Color color;
           bool highSales = point.quantitySold >= targetSales;
           bool highProfit = point.totalProfit >= targetProfit;
-
           if (highSales && highProfit) color = Colors.green;
           else if (highSales && !highProfit) color = Colors.blue;
           else if (!highSales && highProfit) color = Colors.orange;
           else color = Colors.red;
 
           return ScatterSpot(
-            point.quantitySold, 
-            point.totalProfit,  
-            dotPainter: FlDotCirclePainter(
-              color: color,
-              radius: (color == Colors.green || color == Colors.red) ? 8 : 6,
-              strokeWidth: 0,
-            ),
+            point.quantitySold, point.totalProfit,  
+            dotPainter: FlDotCirclePainter(color: color, radius: (color == Colors.green || color == Colors.red) ? 8 : 6, strokeWidth: 0),
           );
         }).toList(),
         scatterTouchData: ScatterTouchData(
@@ -338,13 +398,8 @@ class _InventoryEfficiencyChart extends StatelessWidget {
                    (p) => (p.quantitySold - spot.x).abs() < 0.1 && (p.totalProfit - spot.y).abs() < 0.1, 
                    orElse: () => InventoryEfficiencyPoint(name: "Item", quantitySold: 0, totalProfit: 0)
                  );
-                 return XAxisTooltipItem(
-                   text: "${match.name}\nVol: ${spot.x.toInt()} | Gan: \$${spot.y.toStringAsFixed(2)}",
-                   textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                 );
-              } catch (e) {
-                return null;
-              }
+                 return XAxisTooltipItem(text: "${match.name}\nVol: ${spot.x.toInt()} | Gan: \$${spot.y.toStringAsFixed(2)}", textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11));
+              } catch (e) { return null; }
             },
           ),
         ),
@@ -354,8 +409,7 @@ class _InventoryEfficiencyChart extends StatelessWidget {
 }
 
 class XAxisTooltipItem extends ScatterTooltipItem {
-  XAxisTooltipItem({required String text, required TextStyle textStyle}) 
-      : super(text, textStyle: textStyle, bottomMargin: 10);
+  XAxisTooltipItem({required String text, required TextStyle textStyle}) : super(text, textStyle: textStyle, bottomMargin: 10);
 }
 
 class _ChartContainer extends StatelessWidget {
@@ -363,9 +417,7 @@ class _ChartContainer extends StatelessWidget {
   final String? subtitle;
   final Widget child;
   final bool isAlert;
-
   const _ChartContainer({required this.title, required this.child, this.isAlert = false, this.subtitle});
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -373,36 +425,20 @@ class _ChartContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: isAlert ? Colors.red.withOpacity(0.05) : Colors.grey.withOpacity(0.05),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: isAlert ? Colors.red.withOpacity(0.2) : Colors.grey.withOpacity(0.15),
-        ),
+        boxShadow: [BoxShadow(color: isAlert ? Colors.red.withOpacity(0.05) : Colors.grey.withOpacity(0.05), spreadRadius: 2, blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: isAlert ? Colors.red.withOpacity(0.2) : Colors.grey.withOpacity(0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              if(isAlert) ...[
-                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20),
-                const SizedBox(width: 8),
-              ],
+              if(isAlert) ...[const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20), const SizedBox(width: 8)],
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(subtitle!, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-                    ),
+                  if (subtitle != null) Padding(padding: const EdgeInsets.only(top: 4.0), child: Text(subtitle!, style: TextStyle(fontSize: 12, color: Colors.grey[500]))),
                 ],
               ),
             ],
@@ -430,27 +466,13 @@ class _KpiCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: info.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-            child: Icon(info.icon, color: info.color, size: 20),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(info.value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-              Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-            ],
-          )
+          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: info.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(info.icon, color: info.color, size: 20)),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(info.value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)), Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600]))])
         ],
       ),
     );
@@ -460,148 +482,30 @@ class _KpiCard extends StatelessWidget {
 class _CategoryPieChart extends StatelessWidget {
   final List<CategoryData> categories;
   const _CategoryPieChart({required this.categories});
-
   @override
   Widget build(BuildContext context) {
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 2,
-        centerSpaceRadius: 40,
-        sections: categories.map((cat) {
-          return PieChartSectionData(
-            color: cat.color,
-            value: cat.value,
-            title: '${cat.value.toInt()}%',
-            radius: 50,
-            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-          );
-        }).toList(),
-      ),
-    );
+    return PieChart(PieChartData(sectionsSpace: 2, centerSpaceRadius: 40, sections: categories.map((cat) => PieChartSectionData(color: cat.color, value: cat.value, title: '${cat.value.toInt()}%', radius: 50, titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white))).toList()));
   }
 }
 
 class _CategoryLegend extends StatelessWidget {
   final List<CategoryData> categories;
   const _CategoryLegend({required this.categories});
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: categories.map((cat) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Row(
-            children: [
-              Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: cat.color)),
-              const SizedBox(width: 8),
-              Expanded(child: Text(cat.name, style: const TextStyle(fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis)),
-              Text("${cat.value}%", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600])),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-// Estos dos (TopProducts y LowStock) siguen usando mocks por ahora, 
-// pero están preparados para recibir datos reales del provider cuando los conectes.
-class _TopProductsList extends StatelessWidget {
-  final List<ProductMetric> products;
-  const _TopProductsList({required this.products});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        final prod = products[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(prod.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  Text("${prod.soldCount} Unds.", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: prod.percentage,
-                  minHeight: 8,
-                  backgroundColor: Colors.grey[100],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    index == 0 ? const Color(0xFF6366F1) : Colors.blue.withOpacity(0.7 - (index * 0.1)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    return Column(mainAxisAlignment: MainAxisAlignment.center, children: categories.map((cat) => Padding(padding: const EdgeInsets.symmetric(vertical: 4.0), child: Row(children: [Container(width: 12, height: 12, decoration: BoxDecoration(shape: BoxShape.circle, color: cat.color)), const SizedBox(width: 8), Expanded(child: Text(cat.name, style: const TextStyle(fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis)), Text("${cat.value}%", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600]))]))).toList());
   }
 }
 
 class _LowStockList extends StatelessWidget {
   final List<StockAlert> items;
   const _LowStockList({required this.items});
-
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      separatorBuilder: (c, i) => Divider(color: Colors.grey.withOpacity(0.1)),
-      itemBuilder: (context, index) {
+    if (items.isEmpty) return const Center(child: Text("No hay alertas de stock.", style: TextStyle(color: Colors.grey)));
+    return ListView.separated(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: items.length, separatorBuilder: (c, i) => Divider(color: Colors.grey.withOpacity(0.1)), itemBuilder: (context, index) {
         final item = items[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.inventory, color: Colors.red, size: 16),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    Text("Stock actual: ${item.quantity}", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red.withOpacity(0.5)),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  item.level.toUpperCase(),
-                  style: const TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+        return Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Row(children: [Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.inventory, color: Colors.red, size: 16)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), Text("Stock actual: ${item.quantity}", style: TextStyle(color: Colors.grey[600], fontSize: 12))])), Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(border: Border.all(color: Colors.red.withOpacity(0.5)), borderRadius: BorderRadius.circular(4)), child: Text(item.level.toUpperCase(), style: const TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)))]));
+      });
   }
 }

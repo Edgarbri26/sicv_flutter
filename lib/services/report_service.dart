@@ -197,4 +197,27 @@ class ReportService {
       throw Exception('Error de conexión al obtener categorías.');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getTopSellingProducts(String filter) async {
+    // El backend espera ?period=month (o week, year, all)
+    final uri = Uri.parse('$_baseUrl/report/top_selling_products?period=$filter');
+    
+    try {
+      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        // El backend devuelve: data: [{ name: "...", soldCount: 10, percentage: 0.5 }, ...]
+        final List<dynamic> data = responseData['data'] as List<dynamic>;
+        
+        // Retornamos como lista de mapas para que el Provider lo convierta a objetos
+        return data.map((e) => e as Map<String, dynamic>).toList();
+      } else {
+        throw Exception('Error al cargar top productos (Code: ${response.statusCode})');
+      }
+    } catch (e) {
+      print(e.toString());
+      throw Exception('Error de conexión al obtener top productos.');
+    }
+  }
 }
