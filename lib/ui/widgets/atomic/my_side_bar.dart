@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
@@ -26,8 +27,8 @@ class MySideBar extends ConsumerWidget {
     
     // Verificamos si tiene el permiso específico para ver Movimientos
     // Asegúrate de que 'VIEW_MOVEMENTS' (o 'all:permissions') coincida con tu BD
-    final hasAccessMovements = userPermissions.contains('all:permissions') || 
-                               userPermissions.contains('view:movements');
+    final hasAccessMovements = userPermissions.contains(AppPermissions.allPermissions) || 
+                               userPermissions.contains(AppPermissions.readMovements);
 
     return SidebarX(
       controller: controller,
