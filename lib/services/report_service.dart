@@ -41,8 +41,8 @@ class ReportService {
     }
   }
 
-  Future<double> getTotalSales(String filter) async {
-    final uri = Uri.parse('$_baseUrl/report/total_usd_sales?filter=$filter');
+  Future<double> getTotalSales() async {
+    final uri = Uri.parse('$_baseUrl/report/total_usd_sales');
     try {
       final response = await _client.get(
         uri,
@@ -53,15 +53,13 @@ class ReportService {
       );
 
       if (response.statusCode == 200) {
-        // ACTUALIZACIÓN: Parseamos el Mapa y buscamos la llave 'data'
         final Map<String, dynamic> responseData =
             json.decode(response.body) as Map<String, dynamic>;
 
-        final Map<String, dynamic> salesData =
-            responseData['data'] as Map<String, dynamic>;
+        final double salesData = (responseData['data'] as num).toDouble();
 
-        print(salesData);
-        return salesData['total'] as double;
+        print('Total Sales: $salesData');
+        return salesData;
       } else {
         throw Exception(
           'Error al cargar la lista de ventas (Código: ${response.statusCode})',
@@ -73,9 +71,10 @@ class ReportService {
     }
   }
 
-  Future<double> getTotalPurchases(String filter) async {
+  Future<double> getTotalPurchases() async {
     final uri = Uri.parse(
-      '$_baseUrl/report/total_usd_purchases?filter=$filter',
+      // '$_baseUrl/report/total_usd_purchases?filter=$filter',
+      '$_baseUrl/report/total_usd_purchases',
     );
     try {
       final response = await _client.get(
@@ -91,11 +90,10 @@ class ReportService {
         final Map<String, dynamic> responseData =
             json.decode(response.body) as Map<String, dynamic>;
 
-        final Map<String, dynamic> purchasesData =
-            responseData['data'] as Map<String, dynamic>;
+        final double purchasesData = (responseData['data'] as num).toDouble();
 
         print(purchasesData);
-        return purchasesData['total'] as double;
+        return purchasesData;
       } else {
         throw Exception(
           'Error al cargar la lista de compras (Código: ${response.statusCode})',
@@ -107,8 +105,12 @@ class ReportService {
     }
   }
 
-  Future<List<InventoryEfficiencyPoint>> getInventoryEfficiency(String filter) async {
-    final uri = Uri.parse('$_baseUrl/report/inventory_efficiency?period=$filter'); // Ojo: tu backend espera query param 'period', no 'filter' según tu código de backend anterior, si es 'filter' cámbialo aquí.
+  Future<List<InventoryEfficiencyPoint>> getInventoryEfficiency(
+    String filter,
+  ) async {
+    final uri = Uri.parse(
+      '$_baseUrl/report/inventory_efficiency?period=$filter',
+    ); // Ojo: tu backend espera query param 'period', no 'filter' según tu código de backend anterior, si es 'filter' cámbialo aquí.
     try {
       final response = await _client.get(
         uri,

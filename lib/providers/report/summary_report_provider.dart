@@ -3,12 +3,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/services/report_service.dart';
 
-
-final reportProvider = ChangeNotifierProvider<ReportProvider>((ref) {
-  return ReportProvider();
+final summaryReportProvider = ChangeNotifierProvider<SummaryReportProvider>((
+  ref,
+) {
+  return SummaryReportProvider();
 });
 
-class ReportProvider extends ChangeNotifier {
+class SummaryReportProvider extends ChangeNotifier {
   // --- ESTADO ---
   bool _isLoading = false;
   String _selectedFilter =
@@ -19,6 +20,7 @@ class ReportProvider extends ChangeNotifier {
   List<String> _labels = [];
   double _totalSales = 0;
   double _totalPurchases = 0;
+  double _totalProfit = 0;
 
   final List<String> _filterOptions = ['today', 'week', 'month', 'year'];
 
@@ -41,10 +43,11 @@ class ReportProvider extends ChangeNotifier {
   List<String> get labels => _labels;
   double get totalSales => _totalSales;
   double get totalPurchases => _totalPurchases;
+  double get totalProfit => _totalProfit;
 
   final ReportService _reportService = ReportService();
 
-  ReportProvider() {
+  SummaryReportProvider() {
     loadData();
   }
 
@@ -62,10 +65,17 @@ class ReportProvider extends ChangeNotifier {
         _selectedFilter,
       );
 
+      final totalSales = await _reportService.getTotalSales();
+      final totalPurchases = await _reportService.getTotalPurchases();
+
       _labels = reportSpots.labels;
       _salesData = reportSpots.spots
           .map((spot) => FlSpot(spot.x, spot.y))
           .toList();
+
+      _totalSales = totalSales;
+      _totalPurchases = totalPurchases;
+      _totalProfit = totalSales - totalPurchases;
 
       // For now, keep comprasData empty or mock until we have an endpoint
       _purchasesData = [];
