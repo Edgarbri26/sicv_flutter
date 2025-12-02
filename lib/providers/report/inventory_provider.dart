@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 import 'package:sicv_flutter/services/report_service.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
@@ -57,7 +57,9 @@ class InventoryState {
 
 final inventoryFilterProvider = StateProvider<String>((ref) => 'month');
 
-final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref) async {
+final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
+  ref,
+) async {
   final filter = ref.watch(inventoryFilterProvider);
   final service = ReportService();
 

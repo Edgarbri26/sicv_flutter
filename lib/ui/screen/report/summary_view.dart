@@ -192,7 +192,6 @@ class ResumeView extends ConsumerWidget {
     BuildContext context,
     SummaryReportProvider provider,
   ) {
-    print(provider.salesData);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
