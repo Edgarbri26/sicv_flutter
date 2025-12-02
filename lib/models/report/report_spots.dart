@@ -17,13 +17,19 @@ class ReportSpots {
 
   factory ReportSpots.fromJson(Map<String, dynamic> json) {
     return ReportSpots(
-      spots: List<SpotModel>.from(
-        json['spots'].map((x) => SpotModel.fromJson(x)),
-      ),
-      total: (json['total'] as num).toInt(),
-      labels: List<String>.from(json['labels'].map((x) => x)),
-      labelsShort: List<String>.from(json['labelsShort'].map((x) => x)),
-      filter: json['filter'],
+      spots: json['spots'] != null
+          ? List<SpotModel>.from(
+              json['spots'].map((x) => SpotModel.fromJson(x)),
+            )
+          : [],
+      total: json['total'] != null ? (json['total'] as num).toInt() : 0,
+      labels: json['labels'] != null
+          ? List<String>.from(json['labels'].map((x) => x))
+          : [],
+      labelsShort: json['labelsShort'] != null
+          ? List<String>.from(json['labelsShort'].map((x) => x))
+          : [],
+      filter: json['filter'] ?? '',
     );
   }
 }

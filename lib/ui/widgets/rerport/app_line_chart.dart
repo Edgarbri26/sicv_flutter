@@ -36,30 +36,7 @@ class AppLineChart extends StatelessWidget {
           ),
         ),
         borderData: FlBorderData(show: false),
-        lineBarsData: [
-          // LineChartBarData(
-          //   preventCurveOverShooting: true,
-          //   spots: provider.salesData,
-          //   isCurved: true,
-          //   color: Colors.green,
-          //   barWidth: 3,
-          //   dotData: FlDotData(show: false),
-          //   belowBarData: BarAreaData(
-          //     show: true,
-          //     color: Colors.green.withOpacity(0.15),
-          //   ),
-          // ),
-          ...lineChartBarData,
-          // Add comprasData if available
-          // if (provider.purchasesData.isNotEmpty)
-          //   LineChartBarData(
-          //     spots: provider.purchasesData,
-          //     isCurved: true,
-          //     color: Colors.redAccent,
-          //     barWidth: 3,
-          //     dotData: FlDotData(show: false),
-          //   ),
-        ],
+        lineBarsData: [...lineChartBarData],
       ),
     );
   }

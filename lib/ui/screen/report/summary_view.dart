@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <--- Riverpod
-import 'package:sicv_flutter/providers/report_provider.dart';
+import 'package:sicv_flutter/providers/report/report_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/ui/widgets/kpiCard.dart';
 import 'package:sicv_flutter/ui/widgets/rerport/app_bar_Chart.dart';
 import 'package:sicv_flutter/ui/widgets/rerport/app_line_chart.dart';
 import 'package:sicv_flutter/ui/widgets/rerport/app_line_chart_data.dart';
@@ -40,8 +41,6 @@ class ResumeView extends ConsumerWidget {
       ),
     );
   }
-
-  // --- WIDGETS AUXILIARES ---
 
   Widget _buildHeaderAndFilter(BuildContext context, ReportProvider provider) {
     return Row(
@@ -92,28 +91,28 @@ class ResumeView extends ConsumerWidget {
 
   Widget _buildKpiGrid(BuildContext context, ReportProvider provider) {
     final kpis = [
-      _KpiData(
+      KpiData(
         "Ventas Totales",
         "\$${provider.totalSales}",
         Icons.attach_money,
         Colors.green,
         "+12%",
       ),
-      _KpiData(
+      KpiData(
         "Compras",
         "\$ ${provider.totalPurchases}",
         Icons.shopping_bag_outlined,
         Colors.blue,
         "-5%",
       ),
-      _KpiData(
+      KpiData(
         "Ganancia Neta",
         "\$800.00",
         Icons.account_balance_wallet_outlined,
         Colors.purple,
         "+8%",
       ),
-      _KpiData(
+      KpiData(
         "Alertas Stock",
         "8 Items",
         Icons.warning_amber_rounded,
@@ -138,7 +137,7 @@ class ResumeView extends ConsumerWidget {
             childAspectRatio: aspectRatio,
           ),
           itemCount: kpis.length,
-          itemBuilder: (context, index) => _KpiCard(data: kpis[index]),
+          itemBuilder: (context, index) => KpiCard(data: kpis[index]),
         );
       },
     );
@@ -184,6 +183,7 @@ class ResumeView extends ConsumerWidget {
   }
 
   Widget _buildDesktopLayout(BuildContext context, ReportProvider provider) {
+    print(provider.salesData);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -210,102 +210,6 @@ class ResumeView extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// --- WIDGETS DE ESTILO Y GRÁFICOS (Copia el resto del archivo anterior aquí) ---
-// (Incluye _ChartContainer, _KpiCard, _LineChartWidget, _PieChartWidget, etc.)
-// Asegúrate de que _LineChartWidget reciba 'provider' y use sus datos.
-
-class _KpiData {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final String trend;
-  _KpiData(this.title, this.value, this.icon, this.color, this.trend);
-}
-
-class _KpiCard extends StatelessWidget {
-  final _KpiData data;
-
-  const _KpiCard({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: data.color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(data.icon, color: data.color, size: 20),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: data.trend.contains("+")
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  data.trend,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: data.trend.contains("+") ? Colors.green : Colors.red,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                data.value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                data.title,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
