@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/report/report_spots.dart';
+import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
 class ReportService {
   final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
@@ -103,6 +104,37 @@ class ReportService {
     } catch (e) {
       print(e.toString());
       throw Exception('Error de conexión al obtener las compras.');
+    }
+  }
+
+  Future<List<InventoryEfficiencyPoint>> getInventoryEfficiency(String filter) async {
+    final uri = Uri.parse('$_baseUrl/report/inventory_efficiency?period=$filter'); // Ojo: tu backend espera query param 'period', no 'filter' según tu código de backend anterior, si es 'filter' cámbialo aquí.
+    try {
+      final response = await _client.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': 'Bearer TU_TOKEN_JWT',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+
+        final List<dynamic> dataList = responseData['data'] as List<dynamic>;
+
+        return dataList
+            .map((item) => InventoryEfficiencyPoint.fromJson(item))
+            .toList();
+      } else {
+        throw Exception(
+          'Error al cargar eficiencia de inventario (Código: ${response.statusCode})',
+        );
+      }
+    } catch (e) {
+      print(e.toString());
+      throw Exception('Error de conexión al obtener eficiencia.');
     }
   }
 }
