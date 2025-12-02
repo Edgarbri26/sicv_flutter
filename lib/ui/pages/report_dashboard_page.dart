@@ -24,27 +24,72 @@ class ReportDashboardPage extends StatefulWidget {
   State<ReportDashboardPage> createState() => _ReportDashboardPageState();
 }
 
-class _ReportDashboardPageState extends State<ReportDashboardPage> {
+class _ReportDashboardPageState extends State<ReportDashboardPage>
+    with SingleTickerProviderStateMixin {
   /// Estado para rastrear la pestaña de navegación seleccionada (0 = Resumen).
   int _selectedIndex = 0;
+  late TabController _tabController;
 
   final List<MenuItemData> _pageMenuItems = [
-    MenuItemData(index: 0, label: 'Resumen', icon: Icons.dashboard_outlined),
-    MenuItemData(index: 1, label: 'Finanzas', icon: Icons.bar_chart_outlined),
+    MenuItemData(
+      index: 0,
+      label: 'Resumen',
+      icon: Icons.dashboard_outlined,
+      iconActive: Icons.dashboard,
+    ),
+    MenuItemData(
+      index: 1,
+      label: 'Finanzas',
+      icon: Icons.bar_chart_outlined,
+      iconActive: Icons.bar_chart,
+    ),
     MenuItemData(
       index: 2,
       label: 'Inventario',
       icon: Icons.inventory_2_outlined,
+      iconActive: Icons.inventory_2,
     ),
-    MenuItemData(index: 3, label: 'Empleados', icon: Icons.people_outline),
-    MenuItemData(index: 4, label: 'Clientes', icon: Icons.person_outline),
+    MenuItemData(
+      index: 3,
+      label: 'Empleados',
+      icon: Icons.people_outline,
+      iconActive: Icons.people,
+    ),
+    MenuItemData(
+      index: 4,
+      label: 'Clientes',
+      icon: Icons.person_outline,
+      iconActive: Icons.person,
+    ),
     MenuItemData(
       index: 5,
       label: 'Proveedores',
       icon: Icons.local_shipping_outlined,
+      iconActive: Icons.local_shipping,
     ),
-    MenuItemData(index: 6, label: 'Análisis', icon: Icons.analytics_outlined),
+    MenuItemData(
+      index: 6,
+      label: 'Análisis',
+      icon: Icons.analytics_outlined,
+      iconActive: Icons.analytics,
+    ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: _pageMenuItems.length,
+      vsync: this,
+      initialIndex: _selectedIndex,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   /// Lista de las vistas principales que se mostrarán.
   static const List<Widget> _mainViews = [
@@ -74,14 +119,32 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
               ? WideLayout(
                   controller: widget.controller,
                   sideNavigationMenu: SideNavigationMenu(
+                    onDestinationSelected: (index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                      _tabController.animateTo(index);
+                    },
+                    tabController: _tabController,
                     selectedIndex: _selectedIndex,
                     menuItems: _pageMenuItems,
                   ),
                   appbartitle: 'Dashboard de Reportes',
-                  child: _mainViews[_selectedIndex],
+                  child: TabBarView(
+                    controller: _tabController,
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
+                    children: _mainViews,
+                  ),
                 )
-              : _mainViews[_selectedIndex],
+              : TabBarView(
+                  controller: _tabController,
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
+                  children: _mainViews,
+                ),
 
+          // _mainViews[_selectedIndex],
           bottomNavigationBar: !isWide ? _buildMobileBottomNavigation() : null,
         );
       },
@@ -96,45 +159,54 @@ class _ReportDashboardPageState extends State<ReportDashboardPage> {
         setState(() {
           _selectedIndex = index;
         });
+        _tabController.animateTo(index);
       },
       // Fixed es mejor cuando hay 4+ items
       type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard_outlined),
-          activeIcon: Icon(Icons.dashboard),
-          label: 'Resumen',
+      items: [
+        ..._pageMenuItems.map(
+          (item) => BottomNavigationBarItem(
+            icon: Icon(item.icon),
+            activeIcon: Icon(item.iconActive),
+            label: item.label,
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart_outlined),
-          activeIcon: Icon(Icons.bar_chart),
-          label: 'Finanzas',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.inventory_2_outlined),
-          activeIcon: Icon(Icons.inventory_2),
-          label: 'Inventario',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          activeIcon: Icon(Icons.people),
-          label: 'Empleados',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          activeIcon: Icon(Icons.person),
-          label: 'Clientes',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.local_shipping_outlined),
-          activeIcon: Icon(Icons.local_shipping),
-          label: 'Proveedores',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.analytics_outlined),
-          activeIcon: Icon(Icons.analytics),
-          label: 'Análisis',
-        ),
+
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.dashboard_outlined),
+        //   activeIcon: Icon(Icons.dashboard),
+        //   label: 'Resumen',
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.bar_chart_outlined),
+        //   activeIcon: Icon(Icons.bar_chart),
+        //   label: 'Finanzas',
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.inventory_2_outlined),
+        //   activeIcon: Icon(Icons.inventory_2),
+        //   label: 'Inventario',
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.people_outline),
+        //   activeIcon: Icon(Icons.people),
+        //   label: 'Empleados',
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.person_outline),
+        //   activeIcon: Icon(Icons.person),
+        //   label: 'Clientes',
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.local_shipping_outlined),
+        //   activeIcon: Icon(Icons.local_shipping),
+        //   label: 'Proveedores',
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.analytics_outlined),
+        //   activeIcon: Icon(Icons.analytics),
+        //   label: 'Análisis',
+        // ),
       ],
     );
   }

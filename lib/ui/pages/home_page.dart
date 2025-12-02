@@ -29,9 +29,24 @@ class _HomePageState extends State<HomePage>
   int _selectedIndex = 0;
 
   final List<MenuItemData> _pageMenuItems = [
-    MenuItemData(icon: Icons.point_of_sale, label: 'Venta', index: 0),
-    MenuItemData(icon: Icons.shopping_cart, label: 'Compra', index: 1),
-    MenuItemData(icon: Icons.inventory, label: 'Inventario', index: 2),
+    MenuItemData(
+      icon: Icons.point_of_sale,
+      iconActive: Icons.point_of_sale,
+      label: 'Venta',
+      index: 0,
+    ),
+    MenuItemData(
+      icon: Icons.shopping_cart,
+      iconActive: Icons.shopping_cart,
+      label: 'Compra',
+      index: 1,
+    ),
+    MenuItemData(
+      icon: Icons.inventory,
+      iconActive: Icons.inventory,
+      label: 'Inventario',
+      index: 2,
+    ),
   ];
 
   final List<String> _screenTitles = [
@@ -98,6 +113,11 @@ class _HomePageState extends State<HomePage>
                   controller: widget.controller,
                   appbartitle: _screenTitles[_selectedIndex],
                   sideNavigationMenu: SideNavigationMenu(
+                    onDestinationSelected: (index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
                     selectedIndex: _selectedIndex,
                     // onDestinationSelected: _navigateToPage,
                     tabController: _tabController,
@@ -155,7 +175,7 @@ class _HomePageState extends State<HomePage>
       children: _screens,
     );
   }
-  
+
   /// Construye el BottomNavigationBar (solo para modo angosto).
   Widget _buildBottomNavBar() {
     return BottomNavigationBar(
