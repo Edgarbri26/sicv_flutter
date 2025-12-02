@@ -4,6 +4,8 @@ import 'package:sicv_flutter/core/theme/app_colors.dart'; // Asumo esta ruta
 
 class TextFieldApp extends StatelessWidget {
   final TextEditingController controller;
+  final TextInputAction? textInputAction;
+  final Function(String)? onFieldSubmitted;
   final String labelText;
   final IconData? prefixIcon;
   final Widget? suffixIcon; // Añadido para más flexibilidad (ej. contraseñas)
@@ -17,10 +19,13 @@ class TextFieldApp extends StatelessWidget {
   final VoidCallback? onTap;
   final bool? readOnly;
   final ValueChanged<String>? onChanged;
+  final FocusNode? focusNode;
 
   const TextFieldApp({
+    this.onFieldSubmitted,
     super.key,
     required this.controller,
+    this.textInputAction,
     required this.labelText,
     this.prefixIcon,
     this.suffixIcon,
@@ -34,6 +39,7 @@ class TextFieldApp extends StatelessWidget {
     this.onTap,
     this.readOnly = false,
     this.onChanged,
+    this.focusNode,
   });
 
   @override
@@ -41,6 +47,8 @@ class TextFieldApp extends StatelessWidget {
     return TextFormField(
       enabled: enabled,
       controller: controller,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       maxLines: maxLines,
@@ -55,6 +63,7 @@ class TextFieldApp extends StatelessWidget {
         color: AppColors.textPrimary, // Estilo del texto que escribes
       ),
       decoration: InputDecoration(
+        suffixIcon: suffixIcon,
         labelStyle: const TextStyle(
           fontSize: 16.0,
           color: AppColors.textSecondary,
