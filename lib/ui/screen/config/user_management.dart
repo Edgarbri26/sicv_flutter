@@ -4,7 +4,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/role_model.dart';
 import 'package:sicv_flutter/models/user/user_model.dart';
 import 'package:sicv_flutter/providers/role_provider.dart';
-import 'package:sicv_flutter/providers/user_management_provider.dart'; // El nuevo provider de gestión de usuarios
+import 'package:sicv_flutter/providers/user_management_provider.dart'; // El nuevo provider de gestión de usuario
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
@@ -19,7 +19,7 @@ class AdminUserManagementPage extends ConsumerStatefulWidget {
 }
 
 class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPage> {
-  // Estado local para filtros
+  // Estado local para filtro
   String _searchQuery = '';
   RoleModel? _selectedRoleFilter; 
 
@@ -39,7 +39,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
         onPressed: () {
-          // Solo abrimos el modal si ya cargaron los roles
+          // Solo abrimos el modal si ya cargaron los role
           rolesAsync.whenData((roles) {
             _showAddUserModal(context, roles);
           });
