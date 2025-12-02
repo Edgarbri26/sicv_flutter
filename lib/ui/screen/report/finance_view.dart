@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/purchase/purchase_model.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
+import 'package:sicv_flutter/models/sale/sale_summary_model.dart';
+import 'package:sicv_flutter/models/purchase/purchase_summary_model.dart';
 import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/providers/finance_provider.dart';
@@ -20,6 +22,7 @@ class FinancesView extends ConsumerStatefulWidget {
 class _FinancesViewState extends ConsumerState<FinancesView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isAscending = false; // Estado para el ordenamiento
 
   @override
   void initState() {
@@ -37,60 +40,98 @@ class _FinancesViewState extends ConsumerState<FinancesView>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // --- PESTAÑAS ---
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF3F4F6), // Cool grey
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            labelColor: AppColors.primary,
-            labelStyle: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              letterSpacing: 0.3,
-            ),
-            unselectedLabelColor: Colors.grey.shade600,
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-            dividerColor: Colors.transparent,
-            splashBorderRadius: BorderRadius.circular(20),
-            tabs: const [
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.trending_up, size: 18),
-                    SizedBox(width: 8),
-                    Text('Ventas'),
-                  ],
+        // --- PESTAÑAS Y FILTRO ---
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6), // Cool grey
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    labelColor: AppColors.primary,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      letterSpacing: 0.3,
+                    ),
+                    unselectedLabelColor: Colors.grey.shade600,
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                    dividerColor: Colors.transparent,
+                    splashBorderRadius: BorderRadius.circular(20),
+                    tabs: const [
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.trending_up, size: 18),
+                            SizedBox(width: 8),
+                            Text('Ventas'),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.trending_down, size: 18),
+                            SizedBox(width: 8),
+                            Text('Compras'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.trending_down, size: 18),
-                    SizedBox(width: 8),
-                    Text('Compras'),
-                  ],
+              const SizedBox(width: 12),
+              // --- BOTÓN DE ORDENAMIENTO ---
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                elevation: 2,
+                shadowColor: Colors.black.withOpacity(0.1),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isAscending = !_isAscending;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Icon(
+                      _isAscending
+                          ? Icons.arrow_upward_rounded
+                          : Icons.arrow_downward_rounded,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -123,6 +164,14 @@ class _FinancesViewState extends ConsumerState<FinancesView>
           );
         }
 
+        // Lógica de ordenamiento
+        final sortedSales = List<SaleSummaryModel>.from(sales);
+        sortedSales.sort((a, b) {
+          return _isAscending
+              ? a.soldAt.compareTo(b.soldAt)
+              : b.soldAt.compareTo(a.soldAt);
+        });
+
         return LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
@@ -137,11 +186,11 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
-                itemCount: sales.length,
+                itemCount: sortedSales.length,
                 itemBuilder: (context, index) {
-                  final saleSummary = sales[index];
+                  final saleSummary = sortedSales[index];
                   return _TransactionCard(
-                    title: saleSummary.sellerName,
+                    title: "Vendido por ${saleSummary.sellerName}",
                     amount: saleSummary.totalUsd,
                     amountBs: saleSummary.totalVes,
                     date: saleSummary.soldAt,
@@ -161,10 +210,10 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   horizontal: 16,
                   vertical: 12,
                 ),
-                itemCount: sales.length,
+                itemCount: sortedSales.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final saleSummary = sales[index];
+                  final saleSummary = sortedSales[index];
                   return _TransactionCard(
                     title: "Vendido por ${saleSummary.sellerName}",
                     amount: saleSummary.totalUsd,
@@ -200,6 +249,14 @@ class _FinancesViewState extends ConsumerState<FinancesView>
             Icons.shopping_bag_outlined,
           );
 
+        // Lógica de ordenamiento
+        final sortedPurchases = List<PurchaseSummaryModel>.from(purchases);
+        sortedPurchases.sort((a, b) {
+          return _isAscending
+              ? a.boughtAt.compareTo(b.boughtAt)
+              : b.boughtAt.compareTo(a.boughtAt);
+        });
+
         return LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
@@ -214,9 +271,9 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
-                itemCount: purchases.length,
+                itemCount: sortedPurchases.length,
                 itemBuilder: (context, index) {
-                  final purchase = purchases[index];
+                  final purchase = sortedPurchases[index];
                   return _TransactionCard(
                     title: "Compra #${purchase.purchaseId}",
                     amount: purchase.totalUsd,
@@ -239,12 +296,12 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   horizontal: 16,
                   vertical: 12,
                 ),
-                itemCount: purchases.length,
+                itemCount: sortedPurchases.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final purchase = purchases[index];
+                  final purchase = sortedPurchases[index];
                   return _TransactionCard(
-                    title: purchase.providerName,
+                    title: "Compra #${purchase.purchaseId}",
                     amount: purchase.totalUsd,
                     amountBs: purchase.totalVes,
                     date: purchase.boughtAt,

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
 
 class KpiData {
   final String title;
   final String value;
   final IconData icon;
   final Color color;
-  final String trend;
-  KpiData(this.title, this.value, this.icon, this.color, this.trend);
+  final String? trend;
+  KpiData(this.title, this.value, this.icon, this.color, [this.trend]);
 }
 
 class KpiCard extends StatelessWidget {
@@ -17,7 +18,7 @@ class KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSizes.spacingS),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -60,17 +61,19 @@ class KpiCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: data.trend.contains("+")
+                color: data.trend?.contains("+") ?? false
                     ? Colors.green.withOpacity(0.1)
                     : Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                data.trend,
+                data.trend ?? "",
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: data.trend.contains("+") ? Colors.green : Colors.red,
+                  color: data.trend?.contains("+") ?? false
+                      ? Colors.green
+                      : Colors.red,
                 ),
               ),
             ),
