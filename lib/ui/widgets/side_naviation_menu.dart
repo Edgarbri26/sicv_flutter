@@ -3,8 +3,8 @@ import 'package:sicv_flutter/models/icon_menu.dart';
 
 class SideNavigationMenu extends StatefulWidget {
   // 1. Inmutabilidad: Pasamos el estado necesario a través del constructor.
-  final int selectedIndex;
-  final ValueChanged<int>? onDestinationSelected;
+  final int? selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
   final List<MenuItemData> menuItems;
   final TabController? tabController;
   final PageController? pageController;
@@ -14,7 +14,7 @@ class SideNavigationMenu extends StatefulWidget {
   const SideNavigationMenu({
     super.key,
     required this.selectedIndex,
-    this.onDestinationSelected,
+    required this.onDestinationSelected,
     required this.menuItems,
     this.backgroundColor =
         Colors.white, // Valor por defecto o AppColors.background
@@ -32,7 +32,7 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.selectedIndex;
+    _currentIndex = widget.selectedIndex ?? 0;
   }
 
   @override
@@ -40,24 +40,7 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
     super.didUpdateWidget(oldWidget);
     // Si el índice externo cambia, sincronizamos el estado interno
     if (oldWidget.selectedIndex != widget.selectedIndex) {
-      _currentIndex = widget.selectedIndex;
-    }
-  }
-
-  void _navigateToPage(int index) {
-    if (_currentIndex == index) return;
-    setState(() => _currentIndex = index);
-    if (mounted) {
-      // Sincroniza el TabController
-      widget.tabController?.animateTo(index);
-
-      if (widget.pageController?.hasClients ?? false) {
-        widget.pageController?.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      _currentIndex = widget.selectedIndex ?? 0;
     }
   }
 
@@ -71,7 +54,7 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
 
       // Estado
       selectedIndex: _currentIndex,
-      onDestinationSelected: _navigateToPage,
+      onDestinationSelected: widget.onDestinationSelected,
 
       // Mapeo de Destinos
       // Optimizamos el rendimiento generando la lista dentro del build
@@ -79,9 +62,10 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
         return NavigationRailDestination(
           icon: Icon(item.icon),
           selectedIcon: Icon(
-            item.icon,
+            item.iconActive,
             color: Theme.of(context).primaryColor,
           ), // Feedback visual mejorado
+
           label: Text(item.label),
         );
       }).toList(),

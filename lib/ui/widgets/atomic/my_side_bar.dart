@@ -5,14 +5,14 @@ import 'package:sidebarx/sidebarx.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa los NUEVOS providers
-import 'package:sicv_flutter/providers/auth_provider.dart'; 
+import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 
 class MySideBar extends ConsumerWidget {
   const MySideBar({super.key, required this.controller});
 
   final SidebarXController controller;
-  
+
   // Colores (puedes dejarlos aquí o moverlos al tema global)
   final Color primaryColor = AppColors.primary;
   final Color sidebarBackgroundColor = AppColors.background;
@@ -24,11 +24,12 @@ class MySideBar extends ConsumerWidget {
     final userPermissions = ref.watch(currentUserPermissionsProvider);
 
     print("🧐 LISTA DE PERMISOS QUE LLEGARON: $userPermissions");
-    
+
     // Verificamos si tiene el permiso específico para ver Movimientos
     // Asegúrate de que 'VIEW_MOVEMENTS' (o 'all:permissions') coincida con tu BD
-    final hasAccessMovements = userPermissions.contains(AppPermissions.allPermissions) || 
-                               userPermissions.contains(AppPermissions.readMovements);
+    final hasAccessMovements =
+        userPermissions.contains(AppPermissions.allPermissions) ||
+        userPermissions.contains(AppPermissions.readMovements);
 
     return SidebarX(
       controller: controller,
@@ -50,7 +51,10 @@ class MySideBar extends ConsumerWidget {
         iconTheme: IconThemeData(color: AppColors.textSecondary, size: 22),
         selectedIconTheme: const IconThemeData(color: Colors.white, size: 22),
         hoverColor: primaryColor.withOpacity(0.1),
-        hoverTextStyle: TextStyle(color: primaryColor, fontWeight: FontWeight.w600),
+        hoverTextStyle: TextStyle(
+          color: primaryColor,
+          fontWeight: FontWeight.w600,
+        ),
         itemTextPadding: const EdgeInsets.only(left: 15),
         selectedItemTextPadding: const EdgeInsets.only(left: 15),
         selectedItemDecoration: BoxDecoration(
@@ -82,16 +86,11 @@ class MySideBar extends ConsumerWidget {
           height: 100,
           child: const Padding(
             padding: EdgeInsets.all(16.0),
-            child: Icon(Icons.person, size: 40, color: Colors.grey), 
+            child: Icon(Icons.person, size: 40, color: Colors.grey),
           ),
         );
       },
       items: [
-        SidebarXItem(
-          icon: Icons.home,
-          label: 'Inicio',
-          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
-        ),
         SidebarXItem(
           icon: Icons.point_of_sale,
           label: 'Ventas',
@@ -100,25 +99,31 @@ class MySideBar extends ConsumerWidget {
         SidebarXItem(
           icon: Icons.shopping_cart,
           label: 'Compras',
-          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.purchase),
+          onTap: () =>
+              Navigator.pushReplacementNamed(context, AppRoutes.purchase),
         ),
         SidebarXItem(
           icon: Icons.inventory,
           label: 'Inventario',
-          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.inventory),
+          onTap: () =>
+              Navigator.pushReplacementNamed(context, AppRoutes.inventory),
         ),
         SidebarXItem(
           icon: Icons.assessment,
           label: 'Reportes',
-          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.reportDashboard),
+          onTap: () => Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.reportDashboard,
+          ),
         ),
-        
+
         // --- ITEM CONDICIONAL ---
         if (hasAccessMovements)
           SidebarXItem(
             icon: Icons.compare_arrows,
             label: 'Movimientos',
-            onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.movements),
+            onTap: () =>
+                Navigator.pushReplacementNamed(context, AppRoutes.movements),
           ),
       ],
       footerItems: [
@@ -133,9 +138,13 @@ class MySideBar extends ConsumerWidget {
           onTap: () async {
             // 2. LOGOUT USANDO EL NUEVO AUTH PROVIDER
             await ref.read(authProvider.notifier).logout();
-            
+
             if (!context.mounted) return;
-            Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.login,
+              (route) => false,
+            );
           },
         ),
       ],
