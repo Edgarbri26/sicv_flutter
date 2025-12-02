@@ -19,18 +19,19 @@ class MySideBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. OBTENER PERMISOS DEL USUARIO ACTUAL (Set<String>)
-    // Esto se actualiza automáticamente si cambias de usuario.
     final userPermissions = ref.watch(currentUserPermissionsProvider);
 
     print("🧐 LISTA DE PERMISOS QUE LLEGARON: $userPermissions");
 
-    // Verificamos si tiene el permiso específico para ver Movimientos
-    // Asegúrate de que 'VIEW_MOVEMENTS' (o 'all:permissions') coincida con tu BD
-    final hasAccessMovements =
-        userPermissions.contains(AppPermissions.allPermissions) ||
-        userPermissions.contains(AppPermissions.readMovements);
-
+    final hasAccessMovements = userPermissions.can(AppPermissions.readMovements);
+    
+    final hasAccessReports = userPermissions.can(AppPermissions.readReports); 
+    
+    final hasAccessProducts = userPermissions.can(AppPermissions.readProducts);
+    
+    final hasAccessPurchases = userPermissions.can(AppPermissions.createPurchase);
+    
+    final hasAccessSales = userPermissions.can(AppPermissions.createSale);
     return SidebarX(
       controller: controller,
       theme: SidebarXTheme(
@@ -91,33 +92,39 @@ class MySideBar extends ConsumerWidget {
         );
       },
       items: [
-        SidebarXItem(
-          icon: Icons.point_of_sale,
-          label: 'Ventas',
-          onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.sales),
-        ),
-        SidebarXItem(
-          icon: Icons.shopping_cart,
-          label: 'Compras',
-          onTap: () =>
-              Navigator.pushReplacementNamed(context, AppRoutes.purchase),
-        ),
-        SidebarXItem(
-          icon: Icons.inventory,
-          label: 'Inventario',
-          onTap: () =>
-              Navigator.pushReplacementNamed(context, AppRoutes.inventory),
-        ),
-        SidebarXItem(
-          icon: Icons.assessment,
-          label: 'Reportes',
-          onTap: () => Navigator.pushReplacementNamed(
-            context,
-            AppRoutes.reportDashboard,
+        if (hasAccessSales)
+          SidebarXItem(
+            icon: Icons.point_of_sale,
+            label: 'Ventas',
+            onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.sales),
           ),
-        ),
 
-        // --- ITEM CONDICIONAL ---
+        if (hasAccessPurchases)
+          SidebarXItem(
+            icon: Icons.shopping_cart,
+            label: 'Compras',
+            onTap: () =>
+                Navigator.pushReplacementNamed(context, AppRoutes.purchase),
+          ),
+
+        if (hasAccessProducts)
+          SidebarXItem(
+            icon: Icons.inventory,
+            label: 'Inventario',
+            onTap: () =>
+                Navigator.pushReplacementNamed(context, AppRoutes.inventory),
+          ),
+
+        if (hasAccessReports)
+          SidebarXItem(
+            icon: Icons.assessment,
+            label: 'Reportes',
+            onTap: () => Navigator.pushReplacementNamed(
+              context,
+              AppRoutes.reportDashboard,
+            ),
+          ),
+
         if (hasAccessMovements)
           SidebarXItem(
             icon: Icons.compare_arrows,

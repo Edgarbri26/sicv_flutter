@@ -103,8 +103,28 @@ class AppPermissions {
   // ==========================================================
 
   /// Acceso al Dashboard de reportes y estadísticas.
-  static const String viewReports = "view:reports";
+  static const String readReports = "read:reports";
   
   /// Permiso maestro ("Dios"). Tiene acceso a todo sin restricciones.
   static const String allPermissions = "all:permissions";
+
+}
+
+extension PermissionCheck on Set<String> {
+  
+  bool can(String permissionCode) {
+    // Aquí centralizas la lógica:
+    // Retorna TRUE si tiene el permiso específico O si tiene el permiso maestro
+    return contains(permissionCode) || 
+            contains(AppPermissions.allPermissions);
+  }
+
+  // Opcional: Para verificar varios a la vez (tipo "si tiene al menos uno de estos")
+  bool canAny(List<String> permissions) {
+    if (contains(AppPermissions.allPermissions)) return true;
+    for (var p in permissions) {
+      if (contains(p)) return true;
+    }
+    return false;
+  }
 }
