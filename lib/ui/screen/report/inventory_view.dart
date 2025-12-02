@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-// 1. IMPORTA TUS MODELOS
+// 1. IMPORTA EL MODELO DE EFICIENCIA
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
-
 import 'package:sicv_flutter/providers/report/inventory_provider.dart'; 
 
 class InventoryReportView extends ConsumerWidget {
@@ -12,18 +11,18 @@ class InventoryReportView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado del provider que definimos en el otro archivo
     final inventoryStateAsync = ref.watch(inventoryReportProvider);
     final currentFilter = ref.watch(inventoryFilterProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: inventoryStateAsync.when(
-        // ESTADO: CARGANDO
         loading: () => const Center(
           child: CircularProgressIndicator(color: Colors.blue),
         ),
-        // ESTADO: ERROR
+        // /////////////////////////////////////////////
+        //   WIDGET DE ERROR PERSONALIZADO
+        /////////////////////////////////////////////////
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -31,7 +30,7 @@ class InventoryReportView extends ConsumerWidget {
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 16),
               Text(
-                'Ocurrió un error al cargar el reporte:\n$err',
+                'Error al cargar el reporte:\n$err',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey),
               ),
@@ -44,7 +43,6 @@ class InventoryReportView extends ConsumerWidget {
             ],
           ),
         ),
-        // ESTADO: DATOS LISTOS
         data: (data) => SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -53,31 +51,25 @@ class InventoryReportView extends ConsumerWidget {
               _buildHeader(context, ref, currentFilter),
               const SizedBox(height: 32),
               
-              // Aquí pasamos los datos reales al grid
+              // Grid de KPIs
               _buildKpiGrid(context, data),
               
               const SizedBox(height: 24),
 
-              // --- GRÁFICO DE EFICIENCIA (DATOS REALES) ---
+              // --- GRÁFICO DE EFICIENCIA ---
               _ChartContainer(
                 title: "Matriz Rentabilidad vs Volumen",
                 subtitle: "Estrellas (Verde), Vacas (Azul), Interrogantes (Naranja), Perros (Rojo)",
                 child: SizedBox(
                   height: 350,
                   child: data.efficiencyData.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "No hay datos de ventas en este periodo.\nIntenta cambiar el filtro o registrar ventas.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
+                      ? const Center(child: Text("No hay datos de ventas en este periodo"))
                       : _InventoryEfficiencyChart(points: data.efficiencyData),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Layout Responsivo para los gráficos restantes (Mocks o futuros endpoints)
+              // Layout Responsivo
               LayoutBuilder(
                 builder: (context, constraints) {
                   if (constraints.maxWidth > 900) {
@@ -94,7 +86,7 @@ class InventoryReportView extends ConsumerWidget {
     );
   }
 
-  // --- Header con Dropdown ---
+  // --- Header ---
   Widget _buildHeader(BuildContext context, WidgetRef ref, String currentFilter) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,7 +127,6 @@ class InventoryReportView extends ConsumerWidget {
               ],
               onChanged: (val) {
                 if (val != null) {
-                  // Actualizamos el filtro en el provider
                   ref.read(inventoryFilterProvider.notifier).state = val;
                 }
               },
@@ -146,43 +137,18 @@ class InventoryReportView extends ConsumerWidget {
     );
   }
 
-  // --- Grid de KPIs (CON DATOS REALES) ---
+  // --- Grid KPIs ---
   Widget _buildKpiGrid(BuildContext context, InventoryState data) {
     final kpis = [
-      // 1. Valor Real (Viene del Backend)
-      _KpiInfo(
-        "Valor Inventario", 
-        "\$${data.totalInventoryValue}", // Ya viene formateado del provider
-        Icons.monetization_on_outlined, 
-        Colors.teal
-      ),
-      // 2. Total Items Real (Viene del Backend)
-      _KpiInfo(
-        "Total Items", 
-        "${data.totalItems}", 
-        Icons.inventory_2_outlined, 
-        Colors.blue
-      ),
-      // 3. Alertas (Mock/Calculado)
-      _KpiInfo(
-        "Alertas Stock", 
-        "${data.lowStockItems.length}", // Usamos el tamaño de la lista
-        Icons.warning_amber_rounded, 
-        Colors.red
-      ),
-      // 4. Rotación (Mock)
-      _KpiInfo(
-        "Rotación Mes", 
-        data.monthlyTurnover, 
-        Icons.sync_alt, 
-        Colors.orange
-      ),
+      _KpiInfo("Valor Inventario", "\$${data.totalInventoryValue}", Icons.monetization_on_outlined, Colors.teal),
+      _KpiInfo("Total Items", "${data.totalItems}", Icons.inventory_2_outlined, Colors.blue),
+      _KpiInfo("Alertas Stock", "${data.lowStockItems.length}", Icons.warning_amber_rounded, Colors.red),
+      _KpiInfo("Rotación Mes", data.monthlyTurnover, Icons.sync_alt, Colors.orange),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
       int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
       double ratio = constraints.maxWidth < 600 ? 1.5 : 2.2;
-      
       return GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -198,7 +164,7 @@ class InventoryReportView extends ConsumerWidget {
     });
   }
 
-  // --- Layouts Responsivos ---
+  // --- Layouts ---
   Widget _buildDesktopLayout(BuildContext context, InventoryState data) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,22 +175,24 @@ class InventoryReportView extends ConsumerWidget {
             children: [
               _ChartContainer(
                 title: "Distribución por Categoría",
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: _CategoryPieChart(categories: data.categoryDistribution),
-                      ),
+                child: data.categoryDistribution.isEmpty 
+                  ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay datos de categorías")))
+                  : Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: _CategoryPieChart(categories: data.categoryDistribution),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          flex: 2,
+                          child: _CategoryLegend(categories: data.categoryDistribution),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      flex: 2,
-                      child: _CategoryLegend(categories: data.categoryDistribution),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 24),
               _ChartContainer(
@@ -252,16 +220,18 @@ class InventoryReportView extends ConsumerWidget {
       children: [
         _ChartContainer(
           title: "Distribución por Categoría",
-          child: Column(
-            children: [
-              AspectRatio(
-                aspectRatio: 1.3,
-                child: _CategoryPieChart(categories: data.categoryDistribution),
+          child: data.categoryDistribution.isEmpty 
+            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay datos de categorías")))
+            : Column(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 1.3,
+                    child: _CategoryPieChart(categories: data.categoryDistribution),
+                  ),
+                  const SizedBox(height: 20),
+                  _CategoryLegend(categories: data.categoryDistribution),
+                ],
               ),
-              const SizedBox(height: 20),
-              _CategoryLegend(categories: data.categoryDistribution),
-            ],
-          ),
         ),
         const SizedBox(height: 24),
         _ChartContainer(
@@ -279,7 +249,7 @@ class InventoryReportView extends ConsumerWidget {
 }
 
 // ==========================================
-// 4. WIDGETS AUXILIARES (UI Components)
+// 4. WIDGETS AUXILIARES
 // ==========================================
 
 class _InventoryEfficiencyChart extends StatelessWidget {
@@ -296,11 +266,9 @@ class _InventoryEfficiencyChart extends StatelessWidget {
       if (p.totalProfit > maxY) maxY = p.totalProfit;
     }
     
-    // Evitar ceros para que no rompa el gráfico
     maxX = (maxX <= 0 ? 10 : maxX) * 1.2;
     maxY = (maxY <= 0 ? 100 : maxY) * 1.2;
 
-    // Umbrales para colores (40% del máximo como referencia visual)
     final double targetSales = maxX * 0.4;   
     final double targetProfit = maxY * 0.4; 
 
@@ -310,7 +278,6 @@ class _InventoryEfficiencyChart extends StatelessWidget {
         maxX: maxX, 
         minY: 0,
         maxY: maxY, 
-        
         gridData: FlGridData(
           show: true,
           drawVerticalLine: true,
@@ -320,10 +287,9 @@ class _InventoryEfficiencyChart extends StatelessWidget {
           getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
           getDrawingVerticalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
         ),
-        
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
-            axisNameWidget: const Text("Cantidad Vendida (Unidades)", style: TextStyle(fontSize: 10)),
+            axisNameWidget: const Text("Cantidad Vendida", style: TextStyle(fontSize: 10)),
             sideTitles: SideTitles(
               showTitles: true, 
               reservedSize: 30,
@@ -331,7 +297,7 @@ class _InventoryEfficiencyChart extends StatelessWidget {
             ),
           ),
           leftTitles: AxisTitles(
-            axisNameWidget: const Text("Ganancia Total (\$)", style: TextStyle(fontSize: 10)),
+            axisNameWidget: const Text("Ganancia (\$)", style: TextStyle(fontSize: 10)),
             sideTitles: SideTitles(
               showTitles: true, 
               reservedSize: 45,
@@ -341,24 +307,16 @@ class _InventoryEfficiencyChart extends StatelessWidget {
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
-        
         borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.withOpacity(0.1))),
-
         scatterSpots: points.map((point) {
           Color color;
-          // Lógica de colores (BCG Matrix aproximada)
           bool highSales = point.quantitySold >= targetSales;
           bool highProfit = point.totalProfit >= targetProfit;
 
-          if (highSales && highProfit) {
-            color = Colors.green; // ESTRELLA
-          } else if (highSales && !highProfit) {
-            color = Colors.blue;  // VACA
-          } else if (!highSales && highProfit) {
-            color = Colors.orange; // INTERROGANTE
-          } else {
-            color = Colors.red;    // PERRO
-          }
+          if (highSales && highProfit) color = Colors.green;
+          else if (highSales && !highProfit) color = Colors.blue;
+          else if (!highSales && highProfit) color = Colors.orange;
+          else color = Colors.red;
 
           return ScatterSpot(
             point.quantitySold, 
@@ -370,21 +328,18 @@ class _InventoryEfficiencyChart extends StatelessWidget {
             ),
           );
         }).toList(),
-
         scatterTouchData: ScatterTouchData(
           enabled: true,
           touchTooltipData: ScatterTouchTooltipData(
             getTooltipColor: (spot) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
               try {
-                 // Buscamos el punto más cercano para mostrar el nombre
                  final match = points.firstWhere(
                    (p) => (p.quantitySold - spot.x).abs() < 0.1 && (p.totalProfit - spot.y).abs() < 0.1, 
                    orElse: () => InventoryEfficiencyPoint(name: "Item", quantitySold: 0, totalProfit: 0)
                  );
-                 
                  return XAxisTooltipItem(
-                   text: "${match.name}\nVolumen: ${spot.x.toInt()}\nGanancia: \$${spot.y.toStringAsFixed(2)}",
+                   text: "${match.name}\nVol: ${spot.x.toInt()} | Gan: \$${spot.y.toStringAsFixed(2)}",
                    textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                  );
               } catch (e) {
@@ -551,6 +506,8 @@ class _CategoryLegend extends StatelessWidget {
   }
 }
 
+// Estos dos (TopProducts y LowStock) siguen usando mocks por ahora, 
+// pero están preparados para recibir datos reales del provider cuando los conectes.
 class _TopProductsList extends StatelessWidget {
   final List<ProductMetric> products;
   const _TopProductsList({required this.products});

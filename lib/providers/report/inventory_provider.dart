@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:intl/intl.dart'; // Asegúrate de tener intl en pubspec.yaml para formatear moneda
+import 'package:intl/intl.dart'; 
 import 'package:sicv_flutter/services/report_service.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
-// --- CLASES DE DATOS AUXILIARES ---
+// --- CLASES DE DATOS ---
 class CategoryData {
   final String name;
-  final double value;
+  final double value; // Aquí guardaremos el PORCENTAJE para el gráfico
   final Color color;
   CategoryData(this.name, this.value, this.color);
 }
@@ -31,13 +31,13 @@ class StockAlert {
 class InventoryState {
   // Datos Reales
   final List<InventoryEfficiencyPoint> efficiencyData;
-  final String totalInventoryValue; // Ahora viene del backend
-  final int totalItems;             // Ahora viene del backend
+  final String totalInventoryValue;
+  final int totalItems;
+  final List<CategoryData> categoryDistribution; // AHORA ES REAL
   
-  // Datos Mock (Aún pendientes de endpoint)
+  // Datos Mock (Pendientes de endpoint)
   final int lowStockAlerts;
   final String monthlyTurnover;
-  final List<CategoryData> categoryDistribution;
   final List<ProductMetric> topProducts;
   final List<StockAlert> lowStockItems;
 
@@ -45,15 +45,15 @@ class InventoryState {
     required this.efficiencyData,
     required this.totalInventoryValue,
     required this.totalItems,
-    this.lowStockAlerts = 5, // Mock
-    this.monthlyTurnover = "18%", // Mock
-    this.categoryDistribution = const [],
+    required this.categoryDistribution,
+    this.lowStockAlerts = 5,
+    this.monthlyTurnover = "18%",
     this.topProducts = const [],
     this.lowStockItems = const [],
   });
 }
 
-// --- PROVIDERS ---
+// --- PROVIDER ---
 
 final inventoryFilterProvider = StateProvider<String>((ref) => 'month');
 
@@ -61,34 +61,46 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref)
   final filter = ref.watch(inventoryFilterProvider);
   final service = ReportService();
 
-  // EJECUTAMOS 3 PETICIONES EN PARALELO PARA MAYOR VELOCIDAD
+  // EJECUTAMOS 4 PETICIONES EN PARALELO
   final results = await Future.wait([
-    service.getInventoryEfficiency(filter), // [0] Lista de Puntos
-    service.getInventoryValue(),            // [1] Valor en USD (double)
-    service.getTotalItems(),                // [2] Total Items (int)
+    service.getInventoryEfficiency(filter), // [0]
+    service.getInventoryValue(),            // [1]
+    service.getTotalItems(),                // [2]
+    service.getInventoryByCategory(),       // [3] NUEVO
   ]);
 
-  // Extraemos los resultados
+  // Extraemos resultados
   final efficiencyData = results[0] as List<InventoryEfficiencyPoint>;
   final inventoryValue = results[1] as double;
   final totalItems = results[2] as int;
+  final categoryRawData = results[3] as List<Map<String, dynamic>>;
 
-  // Formateador para moneda (ej: 1,234.56)
+  // Helper para convertir Hex String (#RRGGBB) a Color
+  Color parseColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  // Mapeamos la respuesta del backend a CategoryData
+  final categoryDistribution = categoryRawData.map((item) {
+    return CategoryData(
+      item['name'] as String,
+      (item['percentage'] as num).toDouble(), // Usamos el porcentaje para el gráfico
+      parseColor(item['color'] as String),
+    );
+  }).toList();
+
   final currencyFormat = NumberFormat("#,##0.00", "en_US");
 
   return InventoryState(
-    // Inyectamos datos reales
     efficiencyData: efficiencyData,
     totalInventoryValue: currencyFormat.format(inventoryValue),
     totalItems: totalItems,
+    categoryDistribution: categoryDistribution, // Datos reales inyectados
     
-    // --- MOCKS ---
-    categoryDistribution: [
-      CategoryData("Electrónica", 40, const Color(0xFF6366F1)),
-      CategoryData("Ropa", 30, const Color(0xFF3B82F6)),
-      CategoryData("Hogar", 15, const Color(0xFF10B981)),
-      CategoryData("Otros", 15, const Color(0xFF9CA3AF)),
-    ],
+    // Mocks restantes
     topProducts: [
       ProductMetric("Laptop Dell G15", 120, 0.9),
       ProductMetric("iPhone 13 Pro", 95, 0.75),

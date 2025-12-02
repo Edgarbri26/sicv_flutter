@@ -176,4 +176,25 @@ class ReportService {
       throw Exception('Error de conexión al obtener conteo de items.');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getInventoryByCategory() async {
+    final uri = Uri.parse('$_baseUrl/report/inventory_by_category');
+    try {
+      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        // El backend devuelve data: [{ name: "...", value: 100, percentage: 10, color: "#..." }]
+        final List<dynamic> data = responseData['data'] as List<dynamic>;
+        
+        // Retornamos la lista de mapas casteada correctamente
+        return data.map((e) => e as Map<String, dynamic>).toList();
+      } else {
+        throw Exception('Error al cargar inventario por categoría');
+      }
+    } catch (e) {
+      print(e.toString());
+      throw Exception('Error de conexión al obtener categorías.');
+    }
+  }
 }
