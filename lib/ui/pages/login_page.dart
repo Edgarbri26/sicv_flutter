@@ -48,10 +48,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       // 4. Llamar al Provider
       // Usamos ref.read porque es un evento puntual (tap), no una escucha activa
-      final success = await ref.read(authProvider.notifier).login(
-            _userCtrl.text.trim(),
-            _passCtrl.text,
-          );
+      final success = await ref
+          .read(authProvider.notifier)
+          .login(_userCtrl.text.trim(), _passCtrl.text);
 
       // 5. Verificar si el widget sigue montado antes de usar 'context'
       if (!mounted) return;
@@ -103,7 +102,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       elevation: 8,
                       shadowColor: Colors.black26,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(40),
                         child: _buildLoginForm(),
@@ -117,7 +117,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             // Diseño Móvil
             return Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
                 child: _buildLoginForm(),
               ),
             );
@@ -146,7 +149,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               color: primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(Icons.lock_person_rounded, color: primaryColor, size: 40),
+            child: Icon(
+              Icons.lock_person_rounded,
+              color: primaryColor,
+              size: 40,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -169,6 +176,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
           // 3. Inputs
           TextFieldApp(
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
             controller: _userCtrl,
             labelText: 'Usuario',
             prefixIcon: Icons.person_outline,
@@ -181,6 +190,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           const SizedBox(height: 20),
 
           TextFieldApp(
+            textInputAction: TextInputAction.done,
+
+            // 4. Al dar Enter aquí, ejecutamos el Submit directamente
+            onFieldSubmitted: (_) => _submit(),
             controller: _passCtrl,
             labelText: 'Contraseña',
             prefixIcon: Icons.lock_outline,
@@ -192,29 +205,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             },
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: Colors.grey,
               ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
 
-          // 4. Olvidé contraseña (Alineado a la derecha)
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                // TODO: Implementar navegación a recuperación de contraseña
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Contacta al administrador para restablecer.')),
-                );
-              },
-              child: Text(
-                '¿Olvidaste tu contraseña?',
-                style: TextStyle(color: primaryColor, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
           const SizedBox(height: 24),
 
           // 5. Botón de Acción
