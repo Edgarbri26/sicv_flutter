@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
+import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _darkModeEnabled = true;
   bool _notificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
+    final userPermissions = ref.watch(currentUserPermissionsProvider);
+
+    final hasUserPermission = userPermissions.contains(
+      AppPermissions.manageUsers,
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -140,13 +149,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.admin_panel_settings,
                       routeName: AppRoutes.roles,
                     ),
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Usuarios del Sistema',
-                      subtitle: 'Agregar/editar/eliminar usuarios',
-                      icon: Icons.account_circle,
-                      routeName: AppRoutes.users,
-                    ),
+                    if (hasUserPermission)
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Usuarios del Sistema',
+                        subtitle: 'Agregar/editar/eliminar usuarios',
+                        icon: Icons.account_circle,
+                        routeName: AppRoutes.users,
+                      ),
                     _buildConfigTile(
                       context: context,
                       title: 'Clientes del Sistema',
