@@ -137,4 +137,43 @@ class ReportService {
       throw Exception('Error de conexión al obtener eficiencia.');
     }
   }
+
+  Future<double> getInventoryValue() async {
+    final uri = Uri.parse('$_baseUrl/report/inventory_value');
+    try {
+      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> data = responseData['data'] as Map<String, dynamic>;
+        // El backend devuelve { "total_value_usd": 1234.50, "currency": "USD" }
+        return (data['total_value_usd'] as num).toDouble();
+      } else {
+        throw Exception('Error al cargar valor de inventario');
+      }
+    } catch (e) {
+      print(e.toString());
+      throw Exception('Error de conexión al obtener valor de inventario.');
+    }
+  }
+
+  // 2. Obtener Total de Items Físicos
+  Future<int> getTotalItems() async {
+    final uri = Uri.parse('$_baseUrl/report/total_inventory_items');
+    try {
+      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> data = responseData['data'] as Map<String, dynamic>;
+        // El backend devuelve { "total_items": 150 }
+        return data['total_items'] as int;
+      } else {
+        throw Exception('Error al cargar conteo de items');
+      }
+    } catch (e) {
+      print(e.toString());
+      throw Exception('Error de conexión al obtener conteo de items.');
+    }
+  }
 }

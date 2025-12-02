@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:sicv_flutter/services/report_service.dart'; // Importa tu servicio
+import 'package:intl/intl.dart'; // Asegúrate de tener intl en pubspec.yaml para formatear moneda
+import 'package:sicv_flutter/services/report_service.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
-// --- CLASES DE DATOS AUXILIARES (Para lo que aún no tiene endpoint) ---
+// --- CLASES DE DATOS AUXILIARES ---
 class CategoryData {
   final String name;
   final double value;
@@ -30,10 +31,10 @@ class StockAlert {
 class InventoryState {
   // Datos Reales
   final List<InventoryEfficiencyPoint> efficiencyData;
+  final String totalInventoryValue; // Ahora viene del backend
+  final int totalItems;             // Ahora viene del backend
   
-  // Datos Mock (Hasta que tengas endpoints para ellos)
-  final String totalInventoryValue;
-  final int totalItems;
+  // Datos Mock (Aún pendientes de endpoint)
   final int lowStockAlerts;
   final String monthlyTurnover;
   final List<CategoryData> categoryDistribution;
@@ -42,34 +43,46 @@ class InventoryState {
 
   InventoryState({
     required this.efficiencyData,
-    this.totalInventoryValue = "45,230.00", // Mock
-    this.totalItems = 1450, // Mock
+    required this.totalInventoryValue,
+    required this.totalItems,
     this.lowStockAlerts = 5, // Mock
     this.monthlyTurnover = "18%", // Mock
-    this.categoryDistribution = const [], // Mock se llena abajo
-    this.topProducts = const [], // Mock se llena abajo
-    this.lowStockItems = const [], // Mock se llena abajo
+    this.categoryDistribution = const [],
+    this.topProducts = const [],
+    this.lowStockItems = const [],
   });
 }
 
 // --- PROVIDERS ---
 
-// 1. Provider para el filtro de tiempo (week, month, year)
 final inventoryFilterProvider = StateProvider<String>((ref) => 'month');
 
-// 2. Provider que trae los datos
 final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref) async {
   final filter = ref.watch(inventoryFilterProvider);
   final service = ReportService();
 
-  // 1. Obtenemos los datos reales del backend
-  final efficiencyData = await service.getInventoryEfficiency(filter);
+  // EJECUTAMOS 3 PETICIONES EN PARALELO PARA MAYOR VELOCIDAD
+  final results = await Future.wait([
+    service.getInventoryEfficiency(filter), // [0] Lista de Puntos
+    service.getInventoryValue(),            // [1] Valor en USD (double)
+    service.getTotalItems(),                // [2] Total Items (int)
+  ]);
 
-  // 2. Retornamos el estado mezclando datos reales y mocks
+  // Extraemos los resultados
+  final efficiencyData = results[0] as List<InventoryEfficiencyPoint>;
+  final inventoryValue = results[1] as double;
+  final totalItems = results[2] as int;
+
+  // Formateador para moneda (ej: 1,234.56)
+  final currencyFormat = NumberFormat("#,##0.00", "en_US");
+
   return InventoryState(
+    // Inyectamos datos reales
     efficiencyData: efficiencyData,
+    totalInventoryValue: currencyFormat.format(inventoryValue),
+    totalItems: totalItems,
     
-    // --- MOCKS (Puedes conectar más endpoints aquí luego) ---
+    // --- MOCKS ---
     categoryDistribution: [
       CategoryData("Electrónica", 40, const Color(0xFF6366F1)),
       CategoryData("Ropa", 30, const Color(0xFF3B82F6)),

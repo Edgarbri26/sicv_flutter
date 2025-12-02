@@ -1,113 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter_riverpod/legacy.dart';
-// IMPORTANTE: Asegúrate de importar tu servicio real aquí
-import 'package:sicv_flutter/services/report_service.dart';
+
+// 1. IMPORTA TUS MODELOS
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
-// ==========================================
-// 1. MODELOS DE DATOS
-// ==========================================
-// Modelos Mock (Datos simulados para el resto de la vista)
-class CategoryData {
-  final String name;
-  final double value;
-  final Color color;
-  CategoryData(this.name, this.value, this.color);
-}
-
-class ProductMetric {
-  final String name;
-  final int soldCount;
-  final double percentage;
-  ProductMetric(this.name, this.soldCount, this.percentage);
-}
-
-class StockAlert {
-  final String name;
-  final int quantity;
-  final String level;
-  StockAlert(this.name, this.quantity, this.level);
-}
-
-// ==========================================
-// 2. ESTADO Y PROVIDERS (Riverpod)
-// ==========================================
-
-class InventoryState {
-  // Datos Reales
-  final List<InventoryEfficiencyPoint> efficiencyData;
-  
-  // Datos Mock (Falsos, para rellenar la UI mientras haces los otros endpoints)
-  final String totalInventoryValue;
-  final int totalItems;
-  final int lowStockAlerts;
-  final String monthlyTurnover;
-  final List<CategoryData> categoryDistribution;
-  final List<ProductMetric> topProducts;
-  final List<StockAlert> lowStockItems;
-
-  InventoryState({
-    required this.efficiencyData,
-    this.totalInventoryValue = "45,230.00",
-    this.totalItems = 1450,
-    this.lowStockAlerts = 5,
-    this.monthlyTurnover = "18%",
-    this.categoryDistribution = const [],
-    this.topProducts = const [],
-    this.lowStockItems = const [],
-  });
-}
-
-// Provider para el Filtro (Semana, Mes, Año)
-final inventoryFilterProvider = StateProvider<String>((ref) => 'month');
-
-// Provider Principal (Consume el Servicio)
-final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((ref) async {
-  // 1. Escuchamos el filtro. Si cambia, este provider se recarga solo.
-  final filter = ref.watch(inventoryFilterProvider);
-  
-  // 2. Instanciamos el servicio
-  final service = ReportService();
-
-  // 3. Llamada a la API REAL
-  // Nota: Asegúrate de que tu ReportService tenga el método getInventoryEfficiency que hicimos antes
-  final efficiencyData = await service.getInventoryEfficiency(filter);
-
-  // 4. Retornamos el estado mezclado (Real + Mocks)
-  return InventoryState(
-    efficiencyData: efficiencyData,
-    
-    // Mocks Estáticos
-    categoryDistribution: [
-      CategoryData("Alimentos", 40, const Color(0xFF6366F1)),
-      CategoryData("Higiene", 30, const Color(0xFF3B82F6)),
-      CategoryData("Hogar", 15, const Color(0xFF10B981)),
-      CategoryData("Otros", 15, const Color(0xFF9CA3AF)),
-    ],
-    topProducts: [
-      ProductMetric("Harina P.A.N.", 150, 0.9),
-      ProductMetric("Arroz Primor", 120, 0.75),
-      ProductMetric("Margarina Mavesa", 80, 0.6),
-    ],
-    lowStockItems: [
-      StockAlert("Aceite Mazeite", 2, "Crítico"),
-      StockAlert("Jabón Protex", 4, "Bajo"),
-    ],
-  );
-});
-
-// ==========================================
-// 3. VISTA PRINCIPAL
-// ==========================================
+import 'package:sicv_flutter/providers/report/inventory_provider.dart'; 
 
 class InventoryReportView extends ConsumerWidget {
   const InventoryReportView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado asíncrono
+    // Escuchamos el estado del provider que definimos en el otro archivo
     final inventoryStateAsync = ref.watch(inventoryReportProvider);
     final currentFilter = ref.watch(inventoryFilterProvider);
 
@@ -125,10 +30,16 @@ class InventoryReportView extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 16),
-              Text('Error: $err', textAlign: TextAlign.center),
-              TextButton(
+              Text(
+                'Ocurrió un error al cargar el reporte:\n$err',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              TextButton.icon(
                 onPressed: () => ref.refresh(inventoryReportProvider),
-                child: const Text("Reintentar"),
+                icon: const Icon(Icons.refresh),
+                label: const Text("Reintentar"),
               )
             ],
           ),
@@ -141,7 +52,10 @@ class InventoryReportView extends ConsumerWidget {
             children: [
               _buildHeader(context, ref, currentFilter),
               const SizedBox(height: 32),
+              
+              // Aquí pasamos los datos reales al grid
               _buildKpiGrid(context, data),
+              
               const SizedBox(height: 24),
 
               // --- GRÁFICO DE EFICIENCIA (DATOS REALES) ---
@@ -151,13 +65,19 @@ class InventoryReportView extends ConsumerWidget {
                 child: SizedBox(
                   height: 350,
                   child: data.efficiencyData.isEmpty
-                      ? const Center(child: Text("No hay datos de ventas en este periodo"))
+                      ? const Center(
+                          child: Text(
+                            "No hay datos de ventas en este periodo.\nIntenta cambiar el filtro o registrar ventas.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
                       : _InventoryEfficiencyChart(points: data.efficiencyData),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Layout Responsivo para los Mocks
+              // Layout Responsivo para los gráficos restantes (Mocks o futuros endpoints)
               LayoutBuilder(
                 builder: (context, constraints) {
                   if (constraints.maxWidth > 900) {
@@ -191,7 +111,7 @@ class InventoryReportView extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Análisis de eficiencia y stock",
+              "Análisis de eficiencia, valoración y stock",
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
           ],
@@ -215,6 +135,7 @@ class InventoryReportView extends ConsumerWidget {
               ],
               onChanged: (val) {
                 if (val != null) {
+                  // Actualizamos el filtro en el provider
                   ref.read(inventoryFilterProvider.notifier).state = val;
                 }
               },
@@ -225,13 +146,37 @@ class InventoryReportView extends ConsumerWidget {
     );
   }
 
-  // --- Grid de KPIs ---
+  // --- Grid de KPIs (CON DATOS REALES) ---
   Widget _buildKpiGrid(BuildContext context, InventoryState data) {
     final kpis = [
-      _KpiInfo("Valor Inventario", "\$${data.totalInventoryValue}", Icons.monetization_on_outlined, Colors.teal),
-      _KpiInfo("Total Items", "${data.totalItems}", Icons.inventory_2_outlined, Colors.blue),
-      _KpiInfo("Alertas Stock", "${data.lowStockAlerts}", Icons.warning_amber_rounded, Colors.red),
-      _KpiInfo("Rotación Mes", data.monthlyTurnover, Icons.sync_alt, Colors.orange),
+      // 1. Valor Real (Viene del Backend)
+      _KpiInfo(
+        "Valor Inventario", 
+        "\$${data.totalInventoryValue}", // Ya viene formateado del provider
+        Icons.monetization_on_outlined, 
+        Colors.teal
+      ),
+      // 2. Total Items Real (Viene del Backend)
+      _KpiInfo(
+        "Total Items", 
+        "${data.totalItems}", 
+        Icons.inventory_2_outlined, 
+        Colors.blue
+      ),
+      // 3. Alertas (Mock/Calculado)
+      _KpiInfo(
+        "Alertas Stock", 
+        "${data.lowStockItems.length}", // Usamos el tamaño de la lista
+        Icons.warning_amber_rounded, 
+        Colors.red
+      ),
+      // 4. Rotación (Mock)
+      _KpiInfo(
+        "Rotación Mes", 
+        data.monthlyTurnover, 
+        Icons.sync_alt, 
+        Colors.orange
+      ),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -253,7 +198,7 @@ class InventoryReportView extends ConsumerWidget {
     });
   }
 
-  // --- Layouts ---
+  // --- Layouts Responsivos ---
   Widget _buildDesktopLayout(BuildContext context, InventoryState data) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,10 +279,9 @@ class InventoryReportView extends ConsumerWidget {
 }
 
 // ==========================================
-// 4. WIDGETS AUXILIARES (Cards, Charts)
+// 4. WIDGETS AUXILIARES (UI Components)
 // ==========================================
 
-// Gráfico de Eficiencia (Scatter Plot)
 class _InventoryEfficiencyChart extends StatelessWidget {
   final List<InventoryEfficiencyPoint> points;
 
@@ -345,19 +289,18 @@ class _InventoryEfficiencyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculamos máximos dinámicos
     double maxX = 0;
     double maxY = 0;
     for (var p in points) {
       if (p.quantitySold > maxX) maxX = p.quantitySold;
       if (p.totalProfit > maxY) maxY = p.totalProfit;
     }
-    // Añadimos margen del 20%
+    
+    // Evitar ceros para que no rompa el gráfico
     maxX = (maxX <= 0 ? 10 : maxX) * 1.2;
     maxY = (maxY <= 0 ? 100 : maxY) * 1.2;
 
-    // Umbrales para colorear (Estrella, Vaca, Perro, Interrogante)
-    // Usamos el 40% del máximo como punto de corte visual
+    // Umbrales para colores (40% del máximo como referencia visual)
     final double targetSales = maxX * 0.4;   
     final double targetProfit = maxY * 0.4; 
 
@@ -392,7 +335,7 @@ class _InventoryEfficiencyChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true, 
               reservedSize: 45,
-              getTitlesWidget: (val, meta) => Text("\$${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              getTitlesWidget: (val, meta) => Text(val >= 1000 ? "${(val/1000).toStringAsFixed(1)}k" : "${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
             ),
           ),
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -403,17 +346,18 @@ class _InventoryEfficiencyChart extends StatelessWidget {
 
         scatterSpots: points.map((point) {
           Color color;
+          // Lógica de colores (BCG Matrix aproximada)
           bool highSales = point.quantitySold >= targetSales;
           bool highProfit = point.totalProfit >= targetProfit;
 
           if (highSales && highProfit) {
-            color = Colors.green; // ESTRELLA (Vende mucho, gana mucho)
+            color = Colors.green; // ESTRELLA
           } else if (highSales && !highProfit) {
-            color = Colors.blue;  // VACA (Vende mucho, gana poco)
+            color = Colors.blue;  // VACA
           } else if (!highSales && highProfit) {
-            color = Colors.orange; // INTERROGANTE (Vende poco, gana mucho)
+            color = Colors.orange; // INTERROGANTE
           } else {
-            color = Colors.red;    // PERRO (Vende poco, gana poco)
+            color = Colors.red;    // PERRO
           }
 
           return ScatterSpot(
@@ -432,8 +376,8 @@ class _InventoryEfficiencyChart extends StatelessWidget {
           touchTooltipData: ScatterTouchTooltipData(
             getTooltipColor: (spot) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
-              // Buscar el producto que corresponde a este punto
               try {
+                 // Buscamos el punto más cercano para mostrar el nombre
                  final match = points.firstWhere(
                    (p) => (p.quantitySold - spot.x).abs() < 0.1 && (p.totalProfit - spot.y).abs() < 0.1, 
                    orElse: () => InventoryEfficiencyPoint(name: "Item", quantitySold: 0, totalProfit: 0)
@@ -454,13 +398,11 @@ class _InventoryEfficiencyChart extends StatelessWidget {
   }
 }
 
-// Tooltip Auxiliar
 class XAxisTooltipItem extends ScatterTooltipItem {
   XAxisTooltipItem({required String text, required TextStyle textStyle}) 
       : super(text, textStyle: textStyle, bottomMargin: 10);
 }
 
-// Contenedor Genérico de Gráficos
 class _ChartContainer extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -518,7 +460,6 @@ class _ChartContainer extends StatelessWidget {
   }
 }
 
-// Info de KPI
 class _KpiInfo {
   final String title;
   final String value;
@@ -527,7 +468,6 @@ class _KpiInfo {
   _KpiInfo(this.title, this.value, this.icon, this.color);
 }
 
-// Tarjeta KPI
 class _KpiCard extends StatelessWidget {
   final _KpiInfo info;
   const _KpiCard({required this.info});
@@ -562,7 +502,6 @@ class _KpiCard extends StatelessWidget {
   }
 }
 
-// Pie Chart Categorías (Mock)
 class _CategoryPieChart extends StatelessWidget {
   final List<CategoryData> categories;
   const _CategoryPieChart({required this.categories});
@@ -612,7 +551,6 @@ class _CategoryLegend extends StatelessWidget {
   }
 }
 
-// Lista Top Productos (Mock)
 class _TopProductsList extends StatelessWidget {
   final List<ProductMetric> products;
   const _TopProductsList({required this.products});
@@ -657,7 +595,6 @@ class _TopProductsList extends StatelessWidget {
   }
 }
 
-// Lista Stock Bajo (Mock)
 class _LowStockList extends StatelessWidget {
   final List<StockAlert> items;
   const _LowStockList({required this.items});
