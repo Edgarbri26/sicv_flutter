@@ -58,7 +58,6 @@ class ReportService {
 
         final double salesData = (responseData['data'] as num).toDouble();
 
-        print('Total Sales: $salesData');
         return salesData;
       } else {
         throw Exception(
@@ -92,7 +91,6 @@ class ReportService {
 
         final double purchasesData = (responseData['data'] as num).toDouble();
 
-        print(purchasesData);
         return purchasesData;
       } else {
         throw Exception(
@@ -143,11 +141,16 @@ class ReportService {
   Future<double> getInventoryValue() async {
     final uri = Uri.parse('$_baseUrl/report/inventory_value');
     try {
-      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+      final response = await _client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
-        final Map<String, dynamic> data = responseData['data'] as Map<String, dynamic>;
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> data =
+            responseData['data'] as Map<String, dynamic>;
         // El backend devuelve { "total_value_usd": 1234.50, "currency": "USD" }
         return (data['total_value_usd'] as num).toDouble();
       } else {
@@ -163,11 +166,16 @@ class ReportService {
   Future<int> getTotalItems() async {
     final uri = Uri.parse('$_baseUrl/report/total_inventory_items');
     try {
-      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+      final response = await _client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
-        final Map<String, dynamic> data = responseData['data'] as Map<String, dynamic>;
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> data =
+            responseData['data'] as Map<String, dynamic>;
         // El backend devuelve { "total_items": 150 }
         return data['total_items'] as int;
       } else {
@@ -182,13 +190,17 @@ class ReportService {
   Future<List<Map<String, dynamic>>> getInventoryByCategory() async {
     final uri = Uri.parse('$_baseUrl/report/inventory_by_category');
     try {
-      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+      final response = await _client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
         // El backend devuelve data: [{ name: "...", value: 100, percentage: 10, color: "#..." }]
         final List<dynamic> data = responseData['data'] as List<dynamic>;
-        
+
         // Retornamos la lista de mapas casteada correctamente
         return data.map((e) => e as Map<String, dynamic>).toList();
       } else {
