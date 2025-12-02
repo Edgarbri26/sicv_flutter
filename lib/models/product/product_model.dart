@@ -1,5 +1,5 @@
 import 'package:sicv_flutter/models/product/stock_general_model.dart';
-import 'package:sicv_flutter/models/product/stock_lots_model.dart';
+import 'package:sicv_flutter/models/product/stock_lot_model.dart';
 import '../category_model.dart';
 
 class ProductModel {

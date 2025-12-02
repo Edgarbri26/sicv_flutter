@@ -665,73 +665,60 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void _saveSale() async {
-    // 1. Validaciones PRIMERO (Sin Navigator.pop)
-    // Si hay error, solo mostramos mensaje y salimos con return.
-
+    // 1. Validaciones PRIMERO
     if (_itemsForSale.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La venta no puede estar vacía. Agrega productos.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('La venta no puede estar vacía. Agrega productos.'), backgroundColor: Colors.red),
       );
-      return; // Detiene la función aquí, NO cierra la pantalla
+      return;
     }
 
     if (selectedClient == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, seleccione un cliente.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Por favor, seleccione un cliente.'), backgroundColor: Colors.red),
       );
       return;
     }
 
     if (_selectedTypePayment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, seleccione un tipo de pago.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Por favor, seleccione un tipo de pago.'), backgroundColor: Colors.red),
       );
       return;
     }
 
-    final authState = ref.watch(authProvider);
+    // --- CORRECCIÓN AQUÍ ---
+    // Usamos .value porque authProvider ahora es un AsyncValue
+    final user = ref.read(authProvider).value; 
 
-    if (authState.user == null) {
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: No hay sesión de usuario activa.'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Error: No hay sesión de usuario activa.'), backgroundColor: Colors.red),
       );
       return;
     }
+    // -----------------------
 
     // 2. Preparar los datos
-    // Mapeamos los items directamente
     List<SaleItemModel> saleItems = _itemsForSale.map((item) {
       return SaleItemModel(
         productId: item.id,
         amount: item.quantity,
         unitCost: item.price,
-        depotId: 1, // Asegúrate que este ID sea dinámico si manejas varios almacenes
+        depotId: 1, // ID del depósito
       );
     }).toList();
 
     // 3. Crear el objeto venta
     final SaleModel sale = SaleModel.forCreation(
       clientCi: selectedClient!.clientCi,
-      userCi: authState.user!.userCi,
+      userCi: user.userCi, // Usamos la variable 'user' que extrajimos arriba
       typePaymentId: _selectedTypePayment!.typePaymentId,
       items: saleItems,
     );
 
     // 4. Enviar al Backend
     try {
-      // Opcional: Mostrar un indicador de carga
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -740,12 +727,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
       await SaleService().createSale(sale);
 
-      // Cerrar el indicador de carga
-      if (mounted) Navigator.of(context).pop(); 
+      if (mounted) Navigator.of(context).pop(); // Cerrar loading
 
-      // 5. ÉXITO: Aquí SÍ cerramos el modal de ventas y limpiamos
+      // 5. ÉXITO
       if (mounted) {
-        Navigator.of(context).pop(); // Cierra el modal de "Confirmar Venta"
+        Navigator.of(context).pop(); // Cierra el modal de confirmación si existe
         
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -762,15 +748,17 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         });
       }
 
-    } on BackendException catch (e) {
-      // Si hubo loading, hay que cerrarlo primero
-      if (mounted) Navigator.of(context).pop(); 
+    } on Exception catch (e) {
+      // Manejo genérico de excepciones
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop(); // Cerrar loading si sigue abierto
+      }
 
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Error al procesar'),
-          content: Text(e.message),
+          title: const Text('Error'),
+          content: Text(e.toString().replaceAll("Exception: ", "")),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -779,13 +767,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
           ],
         ),
       );
-    } catch (e) {
-      // Si hubo loading, hay que cerrarlo primero
-      if (mounted) Navigator.of(context).pop();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error inesperado: $e'), backgroundColor: Colors.red),
-      );
     }
-  }
+}
 }

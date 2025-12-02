@@ -4,7 +4,8 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/permission_model.dart';
 import 'package:sicv_flutter/models/role_model.dart';
 import 'package:sicv_flutter/providers/role_provider.dart';
-import 'package:sicv_flutter/providers/permission_provider.dart';
+// IMPORTANTE: Importamos el nuevo provider que creamos en el Paso 1
+import 'package:sicv_flutter/providers/all_permissions_provider.dart'; 
 
 class RoleEditView extends ConsumerStatefulWidget {
   final RoleModel? role;
@@ -12,16 +13,16 @@ class RoleEditView extends ConsumerStatefulWidget {
   const RoleEditView({super.key, this.role});
 
   @override
-  RoleEditViewState createState() => RoleEditViewState();
+  ConsumerState<RoleEditView> createState() => _RoleEditViewState();
 }
 
-class RoleEditViewState extends ConsumerState<RoleEditView> {
+class _RoleEditViewState extends ConsumerState<RoleEditView> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
 
+  // Estado Local para la edición
   late Set<int> _selectedPermissionIds;
   late List<PermissionModel> _rolePermissions;
-
   bool _isSaving = false;
 
   @override
@@ -29,10 +30,8 @@ class RoleEditViewState extends ConsumerState<RoleEditView> {
     super.initState();
     _nameController = TextEditingController(text: widget.role?.name ?? '');
 
-    // Inicializar permisos locales
-    _selectedPermissionIds =
-        widget.role?.permissions.map((perm) => perm.permissionId).toSet() ?? {};
-    // Copiamos la lista para no mutar el objeto original del provider directamente
+    // Inicializar permisos locales (copia defensiva para no modificar el state global directamente)
+    _selectedPermissionIds = widget.role?.permissions.map((p) => p.permissionId).toSet() ?? {};
     _rolePermissions = List.from(widget.role?.permissions ?? []);
   }
 
@@ -42,49 +41,40 @@ class RoleEditViewState extends ConsumerState<RoleEditView> {
     super.dispose();
   }
 
-  /// Lógica para guardar usando el Notifier
   Future<void> _saveRole() async {
     if (!_formKey.currentState!.validate() || _isSaving) return;
 
     setState(() => _isSaving = true);
 
-    final roleName = _nameController.text;
+    final name = _nameController.text.trim();
     final permissionIds = _selectedPermissionIds.toList();
 
     try {
-      // LLAMADA AL NOTIFIER (NO AL SERVICIO DIRECTAMENTE)
       if (widget.role == null) {
-        // Crear
+        // --- Crear ---
         await ref.read(rolesProvider.notifier).createRole(
-          name: roleName,
+          name: name,
           permissionIds: permissionIds,
         );
       } else {
-        // Actualizar
+        // --- Actualizar ---
         await ref.read(rolesProvider.notifier).updateRole(
           id: widget.role!.rolId,
-          name: roleName,
+          name: name,
           permissionIds: permissionIds,
         );
       }
 
-      // El notifier ya se encarga de hacer el refresh(), así que solo notificamos éxito.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rol guardado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Rol guardado correctamente'), backgroundColor: Colors.green),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al guardar: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -94,21 +84,18 @@ class RoleEditViewState extends ConsumerState<RoleEditView> {
 
   @override
   Widget build(BuildContext context) {
-    // Escuchamos el nuevo permissionsProvider
-    final asyncAllPermissions = ref.watch(permissionsProvider);
-    final bool isUpdating = widget.role != null;
+    // AHORA SÍ: Escuchamos el provider correcto (allPermissionsProvider)
+    final asyncAllPermissions = ref.watch(allPermissionsProvider);
+    final isEditing = widget.role != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isUpdating ? 'Editar Rol' : 'Crear Rol'),
+        title: Text(isEditing ? 'Editar Rol' : 'Nuevo Rol'),
         actions: [
           if (_isSaving)
             const Padding(
               padding: EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: 24, height: 24,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-              ),
+              child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
             )
           else
             IconButton(icon: const Icon(Icons.save), onPressed: _saveRole),
@@ -116,147 +103,134 @@ class RoleEditViewState extends ConsumerState<RoleEditView> {
       ),
       body: Column(
         children: [
+          // Formulario Básico (Nombre)
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre del Rol',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.shield),
-                    ),
-                    validator: (value) =>
-                        (value == null || value.trim().isEmpty) ? 'Requerido' : null,
-                  ),
-                ],
+              child: TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre del Rol',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.shield_outlined),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Requerido' : null,
               ),
             ),
           ),
-          const SizedBox(height: 10),
           
           // Header de Permisos
+          const Divider(thickness: 1, height: 1),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Permisos Asignados (${_rolePermissions.length})',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  'Permisos Asignados (${_rolePermissions.length})', 
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
                 ),
-                // Botón secundario para limpiar si quieres
               ],
             ),
           ),
-          const Divider(),
-          
-          // Lista local de permisos seleccionados
+
+          // Lista de Permisos Asignados
           Expanded(
             child: _rolePermissions.isEmpty
-                ? Center(
-                    child: Text(
-                      'Sin permisos asignados',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _rolePermissions.length,
-                    itemBuilder: (context, index) {
-                      final permission = _rolePermissions[index];
-                      return ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.verified_user, color: AppColors.primary, size: 20),
-                        title: Text(permission.name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                        subtitle: Text(permission.description, maxLines: 1, overflow: TextOverflow.ellipsis),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              _rolePermissions.removeAt(index);
-                              _selectedPermissionIds.remove(permission.permissionId);
-                            });
-                          },
-                        ),
-                      );
-                    },
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.lock_open, size: 48, color: Colors.grey[300]),
+                      const SizedBox(height: 16),
+                      Text('Sin permisos asignados', style: TextStyle(color: Colors.grey[600])),
+                    ],
                   ),
+                )
+              : ListView.separated(
+                  itemCount: _rolePermissions.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16),
+                  itemBuilder: (context, index) {
+                    final perm = _rolePermissions[index];
+                    return ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
+                      title: Text(perm.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                      subtitle: Text(perm.description, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            _rolePermissions.removeAt(index);
+                            _selectedPermissionIds.remove(perm.permissionId);
+                          });
+                        },
+                      ),
+                    );
+                  },
+                ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Agregar Permiso',
+      floatingActionButton: FloatingActionButton.extended(
+        // Pasamos el asyncValue al diálogo
         onPressed: () => _showAddPermissionDialog(asyncAllPermissions),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text("Agregar Permiso"),
       ),
     );
   }
 
-  /// Diálogo para seleccionar permisos desde el provider
-  Future<void> _showAddPermissionDialog(
-    AsyncValue<List<PermissionModel>> asyncAllPermissions,
-  ) async {
-    final PermissionModel? selectedPermission = await showDialog<PermissionModel>(
+  // Diálogo para seleccionar permisos
+  Future<void> _showAddPermissionDialog(AsyncValue<List<PermissionModel>> asyncPerms) async {
+    final PermissionModel? picked = await showDialog(
       context: context,
-      builder: (dialogContext) {
-        return asyncAllPermissions.when(
+      builder: (context) {
+        return asyncPerms.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('$err'),
-            actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('OK'))],
-          ),
+          error: (err, _) => AlertDialog(title: const Text("Error"), content: Text("$err")),
           data: (allPermissions) {
-            // Filtrar los que ya tengo agregados
-            final availablePermissions = allPermissions.where((perm) {
-              return !_selectedPermissionIds.contains(perm.permissionId);
-            }).toList();
+            // Filtrar: Mostrar solo los que NO están asignados todavía
+            final available = allPermissions.where((p) => !_selectedPermissionIds.contains(p.permissionId)).toList();
 
-            if (availablePermissions.isEmpty) {
+            if (available.isEmpty) {
               return AlertDialog(
-                title: const Text('Aviso'),
-                content: const Text('Ya has asignado todos los permisos disponibles.'),
-                actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('OK'))],
+                title: const Text("Aviso"),
+                content: const Text("Ya has agregado todos los permisos disponibles."),
+                actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
               );
             }
 
             return AlertDialog(
-              title: const Text('Seleccionar Permiso'),
+              title: const Text("Seleccionar Permiso"),
               content: SizedBox(
                 width: double.maxFinite,
                 child: ListView.separated(
                   shrinkWrap: true,
-                  itemCount: availablePermissions.length,
+                  itemCount: available.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, index) {
-                    final perm = availablePermissions[index];
+                    final p = available[index];
                     return ListTile(
-                      title: Text(perm.name),
-                      subtitle: Text(perm.description, style: const TextStyle(fontSize: 12)),
-                      onTap: () => Navigator.pop(dialogContext, perm),
+                      title: Text(p.name),
+                      subtitle: Text(p.description, style: const TextStyle(fontSize: 12)),
+                      onTap: () => Navigator.pop(context, p),
                     );
                   },
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancelar'),
-                ),
-              ],
+              actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar"))],
             );
           },
         );
       },
     );
 
-    if (selectedPermission != null) {
+    if (picked != null) {
       setState(() {
-        _rolePermissions.add(selectedPermission);
-        _selectedPermissionIds.add(selectedPermission.permissionId);
+        _rolePermissions.add(picked);
+        _selectedPermissionIds.add(picked.permissionId);
       });
     }
   }

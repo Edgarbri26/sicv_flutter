@@ -1,9 +1,8 @@
-// ui/pages/auth/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/providers/user_provider.dart';
+import 'package:sicv_flutter/providers/auth_provider.dart'; // Asegúrate de importar el provider correcto
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
@@ -15,13 +14,16 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  // Claves y Controladores
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _userCtrl = TextEditingController();
-  final TextEditingController _passCtrl = TextEditingController();
-  
-  bool _obscure = true;
-  bool _isLoading = false; // Controla el spinner del botón
+  final _userCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
 
+  // Estado Local
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  // Constante de diseño
   static const double kDesktopBreakpoint = 640.0;
 
   @override
@@ -31,159 +33,199 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  // --- VALIDADORES ---
-  String? _userValidator(String? v) {
-    if (v == null || v.trim().isEmpty) return 'El usuario no puede estar vacío';
-    if (v.trim().length < 3) return 'Mínimo 3 caracteres';
-    return null;
-  }
+  // --- LÓGICA DE NEGOCIO ---
 
-  String? _passwordValidator(String? v) {
-    if (v == null || v.isEmpty) return 'La contraseña es requerida';
-    if (v.length < 3) return 'Mínimo 3 caracteres'; // Ajusta según tu regla
-    return null;
-  }
-
-  // --- LÓGICA DE SUBMIT ---
   Future<void> _submit() async {
+    // 1. Validar formulario
     if (!_formKey.currentState!.validate()) return;
-    
-    // Ocultar teclado
+
+    // 2. Ocultar teclado
     FocusScope.of(context).unfocus();
 
+    // 3. Activar estado de carga
     setState(() => _isLoading = true);
 
-    // Llamamos al UserProvider (que a su vez llamará a los permisos)
-    final bool success = await ref.read(userProvider.notifier).login(
-      _userCtrl.text.trim(),
-      _passCtrl.text,
-    );
+    try {
+      // 4. Llamar al Provider
+      // Usamos ref.read porque es un evento puntual (tap), no una escucha activa
+      final success = await ref.read(authProvider.notifier).login(
+            _userCtrl.text.trim(),
+            _passCtrl.text,
+          );
 
-    if (mounted) {
+      // 5. Verificar si el widget sigue montado antes de usar 'context'
+      if (!mounted) return;
+
       setState(() => _isLoading = false);
 
       if (success) {
-        // Éxito: Navegamos al Home
+        // ÉXITO: Navegar al Home y reemplazar la ruta de login para que no puedan volver atrás
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
-        // Error: Mostramos mensaje
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error de acceso. Verifica tus credenciales.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // ERROR: Mostrar feedback
+        _showErrorSnackBar('Credenciales incorrectas o error de conexión.');
       }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showErrorSnackBar('Ocurrió un error inesperado: $e');
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final primary = AppColors.primary;
-
-    // Formulario encapsulado para reutilizar en móvil/desktop
-    final formWidget = Form(
-      key: _formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              color: primary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.lock, color: Colors.white, size: 34),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'Bienvenido',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Inicia sesión para continuar',
-            style: TextStyle(color: primary),
-          ),
-          const SizedBox(height: 24),
-          
-          TextFieldApp(
-            controller: _userCtrl,
-            validator: _userValidator,
-            labelText: 'Usuario',
-            prefixIcon: Icons.person,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFieldApp(
-            controller: _passCtrl,
-            obscureText: _obscure,
-            validator: _passwordValidator,
-            labelText: 'Contraseña',
-            prefixIcon: Icons.lock,
-            suffixIcon: IconButton(
-              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: primary),
-              onPressed: () => setState(() => _obscure = !_obscure),
-            ),
-          ),
-          const SizedBox(height: 24),
-          
-          PrimaryButtonApp(
-            text: 'Entrar',
-            icon: Icons.login,
-            onPressed: _submit,
-            isLoading: _isLoading, // Conectado al estado local
-            maxWidth: 400,
-          ),
-          
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: null, // Implementar recuperación si es necesario
-              child: Text(
-                '¿Olvidaste tu contraseña?',
-                style: TextStyle(color: primary),
-              ),
-            ),
-          ),
-        ],
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
       ),
     );
+  }
 
-    // Layout Responsivo
+  // --- UI COMPONENTS ---
+
+  @override
+  Widget build(BuildContext context) {
+    // LayoutBuilder decide si mostrar vista Móvil o Escritorio
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.white, // Fondo limpio
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            // Diseño Escritorio / Tablet
             if (constraints.maxWidth > kDesktopBreakpoint) {
               return Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 600),
+                    constraints: const BoxConstraints(maxWidth: 500),
                     child: Card(
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 8,
+                      shadowColor: Colors.black26,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       child: Padding(
-                        padding: const EdgeInsets.all(28),
-                        child: formWidget,
+                        padding: const EdgeInsets.all(40),
+                        child: _buildLoginForm(),
                       ),
                     ),
                   ),
                 ),
               );
             }
+
+            // Diseño Móvil
             return Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-                child: formWidget,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: _buildLoginForm(),
               ),
             );
           },
         ),
+      ),
+    );
+  }
+
+  /// Construye el contenido del formulario.
+  /// Se extrae aquí para reutilizarlo en ambos layouts y limpiar el build().
+  Widget _buildLoginForm() {
+    final primaryColor = AppColors.primary;
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 1. Logo / Ícono
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(Icons.lock_person_rounded, color: primaryColor, size: 40),
+          ),
+          const SizedBox(height: 24),
+
+          // 2. Títulos
+          Text(
+            'Bienvenido',
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: primaryColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Inicia sesión para gestionar tu inventario',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
+          const SizedBox(height: 32),
+
+          // 3. Inputs
+          TextFieldApp(
+            controller: _userCtrl,
+            labelText: 'Usuario',
+            prefixIcon: Icons.person_outline,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Ingresa tu usuario';
+              if (v.trim().length < 3) return 'Mínimo 3 caracteres';
+              return null;
+            },
+          ),
+          const SizedBox(height: 20),
+
+          TextFieldApp(
+            controller: _passCtrl,
+            labelText: 'Contraseña',
+            prefixIcon: Icons.lock_outline,
+            obscureText: _obscurePassword,
+            maxLines: 1,
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
+              return null;
+            },
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: Colors.grey,
+              ),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            ),
+          ),
+
+          // 4. Olvidé contraseña (Alineado a la derecha)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                // TODO: Implementar navegación a recuperación de contraseña
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Contacta al administrador para restablecer.')),
+                );
+              },
+              child: Text(
+                '¿Olvidaste tu contraseña?',
+                style: TextStyle(color: primaryColor, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 5. Botón de Acción
+          PrimaryButtonApp(
+            text: 'INGRESAR',
+            icon: Icons.login,
+            isLoading: _isLoading,
+            onPressed: _submit,
+            maxWidth: double.infinity, // Ocupa todo el ancho disponible
+          ),
+        ],
       ),
     );
   }

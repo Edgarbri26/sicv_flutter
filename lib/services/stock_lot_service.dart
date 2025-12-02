@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
-import 'package:sicv_flutter/models/product/stock_lots_model.dart';
+import 'package:sicv_flutter/models/product/stock_lot_model.dart';
 
 class StockLotService {
   final String _baseUrl = ApiUrl().url;

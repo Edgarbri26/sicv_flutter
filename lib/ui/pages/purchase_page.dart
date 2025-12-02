@@ -1,29 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_symbols_icons/symbols.dart'; // Asegúrate de tener esto o cambiar iconos
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/models/depot/depot_model.dart';
-import 'package:sicv_flutter/models/product/product_model.dart';
-import 'package:sicv_flutter/models/provider_model.dart';
-import 'package:sicv_flutter/models/purchase/purchase_item_controller.dart';
-import 'package:sicv_flutter/models/purchase/purchase_item_model.dart';
-import 'package:sicv_flutter/models/purchase/purchase_model.dart';
-import 'package:sicv_flutter/models/type_payment_model.dart';
-import 'package:sicv_flutter/providers/auth_provider.dart';
-import 'package:sicv_flutter/providers/product_provider.dart';
-import 'package:sicv_flutter/providers/providers_provider.dart';
-import 'package:sicv_flutter/providers/type_payment_provider.dart';
-import 'package:sicv_flutter/services/depot_service.dart';
-import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
-import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 // ==========================================

@@ -1,103 +1,69 @@
-// services/permission_service.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/permission_model.dart';
 
 class PermissionService {
-  final String _baseUrl = ApiUrl().url; // <-- Usa tu URL base
+  final String _baseUrl = ApiUrl().url;
   final http.Client _client;
 
+  // Constructor que permite inyección de cliente (útil para tests) o usa uno por defecto
   PermissionService({http.Client? client}) : _client = client ?? http.Client();
 
-  /// Obtiene una lista de TODOS los permisos disponibles en el sistema.
+  /// 1. Obtiene la lista MAESTRA de todos los permisos disponibles en la base de datos.
+  /// Se usa en RoleEditView para mostrar el listado en el diálogo "Agregar Permiso".
   Future<List<PermissionModel>> getAllPermissions() async {
-    final uri = Uri.parse(
-      '$_baseUrl/permission',
-    ); // Endpoint de todos los permisos
+    // Asegúrate de que esta ruta coincida con tu backend (ej: /permission o /permissions)
+    final uri = Uri.parse('$_baseUrl/permission'); 
 
     try {
       final response = await _client.get(
         uri,
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer TU_TOKEN_JWT',
+          // 'Authorization': 'Bearer ...', // Si tu endpoint requiere token
         },
       );
 
       if (response.statusCode == 200) {
-        // 1. Obtenemos el Map principal
-        final Map<String, dynamic> responseData =
-            json.decode(response.body) as Map<String, dynamic>;
-
-        // 2. Extraemos la Lista de la llave 'data'
-        final List<dynamic> permissionListJson =
-            responseData['data'] as List<dynamic>;
-
-        // 3. Mapeamos la lista, y aquí es donde se usa tu modelo
-        return permissionListJson
-            .map(
-              (json) => PermissionModel.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> list = responseData['data'];
+        
+        return list.map((json) => PermissionModel.fromJson(json)).toList();
       } else {
-        throw Exception(
-          'Error al cargar la lista de permisos (Código: ${response.statusCode})',
-        );
+        throw Exception('Error al cargar lista de permisos (Código: ${response.statusCode})');
       }
     } catch (e) {
-      print(e.toString());
-      throw Exception('Error de conexión al obtener los permisos.');
+      print('Error getAllPermissions: $e');
+      // Re-lanzamos el error para que el Provider (AsyncValue) lo capture y muestre en UI
+      throw Exception('Error de conexión al obtener permisos.');
     }
   }
 
+  /// 2. Obtiene los permisos asignados a un rol específico.
+  /// Se usa al hacer Login para saber qué puede hacer el usuario actual.
   Future<List<PermissionModel>> getPermissionsByRole(int roleId) async {
-    final uri = Uri.parse(
-      '$_baseUrl/role/$roleId/permissions',
-    ); // Endpoint de permisos por rol
+    final uri = Uri.parse('$_baseUrl/rol/$roleId/permissions');
 
     try {
       final response = await _client.get(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer TU_TOKEN_JWT',
-        },
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
-        // Manejar la respuesta exitosa
-        print('Permisos obtenidos correctamente para el rol $roleId');
-        final Map<String, dynamic> responseData =
-            json.decode(response.body) as Map<String, dynamic>;
-        final List<dynamic> permissionListJson =
-            responseData['data'] as List<dynamic>;
-
-        return permissionListJson
-            .map(
-              (json) => PermissionModel.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> list = responseData['data'];
+        
+        return list.map((json) => PermissionModel.fromJson(json)).toList();
       } else {
-        throw Exception(
-          'Error al cargar los permisos por rol (Código: ${response.statusCode})',
-        );
+        // Si falla este (ej: rol sin permisos), devolvemos lista vacía para no bloquear el login
+        print('Advertencia: No se pudieron cargar permisos del rol $roleId (${response.statusCode})');
+        return [];
       }
     } catch (e) {
-      print(e.toString());
-      throw Exception('Error de conexión al obtener los permisos por rol.');
+      print('Error getPermissionsByRole: $e');
+      return [];
     }
   }
-
-  // //autentifica el usuario tiene el rol con el permiso solicitado
-  // Future<bool> hasPermission(int roleId, int permissionId) async {
-  //   try {
-  //     final permissions = await getPermissionsByRole(roleId);
-  //     return permissions.any((perm) => perm.permissionId == permissionId);
-  //   } catch (e) {
-  //     print('Error verificando permiso: $e');
-  //     return false;
-  //   }
-  // }
 }

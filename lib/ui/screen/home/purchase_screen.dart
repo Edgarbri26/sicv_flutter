@@ -14,9 +14,9 @@ import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart'; // Necesitas el auth para el UserCI
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/providers_provider.dart';
+import 'package:sicv_flutter/providers/purchase_provider.dart';
 import 'package:sicv_flutter/providers/type_payment_provider.dart';
 import 'package:sicv_flutter/services/depot_service.dart';
-import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
@@ -35,7 +35,6 @@ class PurchaseScreen extends ConsumerStatefulWidget {
 
 class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
   final DepotService _depotService = DepotService();
-  final PurchaseService _purchaseService = PurchaseService();
 
   ProviderModel? _selectedProvider;
   TypePaymentModel? _selectedTypePayment;
@@ -152,11 +151,17 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
   /// Guarda la compra (LÓGICA CORREGIDA)
   void _registerPurchase() async {
-    final authState = ref.read(authProvider); // Obtenemos usuario real
+    // 1. OBTENER USUARIO (Nueva forma con Riverpod 2.0 AsyncValue)
+    final authState = ref.read(authProvider);
+    final user = authState.value; // Accedemos al valor del AsyncValue
 
-    setState(() => _isRegistering = true);
+    // Validar sesión antes de empezar
+    if (user == null) {
+      _showError('No hay sesión activa. Intenta loguearte de nuevo.');
+      return;
+    }
 
-    // Validaciones básicas
+    // 2. VALIDACIONES UI
     if (_selectedProvider == null) {
       _showError('Por favor, selecciona un proveedor.');
       return;
@@ -169,92 +174,92 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       _showError('No has añadido productos a la orden.');
       return;
     }
-    if (authState.user == null) {
-      _showError('Error de sesión. Vuelve a iniciar sesión.');
-      return;
-    }
 
-    // 1. Construir la lista unificada de items
-    final List<PurchaseItemModel> itemsToSend = [];
+    // Validar formulario interno
+    // (Asumiendo que usas un Form widget global o controladores directos)
+    // if (!_formKey.currentState!.validate()) return; 
 
-    for (var item in _purchaseItems) {
-      final amount = int.tryParse(item.quantityController.text) ?? 0;
-      final unitCost = double.tryParse(item.costController.text) ?? 0.0;
+    setState(() => _isRegistering = true);
 
-      if (amount <= 0) {
-        _showError('La cantidad del producto ${item.product.name} debe ser mayor a 0.');
-        return;
-      }
-
-      if (item.selectedDepot == null) {
-        _showError('Selecciona un depósito para ${item.product.name}.');
-        return;
-      }
-
-      DateTime? expirationDate;
-      // Si es perecedero, validamos y parseamos la fecha
-      if (item.product.perishable) {
-        if (item.expirationDateController == null || item.expirationDateController!.text.isEmpty) {
-          _showError('Falta fecha de vencimiento para ${item.product.name}.');
-          return;
-        }
-        expirationDate = DateTime.tryParse(item.expirationDateController!.text);
-        if (expirationDate == null) {
-           _showError('Formato de fecha inválido para ${item.product.name}.');
-           return;
-        }
-      }
-
-      // Agregamos a la lista única (PurchaseItemModel maneja ambos casos)
-      itemsToSend.add(PurchaseItemModel(
-        productId: item.product.id,
-        depotId: item.selectedDepot!.depotId,
-        amount: amount,
-        unitCost: unitCost,
-        expirationDate: expirationDate, // Será null si no es perecedero
-      ));
-    }
-
-    // 2. Crear el objeto PurchaseModel para envío
-    final purchase = PurchaseModel.forCreation(
-      providerId: _selectedProvider!.id,
-      userCi: authState.user!.userCi, // Usuario real
-      typePaymentId: _selectedTypePayment!.typePaymentId,
-      items: itemsToSend,
-    );
-
-    // 3. Enviar al servicio
     try {
-      await _purchaseService.createPurchase(purchase);
+      // 3. CONSTRUIR LISTA DE ITEMS
+      final List<PurchaseItemModel> itemsToSend = [];
+
+      for (var item in _purchaseItems) {
+        final amount = int.tryParse(item.quantityController.text) ?? 0;
+        final unitCost = double.tryParse(item.costController.text) ?? 0.0;
+
+        // Validaciones por Item
+        if (amount <= 0) throw "La cantidad de ${item.product.name} debe ser mayor a 0";
+        if (item.selectedDepot == null) throw "Selecciona depósito para ${item.product.name}";
+
+        DateTime? expirationDate;
+        
+        // Lógica Perecederos
+        if (item.product.perishable) {
+          final dateText = item.expirationDateController?.text ?? '';
+          if (dateText.isEmpty) throw "Falta fecha vencimiento para ${item.product.name}";
+          
+          expirationDate = DateTime.tryParse(dateText);
+          if (expirationDate == null) throw "Fecha inválida para ${item.product.name}";
+        }
+
+        itemsToSend.add(PurchaseItemModel(
+          productId: item.product.id,
+          depotId: item.selectedDepot!.depotId,
+          amount: amount,
+          unitCost: unitCost,
+          expirationDate: expirationDate,
+        ));
+      }
+
+      // 4. CREAR MODELO DE COMPRA
+      final purchase = PurchaseModel.forCreation(
+        providerId: _selectedProvider!.id,
+        userCi: user.userCi, // <-- USAMOS EL USUARIO REAL DEL PROVIDER
+        typePaymentId: _selectedTypePayment!.typePaymentId,
+        items: itemsToSend,
+      );
+
+      // 5. ENVIAR AL BACKEND (Usando el nuevo Provider)
+      await ref.read(purchaseProvider.notifier).createPurchase(purchase);
+
+      // 6. ÉXITO (Chequeo 'mounted' vital después de await)
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Compra registrada exitosamente'), backgroundColor: Colors.green),
       );
 
-      // Limpiar todo
-      _searchController.clear();
-      ref.invalidate(productsProvider); // Recargar productos para actualizar stock
+      // 7. LIMPIEZA
+      ref.invalidate(productsProvider); // Refresca el stock global de productos
       
       setState(() {
         _purchaseItems.clear();
         _selectedProvider = null;
         _selectedTypePayment = null;
         _totalCost = 0.0;
-        _isRegistering = false;
+        _searchController.clear(); // Si tienes un controller de búsqueda
       });
 
     } catch (e) {
-      _showError('Error al registrar: $e');
+      // Captura tanto errores de validación (throw string) como de backend
+      if (mounted) {
+        _showError(e.toString().replaceAll("Exception: ", ""));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRegistering = false);
+      }
     }
   }
 
-  void _showError(String msg) {
+  // Helper simple para mostrar errores
+  void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
-    setState(() => _isRegistering = false);
   }
-
   void showProductSearchModal() {
     showModalBottomSheet(
       context: context,
