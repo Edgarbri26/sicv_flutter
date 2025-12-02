@@ -11,19 +11,10 @@ class AppPermissions {
   // 1. ADMINISTRACIÓN (Usuarios y Roles)
   // ==========================================================
   
-  /// Permite registrar nuevos usuarios en el sistema.
-  static const String createUser = "create:user";
+  /// Permite gestionar usuarios.
+  static const String manageUsers = "manage:users";
   
-  /// Permite ver el listado de usuarios y sus detalles.
-  static const String readUsers = "read:users";
-  
-  /// Permite editar datos de usuarios existentes.
-  static const String updateUser = "update:user";
-  
-  /// Permite eliminar (o desactivar) usuarios.
-  static const String deleteUser = "delete:user";
-  
-  /// Acceso completo a la gestión de Roles y Permisos.
+  /// Permite gestionar roles y permisos.
   static const String manageRoles = "manage:roles";
 
 
@@ -43,12 +34,6 @@ class AppPermissions {
   /// Permite eliminar productos del sistema.
   static const String deleteProduct = "delete:product";
   
-  /// Permite visualizar la cantidad de stock actual.
-  static const String readStock = "read:stock";
-  
-  /// Permite realizar ajustes manuales (positivos/negativos) al inventario.
-  static const String adjustStock = "adjust:stock";
-  
   /// Permite ver el Kardex o historial de movimientos.
   static const String readMovements = "read:movements";
 
@@ -57,9 +42,12 @@ class AppPermissions {
   // 3. VENTAS
   // ==========================================================
 
-  /// Permite acceder al POS y registrar nuevas ventas.
+  /// Permite registrar nuevas ventas.
   static const String createSale = "create:sale";
-  
+
+  /// Permite gestionar ventas.
+  static const String manageSales = "confirm:sale";
+
   /// Permite ver el historial de ventas realizadas.
   static const String readSales = "read:sales";
   
@@ -86,16 +74,11 @@ class AppPermissions {
   // ==========================================================
 
   // --- Clientes ---
-  static const String createClient = "create:client";
-  static const String readClients = "read:clients";
-  static const String updateClient = "update:client";
-  static const String deleteClient = "delete:client";
+  static const String manageClient = "manage:client";
+
 
   // --- Proveedores ---
-  static const String createProvider = "create:provider";
-  static const String readProviders = "read:providers";
-  static const String updateProvider = "update:provider";
-  static const String deleteProvider = "delete:provider";
+  static const String manageProvider = "manage:provider";
 
 
   // ==========================================================
@@ -112,7 +95,7 @@ class AppPermissions {
   static const String managePaymentTypes = "manage:paymenttypes";
   
   /// Ver historial de tasa de cambio (divisas).
-  static const String readExchangeRate = "read:exchangerate";
+  // static const String readExchangeRate = "read:exchangerate";
 
 
   // ==========================================================
