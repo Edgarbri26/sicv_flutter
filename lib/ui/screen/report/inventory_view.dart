@@ -265,7 +265,7 @@ class _TopProductsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // VALIDACIÓN: Si la lista está vacía (no hay ventas)
+    // Validación de lista vacía
     if (products.isEmpty) {
       return const Center(
         child: Padding(
@@ -293,17 +293,16 @@ class _TopProductsList extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Expanded para que el nombre no rompa si es muy largo
                   Expanded(
                     child: Text(
-                      prod.name, 
+                      prod.name,
                       style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    "${prod.soldCount} Unds.", 
+                    "${prod.soldCount} Unds.",
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ],
@@ -312,12 +311,16 @@ class _TopProductsList extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: prod.percentage, // Este valor viene del backend (0.0 a 1.0)
+                  value: prod.percentage,
                   minHeight: 8,
                   backgroundColor: Colors.grey[100],
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    // Gradiente de colores para el ranking (1ro Morado, 2do Azul...)
-                    index == 0 ? const Color(0xFF6366F1) : Colors.blue.withOpacity(0.8 - (index * 0.1)),
+                    index == 0 
+                        ? const Color(0xFF6366F1) 
+                        : Colors.blue.withOpacity(
+                            // FIX: Usamos clamp para asegurar que la opacidad nunca sea menor a 0.2 ni mayor a 1.0
+                            (0.8 - (index * 0.05)).clamp(0.2, 1.0)
+                          ),
                   ),
                 ),
               ),

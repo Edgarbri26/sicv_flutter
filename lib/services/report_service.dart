@@ -222,4 +222,33 @@ class ReportService {
       throw Exception('Error de conexión al obtener top productos.');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getEmployeePerformance(String filter) async {
+    // El backend espera ?period=month (o week, year)
+    final uri = Uri.parse('$_baseUrl/report/employee_performance?period=$filter');
+    
+    try {
+      final response = await _client.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': 'Bearer ...', // Si usas token
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        
+        // Estructura esperada: { data: [{ name, sales_count, total_profit, color }, ...] }
+        final List<dynamic> data = responseData['data'] as List<dynamic>;
+        
+        return data.map((e) => e as Map<String, dynamic>).toList();
+      } else {
+        throw Exception('Error al cargar rendimiento (Code: ${response.statusCode})');
+      }
+    } catch (e) {
+      print("Error en getEmployeePerformance: $e");
+      throw Exception('Error de conexión al obtener datos de empleados.');
+    }
+  }
 }
