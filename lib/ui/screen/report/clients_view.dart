@@ -2,135 +2,136 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-// --- PROVIDER SIMULADO ---
-final clientReportProvider = Provider<ClientReportState>((ref) {
-  return ClientReportState();
-});
+// Importa los modelos y el provider de tu proyecto
+import 'package:sicv_flutter/providers/report/client_report_provider.dart';
 
-class ClientReportState {
-  final int totalClients = 450;
-  final int newClients = 28;
-  final String activeRate = "85%";
-  final String topRegion = "Lara";
-
-  // Top 5 Clientes para Gráfico de Barras
-  final List<ClientChartData> topClients = [
-    ClientChartData("Distribuidora A", 15000, Colors.blue),
-    ClientChartData("Tech Solutions", 12500, Colors.blueAccent),
-    ClientChartData("Inversiones J", 9800, Colors.lightBlue),
-    ClientChartData("Muebles Lara", 7500, Colors.cyan),
-    ClientChartData("Particular", 4200, Colors.teal),
-  ];
-
-  // Lista detallada
-  final List<ClientRow> clientList = [
-    ClientRow("Distribuidora Alpha", "VIP", 15000, "Hace 2 días", true),
-    ClientRow("Tech Solutions CA", "Frecuente", 12500, "Hace 5 días", true),
-    ClientRow("Carlos Mendez", "Nuevo", 250, "Ayer", true),
-    ClientRow("Inversiones J&J", "Regular", 9800, "Hace 25 días", false),
-    ClientRow("Bodega Central", "Regular", 1200, "Hace 3 días", true),
-  ];
-
-  // <--- NUEVO: DATOS PARA LA MATRIZ DE RIESGO
-  // (Nombre, Días sin comprar, Total Gastado Histórico)
-  final List<ClientRetentionPoint> retentionList = [
-    ClientRetentionPoint("Cliente A", 10, 5000),   // Reciente, Buen valor
-    ClientRetentionPoint("Cliente B", 90, 12000),  // ALERTA: Mucho valor, hace mucho no viene
-    ClientRetentionPoint("Cliente C", 5, 500),     // Nuevo, poco valor
-    ClientRetentionPoint("Cliente D", 65, 8000),   // ALERTA
-    ClientRetentionPoint("Cliente E", 30, 2000),   // Promedio
-    ClientRetentionPoint("Cliente F", 80, 100),    // Perdido, pero bajo valor (menos grave)
-    ClientRetentionPoint("Cliente G", 15, 7000),
-  ];
-}
-
-class ClientChartData {
-  final String name;
-  final double value;
-  final Color color;
-  ClientChartData(this.name, this.value, this.color);
-}
-
-class ClientRow {
-  final String name;
-  final String type;
-  final double totalSpent;
-  final String lastPurchase;
-  final bool isActive;
-  ClientRow(this.name, this.type, this.totalSpent, this.lastPurchase, this.isActive);
-}
-
-// <--- NUEVO: CLASE PARA PUNTOS DE DISPERSIÓN
-class ClientRetentionPoint {
-  final String name;
-  final double daysSinceLast;
-  final double totalValue;
-  ClientRetentionPoint(this.name, this.daysSinceLast, this.totalValue);
-}
-
-// --- VISTA PRINCIPAL ---
+// --- WIDGET PRINCIPAL ---
 
 class ClientReportView extends ConsumerWidget {
   const ClientReportView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final data = ref.watch(clientReportProvider);
+    // Escuchamos el estado asíncrono real del provider
+    final clientStateAsync = ref.watch(clientReportProvider);
+    final currentFilter = ref.watch(clientFilterProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 32),
-            _buildKpiGrid(context, data),
-            const SizedBox(height: 24),
-            
-            // Layout principal
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 900) {
-                  return _buildDesktopLayout(context, data);
-                } else {
-                  return _buildMobileLayout(context, data);
-                }
-              },
-            ),
-          ],
+      body: clientStateAsync.when(
+        // ESTADO: CARGANDO
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Colors.blue),
+        ),
+        // ESTADO: ERROR
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                'Error al cargar reporte de clientes:\n$err',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: () => ref.refresh(clientReportProvider),
+                icon: const Icon(Icons.refresh),
+                label: const Text("Reintentar"),
+              )
+            ],
+          ),
+        ),
+        // ESTADO: DATOS LISTOS
+        data: (data) => SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context, ref, currentFilter),
+              const SizedBox(height: 32),
+              // Grid de KPIs
+              _buildKpiGrid(context, data),
+              const SizedBox(height: 24),
+              
+              // Layout principal
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 900) {
+                    return _buildDesktopLayout(context, data);
+                  } else {
+                    return _buildMobileLayout(context, data);
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // --- Header y Filtros ---
+  Widget _buildHeader(BuildContext context, WidgetRef ref, String currentFilter) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          "Reporte de Clientes",
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
-              ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Reporte de Clientes",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Análisis de fidelización y comportamiento de compra",
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          "Análisis de fidelización y comportamiento de compra",
-          style: TextStyle(color: Colors.grey[500], fontSize: 14),
+        // Dropdown de Filtro de Tiempo
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: currentFilter,
+              icon: const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+              items: const [
+                DropdownMenuItem(value: 'week', child: Text("Última Semana")),
+                DropdownMenuItem(value: 'month', child: Text("Último Mes")),
+                DropdownMenuItem(value: 'year', child: Text("Último Año")),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  ref.read(clientFilterProvider.notifier).state = val;
+                }
+              },
+            ),
+          ),
         ),
       ],
     );
   }
 
+  // --- Grid de KPIs (CON DATOS REALES) ---
   Widget _buildKpiGrid(BuildContext context, ClientReportState data) {
     final kpis = [
       _KpiInfo("Total Clientes", "${data.totalClients}", Icons.groups_outlined, Colors.blue),
-      _KpiInfo("Nuevos (Mes)", "+${data.newClients}", Icons.person_add_alt, Colors.green),
-      _KpiInfo("Tasa Actividad", data.activeRate, Icons.trending_up, Colors.orange),
-      _KpiInfo("Región Top", data.topRegion, Icons.map_outlined, Colors.purple),
+      _KpiInfo("Ingreso Total", "\$${data.totalRevenue}", Icons.attach_money, Colors.green),
+      _KpiInfo("Valor Órden Prom.", "\$${data.avgOrderValue}", Icons.trending_up, Colors.orange),
+      _KpiInfo("Cliente Top", data.topClientName, Icons.star_border, Colors.purple),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -150,6 +151,8 @@ class ClientReportView extends ConsumerWidget {
     });
   }
 
+  // --- LAYOUTS ---
+
   Widget _buildDesktopLayout(BuildContext context, ClientReportState data) {
     return Column(
       children: [
@@ -159,10 +162,12 @@ class ClientReportView extends ConsumerWidget {
             Expanded(
               flex: 2,
               child: _ChartContainer(
-                title: "Top 5 Clientes (Ventas)",
+                title: "Top 5 Clientes (Valor Monetario)",
                 child: AspectRatio(
                   aspectRatio: 1.7,
-                  child: _TopClientsChart(data: data.topClients),
+                  child: data.topClients.isEmpty 
+                    ? const Center(child: Text("Sin data de Top Clientes")) 
+                    : _TopClientsChart(data: data.topClients),
                 ),
               ),
             ),
@@ -171,19 +176,23 @@ class ClientReportView extends ConsumerWidget {
               flex: 1,
               child: _ChartContainer(
                 title: "Actividad Reciente",
-                child: _ClientList(clients: data.clientList),
+                child: data.clientList.isEmpty
+                    ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay clientes en el periodo", style: TextStyle(color: Colors.grey))))
+                    : _ClientList(clients: data.clientList),
               ),
             ),
           ],
         ),
         const SizedBox(height: 24),
-        // <--- NUEVO: GRÁFICO DE DISPERSIÓN (ANCHO COMPLETO EN DESKTOP)
+        // GRÁFICO DE CORRELACIÓN F-M
         _ChartContainer(
-          title: "Matriz de Riesgo y Retención",
-          subtitle: "Clientes en Zona Roja: Alto Valor + Inactividad prolongada (>60 días)",
+          title: "Matriz Frecuencia vs. Valor (Segmentación)",
+          subtitle: "Eje X: N° Órdenes (Frecuencia) | Eje Y: Valor Total (\$)",
           child: SizedBox(
             height: 350,
-            child: _RetentionScatterChart(points: data.retentionList),
+            child: data.correlationData.isEmpty 
+              ? const Center(child: Text("Sin datos de correlación"))
+              : _FrequencyValueScatterChart(points: data.correlationData),
           ),
         ),
       ],
@@ -197,34 +206,42 @@ class ClientReportView extends ConsumerWidget {
           title: "Top 5 Clientes",
           child: AspectRatio(
             aspectRatio: 1.3,
-            child: _TopClientsChart(data: data.topClients),
+            child: data.topClients.isEmpty 
+              ? const Center(child: Text("Sin data de Top Clientes")) 
+              : _TopClientsChart(data: data.topClients),
           ),
         ),
         const SizedBox(height: 24),
-        // <--- NUEVO: GRÁFICO DE DISPERSIÓN EN MÓVIL
+        // GRÁFICO DE CORRELACIÓN EN MÓVIL
         _ChartContainer(
-          title: "Matriz de Riesgo",
-          subtitle: "Días inactivo vs. Valor (\$)",
+          title: "Matriz Frecuencia vs. Valor",
+          subtitle: "Segmentación de clientes",
           child: SizedBox(
             height: 300,
-            child: _RetentionScatterChart(points: data.retentionList),
+            child: data.correlationData.isEmpty 
+              ? const Center(child: Text("Sin datos de correlación"))
+              : _FrequencyValueScatterChart(points: data.correlationData),
           ),
         ),
         const SizedBox(height: 24),
         _ChartContainer(
           title: "Actividad Reciente",
-          child: _ClientList(clients: data.clientList),
+          child: data.clientList.isEmpty
+            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay clientes en el periodo", style: TextStyle(color: Colors.grey))))
+            : _ClientList(clients: data.clientList),
         ),
       ],
     );
   }
 }
 
-// --- WIDGETS AUXILIARES ---
+// ==========================================
+// 4. WIDGETS AUXILIARES (Los definidos previamente)
+// ==========================================
 
 class _ChartContainer extends StatelessWidget {
   final String title;
-  final String? subtitle; // <--- Opcional para explicar la gráfica compleja
+  final String? subtitle;
   final Widget child;
   const _ChartContainer({required this.title, required this.child, this.subtitle});
   @override
@@ -235,11 +252,7 @@ class _ChartContainer extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            spreadRadius: 2,
-            blurRadius: 10,
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.05), spreadRadius: 2, blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -273,50 +286,50 @@ class _KpiCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: info.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(info.icon, color: info.color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(info.value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-            ],
-          )
-        ],
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
+      child: Row(children: [Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: info.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(info.icon, color: info.color, size: 22)), const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [Text(info.value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600]))])]),
     );
   }
 }
 
-// --- GRÁFICOS Y LISTA ---
-
 class _TopClientsChart extends StatelessWidget {
   final List<ClientChartData> data;
   const _TopClientsChart({required this.data});
-
   @override
   Widget build(BuildContext context) {
+    final double maxY = data.isEmpty ? 1 : data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2;
+
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: 20000,
-        barTouchData: BarTouchData(enabled: false),
+        maxY: maxY, 
+        
+        // 🚀 MODIFICACIÓN CLAVE: Habilitar y Configurar TouchData
+        barTouchData: BarTouchData(
+          enabled: true, // Habilitar toque
+          touchTooltipData: BarTouchTooltipData(
+            // Estilo del tooltip
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final client = data[groupIndex]; // Obtener el objeto de datos del cliente
+              
+              // Formato para mostrar el Nombre y el Valor Gastado
+              return BarTooltipItem(
+                '${client.name}\n\$${client.value.toStringAsFixed(2)}', // Contenido del tooltip
+                const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              );
+            },
+            // Estilo de la burbuja (opcional)
+            getTooltipColor: (group) => Colors.blueGrey,
+          ),
+        ), 
+        // -------------------------------------------------------------
+        
         titlesData: FlTitlesData(
+          // ... (resto de titlesData sin cambios)
           show: true,
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -325,10 +338,7 @@ class _TopClientsChart extends StatelessWidget {
                 if (value.toInt() >= 0 && value.toInt() < data.length) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      data[value.toInt()].name.split(" ")[0], // Solo primera palabra
-                      style: const TextStyle(fontSize: 10, color: Colors.grey),
-                    ),
+                    child: Text(data[value.toInt()].name.split(" ")[0], style: const TextStyle(fontSize: 10, color: Colors.grey)),
                   );
                 }
                 return const Text('');
@@ -352,7 +362,7 @@ class _TopClientsChart extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                 backDrawRodData: BackgroundBarChartRodData(
                   show: true,
-                  toY: 20000,
+                  toY: maxY, // Ya corregido en el paso anterior
                   color: Colors.grey[100],
                 ),
               ),
@@ -362,105 +372,6 @@ class _TopClientsChart extends StatelessWidget {
       ),
     );
   }
-}
-
-// <--- NUEVO: WIDGET DE GRÁFICO DE DISPERSIÓN INTEGRADO
-class _RetentionScatterChart extends StatelessWidget {
-  final List<ClientRetentionPoint> points;
-
-  const _RetentionScatterChart({required this.points});
-
-  @override
-  Widget build(BuildContext context) {
-    return ScatterChart(
-      ScatterChartData(
-        minX: 0, 
-        maxX: 100, // Ajustar a max días de inactividad
-        minY: 0, 
-        maxY: 15000, // Ajustar a max ventas
-
-        // Nota: RangeAnnotations no está disponible en ScatterChartData en esta versión de fl_chart.
-        // Si desea resaltar zonas de riesgo, puede dibujar un contenedor superpuesto detrás del gráfico usando un Stack.
-
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: true,
-          horizontalInterval: 5000,
-          verticalInterval: 20,
-          getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1)),
-          getDrawingVerticalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1)),
-        ),
-        
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(
-            axisNameWidget: const Text("Días sin comprar", style: TextStyle(fontSize: 10)),
-            sideTitles: SideTitles(
-              showTitles: true, 
-              reservedSize: 30,
-              getTitlesWidget: (val, meta) => Text("${val.toInt()}d", style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ),
-          ),
-          leftTitles: AxisTitles(
-            axisNameWidget: const Text("Valor Total (\$)", style: TextStyle(fontSize: 10)),
-            sideTitles: SideTitles(
-              showTitles: true, 
-              reservedSize: 40,
-              getTitlesWidget: (val, meta) => Text("${(val/1000).toStringAsFixed(0)}k", style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            ),
-          ),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        ),
-        
-        borderData: FlBorderData(
-          show: true,
-          border: Border.all(color: Colors.grey.withOpacity(0.1)),
-        ),
-
-        // Lógica de los puntos
-        scatterSpots: points.map((point) {
-          // Lógica de negocio: Si lleva más de 60 días inactivo Y ha gastado más de $5000
-          // Es un cliente VIP en riesgo de fuga (Punto ROJO y GRANDE)
-          bool isAtRisk = point.daysSinceLast > 60 && point.totalValue > 5000;
-          
-          return ScatterSpot(
-            point.daysSinceLast,
-            point.totalValue,
-            dotPainter: FlDotCirclePainter(
-              color: isAtRisk ? Colors.redAccent : Colors.blue.withOpacity(0.5),
-              radius: isAtRisk ? 10 : 6, // Más grandes si son importantes
-              strokeWidth: isAtRisk ? 2 : 0,
-              strokeColor: Colors.white,
-            ),
-          );
-        }).toList(),
-
-        // Tooltip al tocar el punto
-        scatterTouchData: ScatterTouchData(
-          enabled: true,
-          touchTooltipData: ScatterTouchTooltipData(
-            getTooltipColor: (_) => Colors.blueGrey,
-            getTooltipItems: (ScatterSpot spot) {
-               // Buscamos el cliente que corresponde a este punto
-               // (En producción usarías un ID, aquí buscamos por coincidencia)
-               final match = points.firstWhere((p) => p.daysSinceLast == spot.x && p.totalValue == spot.y, orElse: () => ClientRetentionPoint("?", 0,0));
-               
-               return XAxisTooltipItem(
-                 text: "${match.name}\n${spot.x.toInt()} días inactivo",
-                 textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-               );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Necesario para el Tooltip personalizado en ScatterChart
-class XAxisTooltipItem extends ScatterTooltipItem {
-  XAxisTooltipItem({required String text, required TextStyle textStyle}) 
-      : super(text, textStyle: textStyle, bottomMargin: 10);
 }
 
 class _ClientList extends StatelessWidget {
@@ -476,6 +387,8 @@ class _ClientList extends StatelessWidget {
       separatorBuilder: (_, __) => const Divider(height: 16),
       itemBuilder: (context, index) {
         final client = clients[index];
+        Color statusColor = client.status == "Activo" ? Colors.green : Colors.orange;
+
         return Row(
           children: [
             CircleAvatar(
@@ -493,7 +406,7 @@ class _ClientList extends StatelessWidget {
                 children: [
                   Text(client.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   Text(
-                    "${client.type} • Última compra: ${client.lastPurchase}",
+                    "${client.type} • Status: ${client.status}", // Usamos Status del provider
                     style: TextStyle(color: Colors.grey[500], fontSize: 11),
                   ),
                 ],
@@ -509,7 +422,7 @@ class _ClientList extends StatelessWidget {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: client.isActive ? Colors.green : Colors.grey[300],
+                    color: statusColor,
                   ),
                 )
               ],
@@ -519,4 +432,74 @@ class _ClientList extends StatelessWidget {
       },
     );
   }
+}
+
+class _FrequencyValueScatterChart extends StatelessWidget {
+  final List<ClientCorrelationPoint> points;
+
+  const _FrequencyValueScatterChart({required this.points});
+
+  @override
+  Widget build(BuildContext context) {
+    double maxX = 0;
+    double maxY = 0;
+    for (var p in points) {
+      if (p.ordersCount > maxX) maxX = p.ordersCount.toDouble();
+      if (p.totalSpent > maxY) maxY = p.totalSpent;
+    }
+    maxX = (maxX == 0 ? 30 : maxX) * 1.2;
+    maxY = (maxY == 0 ? 10000 : maxY) * 1.2;
+
+    final double highFrequencyThreshold = maxX * 0.4;
+    final double highValueThreshold = maxY * 0.5;
+
+    return ScatterChart(
+      ScatterChartData(
+        minX: 0, maxX: maxX, minY: 0, maxY: maxY,
+        gridData: FlGridData(
+          show: true, drawVerticalLine: true, drawHorizontalLine: true,
+          getDrawingHorizontalLine: (val) => FlLine(color: val == highValueThreshold ? Colors.green.shade200 : Colors.grey.withOpacity(0.1), strokeWidth: 2),
+          getDrawingVerticalLine: (val) => FlLine(color: val == highFrequencyThreshold ? Colors.blue.shade200 : Colors.grey.withOpacity(0.1), strokeWidth: 2),
+        ),
+        titlesData: FlTitlesData(
+          bottomTitles: AxisTitles(axisNameWidget: const Text("N° Órdenes (Frecuencia)", style: TextStyle(fontSize: 10)), sideTitles: SideTitles(showTitles: true, getTitlesWidget: (val, meta) => Text("${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)))),
+          leftTitles: AxisTitles(axisNameWidget: const Text("Valor Total (\$)", style: TextStyle(fontSize: 10)), sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (val, meta) => Text(val >= 1000 ? "${(val/1000).toStringAsFixed(0)}k" : "${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)))),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.withOpacity(0.2))),
+        scatterSpots: points.map((point) {
+          bool highFreq = point.ordersCount >= highFrequencyThreshold;
+          bool highValue = point.totalSpent >= highValueThreshold;
+          
+          Color color;
+          double radius = 6;
+
+          if (highFreq && highValue) { color = Colors.purple; radius = 10; } 
+          else if (highFreq && !highValue) { color = Colors.orange; } 
+          else if (!highFreq && highValue) { color = Colors.teal; } 
+          else { color = Colors.red; }
+
+          return ScatterSpot(point.ordersCount.toDouble(), point.totalSpent, dotPainter: FlDotCirclePainter(color: color, radius: radius, strokeWidth: 0));
+        }).toList(),
+        scatterTouchData: ScatterTouchData(
+          enabled: true,
+          touchTooltipData: ScatterTouchTooltipData(
+            getTooltipColor: (_) => Colors.blueGrey,
+            getTooltipItems: (ScatterSpot spot) {
+              try {
+                final match = points.firstWhere((p) => p.ordersCount.toDouble() == spot.x && p.totalSpent == spot.y);
+                return XAxisTooltipItem(text: "${match.name}\nÓrdenes: ${match.ordersCount}\nValor: \$${match.totalSpent.toStringAsFixed(0)}", textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12));
+              } catch (e) { return null; }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class XAxisTooltipItem extends ScatterTooltipItem {
+
+  XAxisTooltipItem({required String text, required TextStyle textStyle}) : super(text, textStyle: textStyle, bottomMargin: 10);
 }

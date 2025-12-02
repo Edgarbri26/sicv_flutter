@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/report/report_spots.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
+import 'package:sicv_flutter/providers/report/client_report_provider.dart';
 
 class ReportService {
   final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
@@ -261,6 +262,36 @@ class ReportService {
     } catch (e) {
       print("Error en getEmployeePerformance: $e");
       throw Exception('Error de conexión al obtener datos de empleados.');
+    }
+  }
+
+  Future<List<ClientCorrelationPoint>> fetchClientCorrelationFM({String period = 'year'}) async { 
+    // Asumo que _baseUrl es accesible aquí
+    final uri = Uri.parse('$_baseUrl/report/client_correlation_fm?period=$period');
+
+    try {
+      final response = await _client.get(
+        uri, 
+        headers: {'Content-Type': 'application/json'}
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        
+        // El backend devuelve: { "data": [...] }
+        final List<dynamic> dataList = jsonResponse['data'] ?? [];
+
+        // Mapea la lista de JSON a la lista de modelos de Dart
+        return dataList
+            .map((json) => ClientCorrelationPoint.fromJson(json))
+            .toList();
+
+      } else {
+        throw Exception('Error ${response.statusCode}: No se pudo cargar la data de correlación.');
+      }
+    } catch (e) {
+      print('Error en ReportService.fetchClientCorrelationFM: $e');
+      throw Exception('Fallo la conexión o el procesamiento de datos.');
     }
   }
 }
