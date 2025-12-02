@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/movement/movement_type.dart';
+import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/providers/movement_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -35,10 +37,13 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
     final movements = ref.watch(filteredMovementsProvider);
     final isLoading = ref.watch(movementsProvider).isLoading;
 
+    final userPermissions = ref.watch(currentUserPermissionsProvider);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
 
+        final hasAccessCreateMovements = userPermissions.can(AppPermissions.createMovements);
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: !isWide
@@ -46,11 +51,11 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
               : null,
           drawer: isWide ? null : MySideBar(controller: widget.controller),
           
-          floatingActionButton: FloatingActionButton.extended(
+          floatingActionButton:  hasAccessCreateMovements ? FloatingActionButton.extended(
             icon: const Icon(Icons.add),
             label: const Text('Ajuste'),
             onPressed: () => AddMovementModal.show(context),
-          ),
+          ) : null,
 
           body: isWide
               ? WideLayout(

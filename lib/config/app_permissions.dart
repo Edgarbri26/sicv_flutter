@@ -37,6 +37,9 @@ class AppPermissions {
   /// Permite ver el Kardex o historial de movimientos.
   static const String readMovements = "read:movements";
 
+  /// Permite registrar movimientos de inventario (ajustes, transferencias).
+  static const String createMovements = "create:movements";
+
 
   // ==========================================================
   // 3. VENTAS
@@ -74,7 +77,7 @@ class AppPermissions {
   // ==========================================================
 
   // --- Clientes ---
-  static const String manageClient = "manage:client";
+  static const String manageClients = "manage:client";
 
 
   // --- Proveedores ---

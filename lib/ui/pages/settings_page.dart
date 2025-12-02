@@ -20,9 +20,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final userPermissions = ref.watch(currentUserPermissionsProvider);
 
-    final hasUserPermission = userPermissions.contains(
-      AppPermissions.manageUsers,
-    );
+    final hasAccessUserManagement = userPermissions.can(AppPermissions.manageUsers);
+    final hasAccessClientManagement = userPermissions.can(AppPermissions.manageClients);
+    final hasAccessProviderManagement = userPermissions.can(AppPermissions.manageProvider);
+    final hasAccessCategoryManagement = userPermissions.can(AppPermissions.manageCategories);
+    final hasAccessRoleManagement = userPermissions.can(AppPermissions.manageRoles);
+    final hasAccessDepotManagement = userPermissions.can(AppPermissions.manageDepots);
+    final hasAccessTypePaymentManagement = userPermissions.can(AppPermissions.managePaymentTypes);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -89,20 +93,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                     // --- Secciones de Configuración ---
                     _buildSectionTitle('CONFIGURACIÓN GENERAL'),
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Información de la Empresa',
-                      subtitle: 'Nombre, logo, dirección, datos fiscales',
-                      icon: Icons.business,
-                      routeName: AppRoutes.company,
-                    ),*/
                     _buildConfigTile(
+                      context: context,
+                      title: 'Indicaciones de tu perfil',
+                      subtitle: 'Nombre, contraseña, foto',
+                      icon: Icons.person,
+                      routeName: AppRoutes.perfil,
+                    ),
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Configuración de Moneda',
                       subtitle: 'Tipo de moneda, decimales, símbolo',
                       icon: Icons.attach_money,
                       routeName: AppRoutes.currency,
-                    ),
+                    ),*/
+                    
+                    if (hasAccessTypePaymentManagement)
                     _buildConfigTile(
                       context: context,
                       title: 'Configuración de Los Tipos de Pago',
@@ -111,6 +117,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       routeName: AppRoutes.typePayment,
                     ),
                     const SizedBox(height: 16),
+
+                    if (hasAccessCategoryManagement || hasAccessDepotManagement)
                     _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
                     /*_buildConfigTile(
                       context: context,
@@ -119,13 +127,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.square_foot,
                       routeName: AppRoutes.units,
                     ),*/
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Categorías y Subcategorías',
-                      subtitle: 'Gestión de categorías',
-                      icon: Icons.category,
-                      routeName: AppRoutes.categories,
-                    ),
+                    
+                    if (hasAccessCategoryManagement)
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Categorías y Subcategorías',
+                        subtitle: 'Gestión de categorías',
+                        icon: Icons.category,
+                        routeName: AppRoutes.categories,
+                      ),
+
                     /*_buildConfigTile(
                       context: context,
                       title: 'Niveles de Stock',
@@ -133,23 +144,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.warning_amber,
                       routeName: AppRoutes.stock,
                     ),*/
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Depositos y Almacenes',
-                      subtitle: 'Gestión de depósitos',
-                      icon: Icons.store,
-                      routeName: AppRoutes.depot,
-                    ),
+
+                    if (hasAccessDepotManagement)
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Depositos y Almacenes',
+                        subtitle: 'Gestión de depósitos',
+                        icon: Icons.store,
+                        routeName: AppRoutes.depot,
+                      ),
+
                     const SizedBox(height: 16),
+                    if (hasAccessRoleManagement || hasAccessUserManagement || hasAccessClientManagement || hasAccessProviderManagement)
                     _buildSectionTitle('CONFIGURACIÓN DE USUARIOS'),
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Roles y Permisos',
-                      subtitle: 'Administrador, Vendedor, Almacén',
-                      icon: Icons.admin_panel_settings,
-                      routeName: AppRoutes.roles,
-                    ),
-                    if (hasUserPermission)
+
+                    if (hasAccessRoleManagement)
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Roles y Permisos',
+                        subtitle: 'Administrador, Vendedor, Almacén',
+                        icon: Icons.admin_panel_settings,
+                        routeName: AppRoutes.roles,
+                      ),
+
+                    if (hasAccessUserManagement)
                       _buildConfigTile(
                         context: context,
                         title: 'Usuarios del Sistema',
@@ -157,29 +175,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         icon: Icons.account_circle,
                         routeName: AppRoutes.users,
                       ),
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Clientes del Sistema',
-                      subtitle: 'Agregar/editar/eliminar clientes',
-                      icon: Icons.people,
-                      routeName: AppRoutes.client,
-                    ),
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Proveedores del Sistema',
-                      subtitle: 'Agregar/editar/eliminar proveedores',
-                      icon: Icons.local_shipping,
-                      routeName: AppRoutes.provider,
-                    ),
+
+                    if (hasAccessClientManagement)
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Clientes del Sistema',
+                        subtitle: 'Agregar/editar/eliminar clientes',
+                        icon: Icons.people,
+                        routeName: AppRoutes.client,
+                      ),
+
+                    if (hasAccessProviderManagement)
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Proveedores del Sistema',
+                        subtitle: 'Agregar/editar/eliminar proveedores',
+                        icon: Icons.local_shipping,
+                        routeName: AppRoutes.provider,
+                      ),
+
                     const SizedBox(height: 16),
-                    _buildSectionTitle('CONFIGURACIÓN DE PRODUCTOS'),
-                    _buildConfigTile(
+                    /*_buildSectionTitle('CONFIGURACIÓN DE PRODUCTOS'),*/
+
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Códigos y SKU',
                       subtitle: 'Formato automático, prefijos',
                       icon: Icons.qr_code,
                       routeName: AppRoutes.sku,
-                    ),
+                    ),*/
                     /*_buildConfigTile(
                       context: context,
                       title: 'Atributos de Productos',
@@ -187,7 +211,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.style,
                       routeName: AppRoutes.atributes,
                     ),*/
-                    const SizedBox(height: 16),
+                    /*const SizedBox(height: 16),
                     _buildSectionTitle('REPORTES Y BACKUP'),
                     _buildConfigTile(
                       context: context,
@@ -195,7 +219,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       subtitle: 'Formatos de exportación (PDF, Excel)',
                       icon: Icons.picture_as_pdf,
                       routeName: AppRoutes.reportDashboard,
-                    ),
+                    ),*/
                     /*_buildConfigTile(
                       context: context,
                       title: 'Backup Automático',
