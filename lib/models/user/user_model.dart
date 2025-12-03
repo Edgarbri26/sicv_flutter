@@ -22,7 +22,7 @@ class UserModel {
     // 1. ESTRATEGIA DE BÚSQUEDA DOBLE (A prueba de errores)
     // Intentamos leer 'rol_id' (lo que definiste en Sequelize)
     // Si es nulo, intentamos leer 'role_id' (lo que a veces llega en el JSON)
-    final rawRoleId = json['rol_id'] ?? json['role_id']; 
+    final rawRoleId = json['role_id']; 
 
     // Parseo del objeto Role anidado
     final Map<String, dynamic>? roleJson = json['role'] as Map<String, dynamic>?;
