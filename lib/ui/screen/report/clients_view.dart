@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 
 // Importa los modelos y el provider de tu proyecto
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
@@ -226,13 +227,48 @@ class ClientReportView extends ConsumerWidget {
         const SizedBox(height: 24),
         // GRÁFICO DE CORRELACIÓN F-M
         _ChartContainer(
-          title: "Matriz Frecuencia vs. Valor (Segmentación)",
-          subtitle: "Eje X: N° Órdenes (Frecuencia) | Eje Y: Valor Total (\$)",
-          child: SizedBox(
-            height: 350,
-            child: data.correlationData.isEmpty
-                ? const Center(child: Text("Sin datos de correlación"))
-                : _FrequencyValueScatterChart(points: data.correlationData),
+          title: "Matriz Frecuencia vs. Valor",
+          // Subtítulo limpio enfocado en la estrategia
+          subtitle: "Segmentación de clientes por comportamiento de compra",
+          child: Column(
+            children: [
+              // --- LEYENDA DE SEGMENTACIÓN ---
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    // Morado: Compran mucho y seguido
+                    _buildSegmentItem(Colors.purple, "VIP", "Alto Valor / Frecuentes"),
+                    
+                    // Teal: Compran caro pero rara vez
+                    _buildSegmentItem(Colors.teal, "Potenciales", "Alto Valor / Ocasionales"),
+                    
+                    // Naranja: Compran barato pero seguido
+                    _buildSegmentItem(Colors.orange, "Recurrentes", "Bajo Valor / Frecuentes"),
+                    
+                    // Rojo: Compran poco y barato
+                    _buildSegmentItem(Colors.red, "Esporádicos", "Bajo Valor / Ocasionales"),
+                  ],
+                ),
+              ),
+              // -------------------------------
+
+              SizedBox(
+                // Puedes cambiar esto a 300 para tu vista móvil si prefieres
+                height: 350, 
+                child: data.correlationData.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "Sin datos de correlación",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : _FrequencyValueScatterChart(points: data.correlationData),
+              ),
+            ],
           ),
         ),
       ],
@@ -255,12 +291,47 @@ class ClientReportView extends ConsumerWidget {
         // GRÁFICO DE CORRELACIÓN EN MÓVIL
         _ChartContainer(
           title: "Matriz Frecuencia vs. Valor",
-          subtitle: "Segmentación de clientes",
-          child: SizedBox(
-            height: 300,
-            child: data.correlationData.isEmpty
-                ? const Center(child: Text("Sin datos de correlación"))
-                : _FrequencyValueScatterChart(points: data.correlationData),
+          // Subtítulo limpio enfocado en la estrategia
+          subtitle: "Segmentación de clientes por comportamiento de compra",
+          child: Column(
+            children: [
+              // --- LEYENDA DE SEGMENTACIÓN ---
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    // Morado: Compran mucho y seguido
+                    _buildSegmentItem(Colors.purple, "VIP", "Alto Valor / Frecuentes"),
+                    
+                    // Teal: Compran caro pero rara vez
+                    _buildSegmentItem(Colors.teal, "Potenciales", "Alto Valor / Ocasionales"),
+                    
+                    // Naranja: Compran barato pero seguido
+                    _buildSegmentItem(Colors.orange, "Recurrentes", "Bajo Valor / Frecuentes"),
+                    
+                    // Rojo: Compran poco y barato
+                    _buildSegmentItem(Colors.red, "Esporádicos", "Bajo Valor / Ocasionales"),
+                  ],
+                ),
+              ),
+              // -------------------------------
+
+              SizedBox(
+                // Puedes cambiar esto a 300 para tu vista móvil si prefieres
+                height: 350, 
+                child: data.correlationData.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "Sin datos de correlación",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : _FrequencyValueScatterChart(points: data.correlationData),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
@@ -551,6 +622,49 @@ class _ClientList extends StatelessWidget {
   }
 }
 
+Widget _buildSegmentItem(Color color, String title, String subtitle) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 9,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 class _FrequencyValueScatterChart extends StatelessWidget {
   final List<ClientCorrelationPoint> points;
 
@@ -558,12 +672,17 @@ class _FrequencyValueScatterChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Generador de números aleatorios para el "Jitter"
+    final random = Random();
+
     double maxX = 0;
     double maxY = 0;
     for (var p in points) {
       if (p.ordersCount > maxX) maxX = p.ordersCount.toDouble();
       if (p.totalSpent > maxY) maxY = p.totalSpent;
     }
+    
+    // Aseguramos que no sea 0 para evitar errores
     maxX = (maxX == 0 ? 30 : maxX) * 1.2;
     maxY = (maxY == 0 ? 10000 : maxY) * 1.2;
 
@@ -583,13 +702,13 @@ class _FrequencyValueScatterChart extends StatelessWidget {
           getDrawingHorizontalLine: (val) => FlLine(
             color: val == highValueThreshold
                 ? Colors.green.shade200
-                : Colors.grey.withValues(alpha: 0.1),
+                : Colors.grey.withOpacity(0.1), // Usamos withOpacity por compatibilidad
             strokeWidth: 2,
           ),
           getDrawingVerticalLine: (val) => FlLine(
             color: val == highFrequencyThreshold
                 ? Colors.blue.shade200
-                : Colors.grey.withValues(alpha: 0.1),
+                : Colors.grey.withOpacity(0.1),
             strokeWidth: 2,
           ),
         ),
@@ -623,16 +742,12 @@ class _FrequencyValueScatterChart extends StatelessWidget {
               ),
             ),
           ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(
           show: true,
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          border: Border.all(color: Colors.grey.withOpacity(0.2)),
         ),
         scatterSpots: points.map((point) {
           bool highFreq = point.ordersCount >= highFrequencyThreshold;
@@ -642,21 +757,26 @@ class _FrequencyValueScatterChart extends StatelessWidget {
           double radius = 6;
 
           if (highFreq && highValue) {
-            color = Colors.purple;
+            color = Colors.purple; // VIP
             radius = 10;
           } else if (highFreq && !highValue) {
-            color = Colors.orange;
+            color = Colors.orange; // Recurrentes
           } else if (!highFreq && highValue) {
-            color = Colors.teal;
+            color = Colors.teal; // Potenciales
           } else {
-            color = Colors.red;
+            color = Colors.red; // Esporádicos
           }
 
+          // --- TRUCO VISUAL: JITTER ---
+          // Desplazamos un poquito el punto a la izquierda o derecha (-0.3 a +0.3)
+          // para que no se vean como una columna perfecta y aburrida.
+          double jitterX = (random.nextDouble() * 0.6) - 0.3;
+
           return ScatterSpot(
-            point.ordersCount.toDouble(),
+            point.ordersCount.toDouble() + jitterX, // <--- Aplicamos aquí
             point.totalSpent,
             dotPainter: FlDotCirclePainter(
-              color: color,
+              color: color.withOpacity(0.7), // Transparencia para ver superposiciones
               radius: radius,
               strokeWidth: 0,
             ),
@@ -668,10 +788,12 @@ class _FrequencyValueScatterChart extends StatelessWidget {
             getTooltipColor: (_) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
               try {
+                // Buscamos el punto original más cercano
                 final match = points.firstWhere(
                   (p) =>
-                      p.ordersCount.toDouble() == spot.x &&
-                      p.totalSpent == spot.y,
+                      // Aumentamos la tolerancia a 0.5 porque movimos el punto con jitter
+                      (p.ordersCount.toDouble() - spot.x).abs() < 0.5 && 
+                      (p.totalSpent - spot.y).abs() < 0.1,
                 );
                 return XAxisTooltipItem(
                   text:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 
 // 1. IMPORTA TU MODELO DE EFICIENCIA
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
@@ -60,18 +61,50 @@ class InventoryReportView extends ConsumerWidget {
               // --- GRÁFICO DE EFICIENCIA (DATOS REALES) ---
               ChartContainer(
                 title: "Matriz Rentabilidad vs Volumen",
-                subtitle:
-                    "Estrellas (Verde), Vacas (Azul), Interrogantes (Naranja), Perros (Rojo)",
-                child: SizedBox(
-                  height: 350,
-                  child: data.efficiencyData.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "No hay datos de ventas en este periodo.",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : _InventoryEfficiencyChart(points: data.efficiencyData),
+                // Dejamos el subtítulo vacío o con una breve descripción general
+                subtitle: "Distribución de productos según su desempeño", 
+                child: Column(
+                  children: [
+                    // --- NUEVA LEYENDA VISUAL ---
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          // Verde: Venden mucho y ganan mucho
+                          _buildLegendItem(
+                              Colors.green, "Líderes", "Alta Venta / Alta Ganancia"),
+                          
+                          // Azul: Venden mucho pero ganancia normal/baja (Mueven flujo de caja)
+                          _buildLegendItem(
+                              Colors.blue, "Alta Rotación", "Alta Venta / Baja Ganancia"),
+                          
+                          // Naranja: Ganan mucho pero se venden poco (Productos de nicho)
+                          _buildLegendItem(
+                              Colors.orange, "Alta Margen", "Baja Venta / Alta Ganancia"),
+                          
+                          // Rojo: No aportan ni volumen ni ganancia
+                          _buildLegendItem(
+                              Colors.red, "Bajo Desempeño", "Baja Venta / Baja Ganancia"),
+                        ],
+                      ),
+                    ),
+                    // -----------------------------
+
+                    SizedBox(
+                      height: 350,
+                      child: data.efficiencyData.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No hay datos de ventas en este periodo.",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : _InventoryEfficiencyChart(points: data.efficiencyData),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -387,6 +420,42 @@ class _TopProductsList extends StatelessWidget {
   }
 }
 
+Widget _buildLegendItem(Color color, String title, String subtitle) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+        ),
+      ),
+      const SizedBox(width: 6),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold, 
+              fontSize: 12,
+            ),
+          ),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              color: Colors.grey, 
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
 class _InventoryEfficiencyChart extends StatelessWidget {
   final List<InventoryEfficiencyPoint> points;
 
@@ -394,6 +463,9 @@ class _InventoryEfficiencyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Para el "Jitter" (Ruido visual aleatorio)
+    final random = Random();
+
     double maxX = 0;
     double maxY = 0;
     for (var p in points) {
@@ -401,11 +473,15 @@ class _InventoryEfficiencyChart extends StatelessWidget {
       if (p.totalProfit > maxY) maxY = p.totalProfit;
     }
 
+    // Aseguramos mínimos para que el gráfico no crashee si está vacío
     maxX = (maxX <= 0 ? 10 : maxX) * 1.2;
     maxY = (maxY <= 0 ? 100 : maxY) * 1.2;
 
-    final double targetSales = maxX * 0.4;
-    final double targetProfit = maxY * 0.4;
+    // --- CAMBIO 1: UMBRALES MÁS SUAVES ---
+    // Antes tenías * 0.4 (40%). Lo bajamos a 0.25 (25%) para que
+    // sea más fácil que un producto sea considerado "Bueno" (Verde/Azul).
+    final double targetSales = maxX * 0.25; 
+    final double targetProfit = maxY * 0.25; 
 
     return ScatterChart(
       ScatterChartData(
@@ -455,50 +531,60 @@ class _InventoryEfficiencyChart extends StatelessWidget {
               ),
             ),
           ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(
           show: true,
           border: Border.all(color: Colors.grey.withOpacity(0.1)),
         ),
         scatterSpots: points.map((point) {
+          // Lógica de colores (igual que antes, pero usa los nuevos targets)
           Color color;
           bool highSales = point.quantitySold >= targetSales;
           bool highProfit = point.totalProfit >= targetProfit;
-          if (highSales && highProfit)
-            color = Colors.green;
-          else if (highSales && !highProfit)
-            color = Colors.blue;
-          else if (!highSales && highProfit)
-            color = Colors.orange;
-          else
-            color = Colors.red;
+          
+          if (highSales && highProfit) {
+            color = Colors.green; // Líderes
+          } else if (highSales && !highProfit) {
+            color = Colors.blue; // Alta Rotación
+          } else if (!highSales && highProfit) {
+            color = Colors.orange; // Alto Margen
+          } else {
+            color = Colors.red; // Bajo Desempeño
+          }
+
+          // --- CAMBIO 2: JITTER (RUIDO VISUAL) ---
+          // Generamos un pequeño número aleatorio entre -0.4 y +0.4
+          // Esto hace que si tienes 10 productos con venta = 1, 
+          // no se pongan uno encima del otro, sino un poquito al lado.
+          double jitterX = (random.nextDouble() * 0.8) - 0.4;
+          
+          // Opcional: Jitter en Y (Ganancia) muy leve
+          double jitterY = (random.nextDouble() * (maxY * 0.02)) - (maxY * 0.01);
 
           return ScatterSpot(
-            point.quantitySold,
-            point.totalProfit,
+            point.quantitySold + jitterX, // <--- Aplicamos Jitter X
+            point.totalProfit + jitterY,  // <--- Aplicamos Jitter Y
             dotPainter: FlDotCirclePainter(
-              color: color,
+              color: color.withOpacity(0.7), // Bajamos opacidad para ver superposiciones
               radius: (color == Colors.green || color == Colors.red) ? 8 : 6,
               strokeWidth: 0,
             ),
           );
         }).toList(),
+        
         scatterTouchData: ScatterTouchData(
           enabled: true,
           touchTooltipData: ScatterTouchTooltipData(
             getTooltipColor: (spot) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
               try {
+                // Buscamos el punto original más cercano ignorando el jitter
                 final match = points.firstWhere(
                   (p) =>
-                      (p.quantitySold - spot.x).abs() < 0.1 &&
-                      (p.totalProfit - spot.y).abs() < 0.1,
+                      (p.quantitySold - spot.x).abs() < 0.6 && // Tolerancia aumentada por el jitter
+                      (p.totalProfit - spot.y).abs() < (maxY * 0.05),
                   orElse: () => InventoryEfficiencyPoint(
                     name: "Item",
                     quantitySold: 0,
@@ -507,7 +593,7 @@ class _InventoryEfficiencyChart extends StatelessWidget {
                 );
                 return XAxisTooltipItem(
                   text:
-                      "${match.name}\nVol: ${spot.x.toInt()} | Gan: \$${spot.y.toStringAsFixed(2)}",
+                      "${match.name}\nVol: ${match.quantitySold.toInt()} | Gan: \$${match.totalProfit.toStringAsFixed(2)}",
                   textStyle: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

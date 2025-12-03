@@ -219,18 +219,55 @@ class EmployeeReportView extends ConsumerWidget {
             Expanded(
               flex: 1,
               child: _ChartContainer(
-                title: "Correlación: Cantidad vs Ganancia",
-                subtitle: "Eje X: N° Ventas | Eje Y: Ganancia (\$)",
-                child: AspectRatio(
-                  aspectRatio: 1.6,
-                  child: data.correlationData.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "Sin datos de correlación",
-                            style: TextStyle(color: Colors.grey),
+                title: "Análisis de Desempeño: Cantidad vs Ganancia",
+                // Subtítulo más limpio o vacío, ya que usaremos la guía visual
+                subtitle: "Relación entre el esfuerzo de venta y el retorno financiero",
+                child: Column(
+                  children: [
+                    // --- GUÍA DE INTERPRETACIÓN (NUEVA LEYENDA) ---
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // Explicación Eje Vertical
+                          _buildGuideItem(
+                            Icons.attach_money, 
+                            Colors.green, 
+                            "Eje Vertical", 
+                            "Rentabilidad Total"
                           ),
-                        )
-                      : _CorrelationChart(data: data.correlationData),
+                          // Explicación Eje Horizontal
+                          _buildGuideItem(
+                            Icons.shopping_cart, 
+                            Colors.blue, 
+                            "Eje Horizontal", 
+                            "Volumen de Ventas"
+                          ),
+                          // Explicación de la Meta (Dónde mirar)
+                          _buildGuideItem(
+                            Icons.trending_up, 
+                            Colors.orange, 
+                            "Objetivo", 
+                            "Zona Superior Derecha"
+                          ),
+                        ],
+                      ),
+                    ),
+                    // ----------------------------------------------
+
+                    AspectRatio(
+                      aspectRatio: 1.6,
+                      child: data.correlationData.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "Sin datos de correlación",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : _CorrelationChart(data: data.correlationData),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -500,6 +537,30 @@ class _EmployeeBarChart extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildGuideItem(IconData icon, Color color, String label, String value) {
+  return Column(
+    children: [
+      Icon(icon, size: 18, color: color),
+      const SizedBox(height: 4),
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10, 
+          color: Colors.grey, 
+          fontWeight: FontWeight.w500
+        ),
+      ),
+      Text(
+        value,
+        style: const TextStyle(
+          fontSize: 11, 
+          fontWeight: FontWeight.bold
+        ),
+      ),
+    ],
+  );
 }
 
 class _CorrelationChart extends StatelessWidget {
