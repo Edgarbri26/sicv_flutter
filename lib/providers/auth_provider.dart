@@ -29,7 +29,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<UserModel?>> {
         
         // 🔥 CRUCIAL: Si hay usuario, cargamos sus permisos inmediatamente
         // Esto llena el currentUserPermissionsProvider
-        await _ref.read(currentUserPermissionsProvider.notifier).loadPermissions(user.rolId);
+        await _ref.read(currentUserPermissionsProvider.notifier).loadPermissions(user.roleId);
       } else {
         state = const AsyncValue.data(null);
       }

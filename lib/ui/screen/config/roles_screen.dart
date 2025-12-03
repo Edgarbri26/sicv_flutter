@@ -124,7 +124,7 @@
 //   ),
 // ];
 
-// /// Simulación de los permisos asignados a cada rol en la BD.
+// /// Simulación de los permisos asignados a cada role en la BD.
 // /// Usamos un Set<String> para una búsqueda rápida (contiene la 'key' del permiso).
 // final Map<String, Set<String>> mockRolePermissionsData = {
 //   'Administrador': {
@@ -182,10 +182,10 @@
 //     print(roles[1].name);
 //   }
 
-//   // Mapa para guardar los permisos del rol seleccionado (el estado de los checkboxes)
+//   // Mapa para guardar los permisos del role seleccionado (el estado de los checkboxes)
 //   // Map<String, bool> _currentPermissions = {};
 
-//   /// Carga los permisos para un rol seleccionado
+//   /// Carga los permisos para un role seleccionado
 //   void _selectRole(int idRol) {
 //     setState(() {
 //       idRolSelect = idRol;
@@ -199,7 +199,7 @@
 //       // Llena el mapa de permisos basado en TODOS los permisos disponibles
 //       // for (var group in allPermissionGroups) {
 //       //   for (var perm in group.permissions) {
-//       //     // Si el rol tiene este permiso en la "BD", márcalo como true
+//       //     // Si el role tiene este permiso en la "BD", márcalo como true
 //       //     _currentPermissions[perm.key] = permissionsForRole.contains(perm.key);
 //       //   }
 //       // }
@@ -273,7 +273,7 @@
 //               // Muestra la lista de roles
 //               return _buildRoleList(context);
 //             } else {
-//               // Muestra los permisos del rol seleccionado
+//               // Muestra los permisos del role seleccionado
 //               return _buildPermissionPane(context);
 //             }
 //           }
@@ -285,7 +285,7 @@
 //   /// Construye el botón de 'Atrás' del AppBar (solo para móvil)
 //   Widget? _buildAppBarLeading(BuildContext context, double breakpoint) {
 //     final bool isNarrow = MediaQuery.of(context).size.width < breakpoint;
-//     // Solo muestra el botón 'Atrás' si estamos en móvil Y un rol está seleccionado
+//     // Solo muestra el botón 'Atrás' si estamos en móvil Y un role está seleccionado
 //     if (isNarrow && _selectedRoleName != null) {
 //       return IconButton(
 //         icon: const Icon(Icons.arrow_back),
@@ -306,17 +306,17 @@
 //   //   return ListView.builder(
 //   //     itemCount: _roles.length,
 //   //     itemBuilder: (context, index) {
-//   //       final rol = _roles[index];
-//   //       final bool isSelected = _selectedRoleName == rol['nombre'];
+//   //       final role = _roles[index];
+//   //       final bool isSelected = _selectedRoleName == role['nombre'];
 
 //   //       return ListTile(
-//   //         leading: Icon(rol['icon']),
-//   //         title: Text(rol['nombre']),
-//   //         selected: isSelected, // Resalta el rol seleccionado
+//   //         leading: Icon(role['icon']),
+//   //         title: Text(role['nombre']),
+//   //         selected: isSelected, // Resalta el role seleccionado
 //   //         selectedTileColor: Theme.of(
 //   //           context,
 //   //         ).colorScheme.primary.withOpacity(0.1),
-//   //         onTap: () => _selectRole(rol['nombre']),
+//   //         onTap: () => _selectRole(role['nombre']),
 //   //       );
 //   //     },
 //   //   );
@@ -326,13 +326,13 @@
 //   Widget _buildPermissionPane(BuildContext context) {
 //     final theme = Theme.of(context);
 
-//     // Si no hay rol seleccionado, muestra un placeholder
+//     // Si no hay role seleccionado, muestra un placeholder
 //     if (_selectedRoleName == null) {
 //       return Center(
 //         child: Padding(
 //           padding: const EdgeInsets.all(24.0),
 //           child: Text(
-//             'Seleccione un rol de la lista para gestionar sus permisos.',
+//             'Seleccione un role de la lista para gestionar sus permisos.',
 //             style: theme.textTheme.titleMedium?.copyWith(
 //               color: theme.colorScheme.onSurfaceVariant,
 //             ),
@@ -342,7 +342,7 @@
 //       );
 //     }
 
-//     // Si hay un rol, construye la vista de permisos
+//     // Si hay un role, construye la vista de permisos
 //     return Column(
 //       children: [
 //         // La lista de permisos (ocupa todo el espacio menos el botón)

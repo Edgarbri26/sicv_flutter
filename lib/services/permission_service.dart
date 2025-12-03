@@ -40,10 +40,10 @@ class PermissionService {
     }
   }
 
-  /// 2. Obtiene los permisos asignados a un rol específico.
+  /// 2. Obtiene los permisos asignados a un role específico.
   /// Se usa al hacer Login para saber qué puede hacer el usuario actual.
   Future<List<PermissionModel>> getPermissionsByRole(int roleId) async {
-    final uri = Uri.parse('$_baseUrl/rol/$roleId/permissions');
+    final uri = Uri.parse('$_baseUrl/role/$roleId/permissions');
 
     try {
       final response = await _client.get(
@@ -57,8 +57,8 @@ class PermissionService {
         
         return list.map((json) => PermissionModel.fromJson(json)).toList();
       } else {
-        // Si falla este (ej: rol sin permisos), devolvemos lista vacía para no bloquear el login
-        print('Advertencia: No se pudieron cargar permisos del rol $roleId (${response.statusCode})');
+        // Si falla este (ej: role sin permisos), devolvemos lista vacía para no bloquear el login
+        print('Advertencia: No se pudieron cargar permisos del role $roleId (${response.statusCode})');
         return [];
       }
     } catch (e) {

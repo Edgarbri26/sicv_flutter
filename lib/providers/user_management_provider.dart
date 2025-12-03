@@ -26,13 +26,13 @@ class UserManagementNotifier extends StateNotifier<AsyncValue<List<UserModel>>> 
   }
 
   // Crear usuario
-  Future<void> createUser(String ci, String name, String pass, int roleId) async {
-    await _service.create(userCi: ci, name: name, password: pass, roleId: roleId);
+  Future<void> createUser(String ci, String name, String pass, int roleId, bool status) async {
+    await _service.create(userCi: ci, name: name, password: pass, roleId: roleId, status: status);
     await loadUsers(); // Recargamos para ver al nuevo usuario
   }
 
   // --- AQUÍ ESTABA LO QUE TE FALTABA ---
-  // Actualizar usuario (Nombre, Rol o Estado)
+  // Actualizar usuario (Nombre, role o Estado)
   Future<void> updateUser(String ci, {String? name, int? roleId, bool? status}) async {
     // Llama al servicio pasando los parámetros opcionales
     await _service.update(ci, name: name, roleId: roleId, status: status);

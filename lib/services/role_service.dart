@@ -11,9 +11,9 @@ class RoleService {
 
   RoleService({http.Client? client}) : _client = client ?? http.Client();
 
-  /// Obtiene un rol específico por su ID.
+  /// Obtiene un role específico por su ID.
   Future<RoleModel> getRoleById(int id) async {
-    final uri = Uri.parse('$_baseUrl/rol/$id');
+    final uri = Uri.parse('$_baseUrl/role/$id');
     try {
       final response = await _client.get(
         uri,
@@ -33,18 +33,18 @@ class RoleService {
         return RoleModel.fromJson(roleData);
       } else {
         throw Exception(
-          'Error al cargar el rol (Código: ${response.statusCode})',
+          'Error al cargar el role (Código: ${response.statusCode})',
         );
       }
     } catch (e) {
       print(e.toString());
-      throw Exception('Error de conexión al obtener el rol.');
+      throw Exception('Error de conexión al obtener el role.');
     }
   }
 
   /// Obtiene una lista de todos los roles.
   Future<List<RoleModel>> getAllRoles() async {
-    final uri = Uri.parse('$_baseUrl/rol');
+    final uri = Uri.parse('$_baseUrl/role');
     try {
       final response = await _client.get(
         uri,
@@ -75,9 +75,9 @@ class RoleService {
     }
   }
 
-  /// Crea un nuevo rol.
+  /// Crea un nuevo role.
   Future<void> createRole(String name, List<int> permissionIds) async {
-    final uri = Uri.parse('$_baseUrl/rol');
+    final uri = Uri.parse('$_baseUrl/role');
     try {
       final response = await _client.post(
         uri,
@@ -97,22 +97,22 @@ class RoleService {
         // return RoleModel.fromJson(roleData);
       } else {
         throw Exception(
-          'Error al crear el rol (Código: ${response.statusCode})',
+          'Error al crear el role (Código: ${response.statusCode})',
         );
       }
     } catch (e) {
       print(e.toString());
-      throw Exception('Error de conexión al crear el rol.');
+      throw Exception('Error de conexión al crear el role.');
     }
   }
 
-  /// Actualiza un rol existente.
+  /// Actualiza un role existente.
   Future<void> updateRole(
     int roleId,
     String name,
     List<int> permissionIds,
   ) async {
-    final uri = Uri.parse('$_baseUrl/rol/$roleId/assign_permissions');
+    final uri = Uri.parse('$_baseUrl/role/$roleId/assign_permissions');
     try {
       final response = await _client.patch(
         uri,
@@ -135,18 +135,18 @@ class RoleService {
         // return RoleModel.fromJson(roleData);
       } else {
         throw Exception(
-          'Error al actualizar el rol (Código: ${response.statusCode})',
+          'Error al actualizar el role (Código: ${response.statusCode})',
         );
       }
     } catch (e) {
       print(e.toString());
-      throw Exception('Error de conexión al actualizar el rol.');
+      throw Exception('Error de conexión al actualizar el role.');
     }
   }
 
-  /// Elimina un rol por su ID.
+  /// Elimina un role por su ID.
   Future<void> deleteRole(int roleId) async {
-    final uri = Uri.parse('$_baseUrl/rol/$roleId');
+    final uri = Uri.parse('$_baseUrl/role/$roleId');
     try {
       final response = await _client.put(
         uri,
@@ -161,18 +161,18 @@ class RoleService {
         return;
       } else {
         throw Exception(
-          'Error al eliminar el rol (Código: ${response.statusCode})',
+          'Error al eliminar el role (Código: ${response.statusCode})',
         );
       }
     } catch (e) {
       print(e.toString());
-      throw Exception('Error de conexión al eliminar el rol.');
+      throw Exception('Error de conexión al eliminar el role.');
     }
   }
 
-  //verificar si el rol tiene el permiso solicitado
+  //verificar si el role tiene el permiso solicitado
   Future<bool> hasPermission(int roleId, String permissionCode) async {
-    final uri = Uri.parse('$_baseUrl/rol/check_permission');
+    final uri = Uri.parse('$_baseUrl/role/check_permission');
 
     try {
       final response = await _client.post(

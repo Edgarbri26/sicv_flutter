@@ -7,12 +7,12 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'permission_model.dart';
 
 class RoleModel {
-  final int rolId;
+  final int roleId;
   final String name;
   final List<PermissionModel> permissions;
 
   RoleModel({
-    this.rolId = 0,
+    this.roleId = 0,
     required this.name,
     this.permissions = const [],
   });
@@ -30,7 +30,7 @@ class RoleModel {
     return RoleModel(
       // 💡 MEJORA DE SEGURIDAD 1: Usa 'as int?' y proporciona un valor por defecto.
       // Esto evita crashes si 'rolId' es nulo o falta.
-      rolId: json['role_id'], 
+      roleId: json['role_id'], 
       
       // 💡 MEJORA DE SEGURIDAD 2: Usa 'as String?' y proporciona un valor por defecto.
       // Esto evita crashes si 'name' es nulo o falta.
@@ -46,7 +46,7 @@ class RoleModel {
   /// Método de conveniencia para convertir la instancia a un Map.
   Map<String, dynamic> toMap() {
     return {
-      'role_id': rolId,
+      'role_id': roleId,
       'name': name,
       'permissions': permissions.map((p) => p.toMap()).toList(),
     };
@@ -59,11 +59,11 @@ class RoleModel {
     if (identical(this, other)) return true;
 
     return other is RoleModel &&
-        other.rolId == rolId &&
+        other.roleId == roleId &&
         other.name == name &&
         listEquals(other.permissions, permissions);
   }
 
   @override
-  int get hashCode => rolId.hashCode ^ name.hashCode ^ permissions.hashCode;
+  int get hashCode => roleId.hashCode ^ name.hashCode ^ permissions.hashCode;
 }

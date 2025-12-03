@@ -111,7 +111,7 @@ final employeeReportProvider = FutureProvider.autoDispose<EmployeeReportState>((
     // C) Datos para Lista de Empleados
     employeeList.add(EmployeeRow(
       name,
-      "Vendedor", // Placeholder (podrías traer el rol del backend si quisieras)
+      "Vendedor", // Placeholder (podrías traer el role del backend si quisieras)
       profit,
       profit > 0 ? "Activo" : "Sin Ventas", 
       "assets/avatar_placeholder.png", 

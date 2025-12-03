@@ -38,21 +38,21 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
     }
   }
 
-  // Crear un nuevo Rol
+  // Crear un nuevo role
   Future<void> createRole({
     required String name,
     required List<int> permissionIds, // Lista de IDs de permisos seleccionados
   }) async {
     try {
       await _service.createRole(name, permissionIds);
-      // Recargamos la lista para ver el nuevo rol
+      // Recargamos la lista para ver el nuevo role
       await refresh();
     } catch (e) {
       throw e; // Re-lanzamos para mostrar SnackBar en la vista
     }
   }
 
-  // Actualizar un Rol existente
+  // Actualizar un role existente
   Future<void> updateRole({
     required int id,
     required String name,
@@ -66,13 +66,13 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
     }
   }
 
-  // Eliminar (o desactivar) un Rol
+  // Eliminar (o desactivar) un role
   Future<void> deleteRole(int roleId) async {
     // Optimismo: Eliminamos visualmente antes de confirmar (opcional)
     final previousState = state;
     if (state.hasValue) {
       state = AsyncValue.data(
-        state.value!.where((r) => r.rolId != roleId).toList(),
+        state.value!.where((r) => r.roleId != roleId).toList(),
       );
     }
 

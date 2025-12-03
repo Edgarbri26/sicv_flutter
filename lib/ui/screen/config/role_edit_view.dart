@@ -59,7 +59,7 @@ class _RoleEditViewState extends ConsumerState<RoleEditView> {
       } else {
         // --- Actualizar ---
         await ref.read(rolesProvider.notifier).updateRole(
-          id: widget.role!.rolId,
+          id: widget.role!.roleId,
           name: name,
           permissionIds: permissionIds,
         );
@@ -67,7 +67,7 @@ class _RoleEditViewState extends ConsumerState<RoleEditView> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Rol guardado correctamente'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('role guardado correctamente'), backgroundColor: Colors.green),
         );
         Navigator.pop(context);
       }
@@ -90,7 +90,7 @@ class _RoleEditViewState extends ConsumerState<RoleEditView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar Rol' : 'Nuevo Rol'),
+        title: Text(isEditing ? 'Editar role' : 'Nuevo role'),
         actions: [
           if (_isSaving)
             const Padding(
@@ -111,7 +111,7 @@ class _RoleEditViewState extends ConsumerState<RoleEditView> {
               child: TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Nombre del Rol',
+                  labelText: 'Nombre del role',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.shield_outlined),
                 ),

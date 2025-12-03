@@ -63,7 +63,7 @@ class RoleListView extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Crear Rol',
+        tooltip: 'Crear role',
         onPressed: () {
           Navigator.push(
             context,

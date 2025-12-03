@@ -34,6 +34,7 @@ class UserService {
     required String name,
     required String password,
     required int roleId,
+    required bool status,
   }) async {
     final uri = Uri.parse('$_baseUrl/user');
     try {
@@ -44,7 +45,8 @@ class UserService {
           'user_ci': userCi,
           'name': name,
           'password': password,
-          'role_id': roleId, // Asegúrate que el backend espera 'role_id' o 'role_id'
+          'role_id': roleId,
+          'status': status,
         }),
       );
 
@@ -57,7 +59,7 @@ class UserService {
     }
   }
 
-  // --- ACTUALIZAR ROL O DATOS ---
+  // --- ACTUALIZAR role O DATOS ---
   Future<void> update(String userCi, {String? name, int? roleId, bool? status}) async {
     final uri = Uri.parse('$_baseUrl/user/$userCi');
     

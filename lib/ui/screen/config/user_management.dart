@@ -65,7 +65,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                 Expanded(
                   child: rolesAsync.when(
                     data: (roles) => DropDownApp<RoleModel?>(
-                      labelText: "Filtrar Rol",
+                      labelText: "Filtrar role",
                       items: [null, ...roles], // null actúa como "Todos"
                       initialValue: _selectedRoleFilter,
                       itemToString: (r) => r?.name ?? "Todos",
@@ -92,7 +92,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                                         u.userCi.toLowerCase().contains(query);
                   
                   final matchesRole = _selectedRoleFilter == null || 
-                                      u.rolId == _selectedRoleFilter!.rolId;
+                                      u.roleId == _selectedRoleFilter!.roleId;
                                       
                   return matchesSearch && matchesRole;
                 }).toList();
@@ -117,7 +117,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                         columns: const [
                           DataColumn(label: Text('CI / Cédula', style: TextStyle(fontWeight: FontWeight.bold))),
                           DataColumn(label: Text('Nombre', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Rol', style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('role', style: TextStyle(fontWeight: FontWeight.bold))),
                           DataColumn(label: Text('Estado', style: TextStyle(fontWeight: FontWeight.bold))),
                           DataColumn(label: Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold))),
                         ],
@@ -135,7 +135,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                                   color: AppColors.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Text(user.rol?.name ?? 'Sin Rol', 
+                                child: Text(user.role?.name ?? 'Sin role', 
                                   style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                               ),
                             ),
@@ -183,6 +183,8 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
     final ciCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
     final passCtrl = TextEditingController();
+
+    bool isActive = true;
     RoleModel? selectedRole;
     bool isSaving = false;
 
@@ -229,15 +231,25 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
               const SizedBox(height: 16),
               
               DropDownApp<RoleModel>(
-                labelText: "Asignar Rol",
+                labelText: "Asignar role",
                 prefixIcon: Icons.shield_outlined,
                 items: roles,
                 initialValue: selectedRole,
                 itemToString: (r) => r.name,
                 onChanged: (r) => setStateModal(() => selectedRole = r),
               ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Checkbox(
+                    value: isActive,
+                    onChanged: (val) => setStateModal(() => isActive = val ?? true),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text("Usuario Activo"),
+                ],
+              ),
               const SizedBox(height: 32),
-              
               PrimaryButtonApp(
                 text: "GUARDAR USUARIO",
                 icon: Icons.save,
@@ -256,7 +268,8 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                       ciCtrl.text.trim(), 
                       nameCtrl.text.trim(), 
                       passCtrl.text, 
-                      selectedRole!.rolId
+                      selectedRole!.roleId,
+                      isActive,
                     );
                     
                     if (mounted) {
@@ -277,16 +290,16 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
     );
   }
 
-  /// Modal para EDITAR Usuario (Nombre y Rol)
+  /// Modal para EDITAR Usuario (Nombre y role)
   void _showEditUserDialog(BuildContext context, UserModel user, List<RoleModel> roles) {
     final nameCtrl = TextEditingController(text: user.name);
     
-    // Buscamos el rol actual en la lista para que el dropdown lo reconozca
+    // Buscamos el role actual en la lista para que el dropdown lo reconozca
     RoleModel? selectedRole;
     try {
-      selectedRole = roles.firstWhere((r) => r.rolId == user.rolId);
+      selectedRole = roles.firstWhere((r) => r.roleId == user.roleId);
     } catch (_) {
-      // Si el rol ya no existe o es null
+      // Si el role ya no existe o es null
     }
 
     showDialog(
@@ -305,7 +318,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
               const SizedBox(height: 16),
               StatefulBuilder(
                 builder: (context, setStateDialog) => DropDownApp<RoleModel>(
-                  labelText: "Rol del Usuario",
+                  labelText: "role del Usuario",
                   items: roles,
                   initialValue: selectedRole,
                   itemToString: (r) => r.name,
@@ -329,7 +342,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                 await ref.read(usersProvider.notifier).updateUser(
                   user.userCi,
                   name: nameCtrl.text.trim(),
-                  roleId: selectedRole?.rolId,
+                  roleId: selectedRole?.roleId,
                 );
                 
                 if (mounted) {

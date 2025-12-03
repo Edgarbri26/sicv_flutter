@@ -4,45 +4,55 @@ class UserModel {
   final String userCi;
   final String name;
   final String? password;
-  final int rolId;
+  final int roleId;
   final bool status;
-  final RoleModel? rol;
+  final RoleModel? role;
 
   UserModel({
     required this.userCi,
     required this.name,
     this.password,
-    required this.rolId,
+    required this.roleId,
     required this.status,
-    this.rol,
+    this.role,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-  
-    // 1. Extraer el valor de 'rol', asegurando que es un Map anulable (Map<String, dynamic>?)
-    // El '?' al final es crucial. Si el valor es un int (como '1'), 'as Map<String, dynamic>?' lo convierte a null.
-    final Map<String, dynamic>? rolJson = json['rol'] as Map<String, dynamic>?;
+    
+    // 1. ESTRATEGIA DE BÚSQUEDA DOBLE (A prueba de errores)
+    // Intentamos leer 'rol_id' (lo que definiste en Sequelize)
+    // Si es nulo, intentamos leer 'role_id' (lo que a veces llega en el JSON)
+    final rawRoleId = json['rol_id'] ?? json['role_id']; 
+
+    // Parseo del objeto Role anidado
+    final Map<String, dynamic>? roleJson = json['role'] as Map<String, dynamic>?;
 
     return UserModel(
       userCi: json['user_ci'] as String? ?? '0',
       name: json['name'] as String? ?? 'Usuario Desconocido',
       password: json['password'],
-      rolId: json['role_id'] is int 
-          ? json['role_id'] 
-          : int.tryParse(json['role_id'].toString()) ?? 0,
+      
+      // 2. Parseo seguro del ID
+      roleId: rawRoleId is int 
+          ? rawRoleId 
+          : int.tryParse(rawRoleId.toString()) ?? 0, // Si falla todo, devuelve 0
+          
       status: json['status'] as bool? ?? false,
-      rol: rolJson != null 
-          ? RoleModel.fromJson(rolJson)
-          : RoleModel(name: 'Rol Desconocido'), // Asegúrate de que RoleModel tiene un constructor compatible con esto.
+      
+      // 3. Parseo del objeto Rol
+      role: roleJson != null 
+          ? RoleModel.fromJson(roleJson)
+          : null,
     );
   }
   
+  // Para enviar datos al backend (aquí sí debemos ser estrictos con lo que espera el backend)
   Map<String, dynamic> toJson() {
     return {
       'user_ci': userCi,
       'name': name,
       'password': password,
-      'role_id': rolId,
+      'role_id': roleId, // Enviaremos 'role_id' que es lo que definiste en tu UserFactory
       'status': status,
     };
   }
