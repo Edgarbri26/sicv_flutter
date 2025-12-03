@@ -5,12 +5,12 @@ import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
 
 // Para usar el DropDownApp con opciones simples de String
-class DropdownItem {
+class _DropdownItem {
   final String value;
   final String label;
   final IconData? icon;
 
-  DropdownItem({required this.value, required this.label, this.icon});
+  _DropdownItem({required this.value, required this.label, this.icon});
 }
 
 class BackupScreen extends StatefulWidget {
@@ -22,37 +22,37 @@ class BackupScreen extends StatefulWidget {
 
 class _BackupScreenState extends State<BackupScreen> {
   bool _backupActivo = false;
-  DropdownItem _frecuencia = DropdownItem(
+  _DropdownItem _frecuencia = _DropdownItem(
     value: 'diario',
     label: 'Diariamente',
   );
-  DropdownItem _destino = DropdownItem(value: 'drive', label: 'Google Drive');
+  _DropdownItem _destino = _DropdownItem(value: 'drive', label: 'Google Drive');
   bool _isLoading = false;
 
-  final List<DropdownItem> _frecuencias = [
-    DropdownItem(value: 'diario', label: 'Diariamente', icon: Icons.schedule),
-    DropdownItem(
+  final List<_DropdownItem> _frecuencias = [
+    _DropdownItem(value: 'diario', label: 'Diariamente', icon: Icons.schedule),
+    _DropdownItem(
       value: 'semanal',
       label: 'Semanalmente',
       icon: Icons.calendar_month,
     ),
-    DropdownItem(
+    _DropdownItem(
       value: 'mensual',
       label: 'Mensualmente',
       icon: Icons.calendar_today,
     ),
   ];
 
-  final List<DropdownItem> _destinos = [
-    DropdownItem(value: 'drive', label: 'Google Drive', icon: Icons.cloud),
-    DropdownItem(value: 'dropbox', label: 'Dropbox', icon: Icons.storage),
-    DropdownItem(value: 'email', label: 'Enviar por Email', icon: Icons.email),
+  final List<_DropdownItem> _destinos = [
+    _DropdownItem(value: 'drive', label: 'Google Drive', icon: Icons.cloud),
+    _DropdownItem(value: 'dropbox', label: 'Dropbox', icon: Icons.storage),
+    _DropdownItem(value: 'email', label: 'Enviar por Email', icon: Icons.email),
   ];
 
   void _iniciarBackup() async {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
-    print('Backup manual iniciado - Destino: ${_destino.label}');
+    debugPrint('Backup manual iniciado - Destino: ${_destino.label}');
     setState(() => _isLoading = false);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +64,10 @@ class _BackupScreenState extends State<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Backup Automático', iconColor: AppColors.textPrimary,),
+      appBar: AppBarApp(
+        title: 'Backup Automático',
+        iconColor: AppColors.textPrimary,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -77,7 +80,7 @@ class _BackupScreenState extends State<BackupScreen> {
             },
           ),
           const Divider(),
-          DropDownApp<DropdownItem>(
+          DropDownApp<_DropdownItem>(
             labelText: 'Frecuencia de Respaldo',
             prefixIcon: Icons.schedule,
             initialValue: _frecuencias.firstWhere(
@@ -93,7 +96,7 @@ class _BackupScreenState extends State<BackupScreen> {
                 : null,
           ),
           const SizedBox(height: 16),
-          DropDownApp<DropdownItem>(
+          DropDownApp<_DropdownItem>(
             labelText: 'Destino de Almacenamiento',
             prefixIcon: Icons.storage,
             initialValue: _destinos.firstWhere(

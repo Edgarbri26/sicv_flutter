@@ -21,16 +21,18 @@ class MySideBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userPermissions = ref.watch(currentUserPermissionsProvider);
 
-    print("🧐 LISTA DE PERMISOS QUE LLEGARON: $userPermissions");
+    final hasAccessMovements = userPermissions.can(
+      AppPermissions.readMovements,
+    );
 
-    final hasAccessMovements = userPermissions.can(AppPermissions.readMovements);
-    
-    final hasAccessReports = userPermissions.can(AppPermissions.readReports); 
-    
+    final hasAccessReports = userPermissions.can(AppPermissions.readReports);
+
     final hasAccessProducts = userPermissions.can(AppPermissions.readProducts);
-    
-    final hasAccessPurchases = userPermissions.can(AppPermissions.createPurchase);
-    
+
+    final hasAccessPurchases = userPermissions.can(
+      AppPermissions.createPurchase,
+    );
+
     final hasAccessSales = userPermissions.can(AppPermissions.createSale);
     return SidebarX(
       controller: controller,
@@ -41,7 +43,7 @@ class MySideBar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -51,7 +53,7 @@ class MySideBar extends ConsumerWidget {
         selectedTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
         iconTheme: IconThemeData(color: AppColors.textSecondary, size: 22),
         selectedIconTheme: const IconThemeData(color: Colors.white, size: 22),
-        hoverColor: primaryColor.withOpacity(0.1),
+        hoverColor: primaryColor.withValues(alpha: 0.1),
         hoverTextStyle: TextStyle(
           color: primaryColor,
           fontWeight: FontWeight.w600,
@@ -62,15 +64,15 @@ class MySideBar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(10),
           gradient: LinearGradient(
             colors: [
-              primaryColor.withOpacity(0.9),
-              primaryColor.withOpacity(0.6),
+              primaryColor.withValues(alpha: 0.9),
+              primaryColor.withValues(alpha: 0.6),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withOpacity(0.4),
+              color: primaryColor.withValues(alpha: 0.4),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -87,7 +89,12 @@ class MySideBar extends ConsumerWidget {
           height: 100,
           child: const Padding(
             padding: EdgeInsets.all(16.0),
-            child: Icon(Icons.person, size: 40, color: Colors.grey),
+            child: Column(
+              children: [
+                Icon(Icons.person, size: 40, color: Colors.grey),
+                Text("Usuario", style: TextStyle(color: Colors.grey)),
+              ],
+            ),
           ),
         );
       },
@@ -96,7 +103,8 @@ class MySideBar extends ConsumerWidget {
           SidebarXItem(
             icon: Icons.point_of_sale,
             label: 'Ventas',
-            onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.sales),
+            onTap: () =>
+                Navigator.pushReplacementNamed(context, AppRoutes.sales),
           ),
 
         if (hasAccessPurchases)

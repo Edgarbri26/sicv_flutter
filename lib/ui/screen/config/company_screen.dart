@@ -26,7 +26,7 @@ class _CompanyScreenState extends State<CompanyScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       await Future.delayed(const Duration(seconds: 2));
-      print('Datos guardados: ${_nameController.text}');
+      debugPrint('Datos guardados: ${_nameController.text}');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,14 +50,15 @@ class _CompanyScreenState extends State<CompanyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Información de la Empresa', iconColor: AppColors.textPrimary,),
+      appBar: AppBarApp(
+        title: 'Información de la Empresa',
+        iconColor: AppColors.textPrimary,
+      ),
       body: Form(
         key: _formKey,
         child: Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 600,
-            ),
+            constraints: BoxConstraints(maxWidth: 600),
             child: ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
@@ -65,7 +66,6 @@ class _CompanyScreenState extends State<CompanyScreen> {
                   controller: _nameController,
                   labelText: 'Nombre de la Empresa',
                   prefixIcon: Icons.business,
-
                 ),
                 const SizedBox(height: 16),
                 TextFieldApp(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 class RemoteConfigService {
@@ -40,7 +41,7 @@ class RemoteConfigService {
     } catch (e) {
       // Si falla (ej. sin conexión), la app usará los valores por defecto
       // establecidos en setDefaults().
-      print('Error al inicializar Remote Config: $e');
+      debugPrint('Error al inicializar Remote Config: $e');
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/services/permission_service.dart';
@@ -22,9 +23,9 @@ class CurrentUserPermissionsNotifier extends StateNotifier<Set<String>> {
       final permissionCodes = permissions.map((p) => p.code).toSet();
 
       state = permissionCodes;
-      print("✅ Permisos cargados: ${state.length}");
+      debugPrint("✅ Permisos cargados: ${state.length}");
     } catch (e) {
-      print("❌ Error cargando permisos: $e");
+      debugPrint("❌ Error cargando permisos: $e");
       state = {};
     }
   }

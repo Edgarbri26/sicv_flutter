@@ -17,8 +17,8 @@ class SupplierReportState {
   final List<SupplierPieData> costDistribution = [
     SupplierPieData("Samsung", 40, const Color(0xFF5C6BC0)), // Indigo
     SupplierPieData("Apple Inc", 30, const Color(0xFFAB47BC)), // Purple
-    SupplierPieData("Xiaomi", 15, const Color(0xFFFF7043)),    // Deep Orange
-    SupplierPieData("Logitech", 15, const Color(0xFF78909C)),  // Blue Grey
+    SupplierPieData("Xiaomi", 15, const Color(0xFFFF7043)), // Deep Orange
+    SupplierPieData("Logitech", 15, const Color(0xFF78909C)), // Blue Grey
   ];
 
   // Lista de Deudas / Estado
@@ -88,9 +88,9 @@ class SupplierReportView extends ConsumerWidget {
         Text(
           "Reporte de Proveedores",
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
-              ),
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1F2937),
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -103,27 +103,49 @@ class SupplierReportView extends ConsumerWidget {
 
   Widget _buildKpiGrid(BuildContext context, SupplierReportState data) {
     final kpis = [
-      _KpiInfo("Cuentas por Pagar", "\$${data.totalDebt}", Icons.money_off, Colors.red),
-      _KpiInfo("Órdenes Activas", "${data.activeOrders}", Icons.local_shipping_outlined, Colors.blue),
-      _KpiInfo("Total Proveedores", "${data.totalSuppliers}", Icons.storefront, Colors.indigo),
-      _KpiInfo("Eficiencia Entrega", data.efficiency, Icons.timelapse, Colors.teal),
+      _KpiInfo(
+        "Cuentas por Pagar",
+        "\$${data.totalDebt}",
+        Icons.money_off,
+        Colors.red,
+      ),
+      _KpiInfo(
+        "Órdenes Activas",
+        "${data.activeOrders}",
+        Icons.local_shipping_outlined,
+        Colors.blue,
+      ),
+      _KpiInfo(
+        "Total Proveedores",
+        "${data.totalSuppliers}",
+        Icons.storefront,
+        Colors.indigo,
+      ),
+      _KpiInfo(
+        "Eficiencia Entrega",
+        data.efficiency,
+        Icons.timelapse,
+        Colors.teal,
+      ),
     ];
 
-    return LayoutBuilder(builder: (context, constraints) {
-      int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
-      return GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 2.0,
-        ),
-        itemCount: kpis.length,
-        itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
+        return GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 2.0,
+          ),
+          itemCount: kpis.length,
+          itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
+        );
+      },
+    );
   }
 
   Widget _buildDesktopLayout(BuildContext context, SupplierReportState data) {
@@ -136,11 +158,16 @@ class SupplierReportView extends ConsumerWidget {
             title: "Distribución de Compras",
             child: Row(
               children: [
-                 Expanded(child: AspectRatio(aspectRatio: 1, child: _CostPieChart(data: data.costDistribution))),
-                 const SizedBox(width: 16),
-                 Expanded(child: _CostLegend(data: data.costDistribution)),
+                Expanded(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: _CostPieChart(data: data.costDistribution),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: _CostLegend(data: data.costDistribution)),
               ],
-            )
+            ),
           ),
         ),
         const SizedBox(width: 24),
@@ -162,7 +189,10 @@ class SupplierReportView extends ConsumerWidget {
           title: "Distribución de Compras",
           child: Column(
             children: [
-              AspectRatio(aspectRatio: 1.3, child: _CostPieChart(data: data.costDistribution)),
+              AspectRatio(
+                aspectRatio: 1.3,
+                child: _CostPieChart(data: data.costDistribution),
+              ),
               const SizedBox(height: 20),
               _CostLegend(data: data.costDistribution),
             ],
@@ -191,12 +221,21 @@ class _ChartContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), spreadRadius: 2, blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.05),
+            spreadRadius: 2,
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 24),
           child,
         ],
@@ -229,7 +268,10 @@ class _KpiCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: info.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: info.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(info.icon, color: info.color, size: 22),
           ),
           const SizedBox(width: 12),
@@ -237,10 +279,19 @@ class _KpiCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(info.value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              Text(
+                info.value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                info.title,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -265,7 +316,11 @@ class _CostPieChart extends StatelessWidget {
             value: item.value,
             title: '${item.value.toInt()}%',
             radius: 40,
-            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+            titleStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           );
         }).toList(),
       ),
@@ -285,9 +340,19 @@ class _CostLegend extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Row(
             children: [
-              Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: item.color)),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: item.color,
+                ),
+              ),
               const SizedBox(width: 8),
-              Text(item.name, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+              Text(
+                item.name,
+                style: const TextStyle(fontSize: 13, color: Colors.black87),
+              ),
             ],
           ),
         );
@@ -324,24 +389,34 @@ class _SupplierList extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    item.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   Text(
                     item.status,
                     style: TextStyle(
-                      color: item.status == "Vencido" ? Colors.red : (item.status == "Al día" ? Colors.green : Colors.orange),
+                      color: item.status == "Vencido"
+                          ? Colors.red
+                          : (item.status == "Al día"
+                                ? Colors.green
+                                : Colors.orange),
                       fontSize: 11,
-                      fontWeight: FontWeight.bold
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
             ),
             Text(
-               item.hasDebt ? "-\$${item.debt.toStringAsFixed(0)}" : "\$0",
-               style: TextStyle(
-                 fontWeight: FontWeight.bold, 
-                 color: item.hasDebt ? Colors.red : Colors.grey
-               ),
+              item.hasDebt ? "-\$${item.debt.toStringAsFixed(0)}" : "\$0",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: item.hasDebt ? Colors.red : Colors.grey,
+              ),
             ),
           ],
         );

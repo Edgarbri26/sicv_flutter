@@ -64,7 +64,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
   void allClients() async {
     _allClients = await ClientService().getAll();
-    print("Clientes cargados: ${_allClients.length}");
+    debugPrint("Clientes cargados: ${_allClients.length}");
     setState(() {});
   }
 
@@ -377,6 +377,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     );
 
     if (clientWasAdded == true) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Cliente agregado correctamente'),
@@ -485,6 +486,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
                                   // 2. Si se agregó, refrescamos la lista
                                   if (clientWasAdded == true) {
+                                    if (!context.mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
@@ -498,6 +500,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                                     final newClients = await clientServiceTemp
                                         .getAll(); // O .getAll() según como se llame tu método
 
+                                    if (!context.mounted) return;
                                     modalSetState(() {
                                       _allClients = newClients;
                                       if (newClients.isNotEmpty) {
@@ -784,6 +787,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         Navigator.of(context).pop(); // Cerrar loading si sigue abierto
       }
 
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(

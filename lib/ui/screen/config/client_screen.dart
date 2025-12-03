@@ -98,8 +98,8 @@ class ClientManagementPageState extends State<ClientManagementPage> {
             bValue = b.phone;
             break;
           case 2: // Estado
-            aValue = a.status;
-            bValue = b.status;
+            aValue = a.status ? 1 : 0;
+            bValue = b.status ? 1 : 0;
             break;
           default:
             return 0;
@@ -151,7 +151,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
                   border: Border.all(color: AppColors.border, width: 3.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 2,
                       offset: const Offset(0, 1),
                     ),
@@ -431,7 +431,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.1),
+                      ).colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Icon(
@@ -475,8 +475,8 @@ class ClientManagementPageState extends State<ClientManagementPage> {
               Chip(
                 label: Text(client.status ? 'Activo' : 'Inactivo'),
                 backgroundColor: client.status
-                    ? Colors.green.withOpacity(0.15)
-                    : Colors.red.withOpacity(0.15),
+                    ? Colors.green.withValues(alpha: 0.15)
+                    : Colors.red.withValues(alpha: 0.15),
                 labelStyle: TextStyle(
                   color: client.status
                       ? Colors.green.shade800
@@ -597,6 +597,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
     );
 
     if (clientWasUpdated == true) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Cliente actualizado correctamente'),
@@ -622,6 +623,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
     );
 
     if (clientWasAdded == true) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Cliente agregado correctamente'),

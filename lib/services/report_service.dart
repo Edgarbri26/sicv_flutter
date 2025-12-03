@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/report/report_spots.dart';
@@ -37,7 +38,7 @@ class ReportService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener las ventas.');
     }
   }
@@ -66,7 +67,7 @@ class ReportService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener las ventas.');
     }
   }
@@ -99,7 +100,7 @@ class ReportService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener las compras.');
     }
   }
@@ -134,7 +135,7 @@ class ReportService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener eficiencia.');
     }
   }
@@ -158,7 +159,7 @@ class ReportService {
         throw Exception('Error al cargar valor de inventario');
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener valor de inventario.');
     }
   }
@@ -183,7 +184,7 @@ class ReportService {
         throw Exception('Error al cargar conteo de items');
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener conteo de items.');
     }
   }
@@ -208,38 +209,52 @@ class ReportService {
         throw Exception('Error al cargar inventario por categoría');
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener categorías.');
     }
   }
 
-  Future<List<Map<String, dynamic>>> getTopSellingProducts(String filter) async {
+  Future<List<Map<String, dynamic>>> getTopSellingProducts(
+    String filter,
+  ) async {
     // El backend espera ?period=month (o week, year, all)
-    final uri = Uri.parse('$_baseUrl/report/top_selling_products?period=$filter');
-    
+    final uri = Uri.parse(
+      '$_baseUrl/report/top_selling_products?period=$filter',
+    );
+
     try {
-      final response = await _client.get(uri, headers: {'Content-Type': 'application/json'});
+      final response = await _client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
         // El backend devuelve: data: [{ name: "...", soldCount: 10, percentage: 0.5 }, ...]
         final List<dynamic> data = responseData['data'] as List<dynamic>;
-        
+
         // Retornamos como lista de mapas para que el Provider lo convierta a objetos
         return data.map((e) => e as Map<String, dynamic>).toList();
       } else {
-        throw Exception('Error al cargar top productos (Code: ${response.statusCode})');
+        throw Exception(
+          'Error al cargar top productos (Code: ${response.statusCode})',
+        );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener top productos.');
     }
   }
 
-  Future<List<Map<String, dynamic>>> getEmployeePerformance(String filter) async {
+  Future<List<Map<String, dynamic>>> getEmployeePerformance(
+    String filter,
+  ) async {
     // El backend espera ?period=month (o week, year)
-    final uri = Uri.parse('$_baseUrl/report/employee_performance?period=$filter');
-    
+    final uri = Uri.parse(
+      '$_baseUrl/report/employee_performance?period=$filter',
+    );
+
     try {
       final response = await _client.get(
         uri,
@@ -250,34 +265,41 @@ class ReportService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body) as Map<String, dynamic>;
-        
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+
         // Estructura esperada: { data: [{ name, sales_count, total_profit, color }, ...] }
         final List<dynamic> data = responseData['data'] as List<dynamic>;
-        
+
         return data.map((e) => e as Map<String, dynamic>).toList();
       } else {
-        throw Exception('Error al cargar rendimiento (Code: ${response.statusCode})');
+        throw Exception(
+          'Error al cargar rendimiento (Code: ${response.statusCode})',
+        );
       }
     } catch (e) {
-      print("Error en getEmployeePerformance: $e");
+      debugPrint("Error en getEmployeePerformance: $e");
       throw Exception('Error de conexión al obtener datos de empleados.');
     }
   }
 
-  Future<List<ClientCorrelationPoint>> fetchClientCorrelationFM({String period = 'year'}) async { 
+  Future<List<ClientCorrelationPoint>> fetchClientCorrelationFM({
+    String period = 'year',
+  }) async {
     // Asumo que _baseUrl es accesible aquí
-    final uri = Uri.parse('$_baseUrl/report/client_correlation_fm?period=$period');
+    final uri = Uri.parse(
+      '$_baseUrl/report/client_correlation_fm?period=$period',
+    );
 
     try {
       final response = await _client.get(
-        uri, 
-        headers: {'Content-Type': 'application/json'}
+        uri,
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        
+
         // El backend devuelve: { "data": [...] }
         final List<dynamic> dataList = jsonResponse['data'] ?? [];
 
@@ -285,12 +307,13 @@ class ReportService {
         return dataList
             .map((json) => ClientCorrelationPoint.fromJson(json))
             .toList();
-
       } else {
-        throw Exception('Error ${response.statusCode}: No se pudo cargar la data de correlación.');
+        throw Exception(
+          'Error ${response.statusCode}: No se pudo cargar la data de correlación.',
+        );
       }
     } catch (e) {
-      print('Error en ReportService.fetchClientCorrelationFM: $e');
+      debugPrint('Error en ReportService.fetchClientCorrelationFM: $e');
       throw Exception('Fallo la conexión o el procesamiento de datos.');
     }
   }

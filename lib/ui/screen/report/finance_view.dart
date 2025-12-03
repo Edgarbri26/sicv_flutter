@@ -60,7 +60,7 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -110,7 +110,7 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 elevation: 2,
-                shadowColor: Colors.black.withOpacity(0.1),
+                shadowColor: Colors.black.withValues(alpha: 0.1),
                 child: InkWell(
                   onTap: () {
                     setState(() {
@@ -490,7 +490,7 @@ class _TransactionCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

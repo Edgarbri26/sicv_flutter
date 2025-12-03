@@ -146,7 +146,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(

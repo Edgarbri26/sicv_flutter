@@ -15,13 +15,15 @@ class AdminUserManagementPage extends ConsumerStatefulWidget {
   const AdminUserManagementPage({super.key});
 
   @override
-  ConsumerState<AdminUserManagementPage> createState() => _AdminUserManagementPageState();
+  ConsumerState<AdminUserManagementPage> createState() =>
+      _AdminUserManagementPageState();
 }
 
-class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPage> {
+class _AdminUserManagementPageState
+    extends ConsumerState<AdminUserManagementPage> {
   // Estado local para filtro
   String _searchQuery = '';
-  RoleModel? _selectedRoleFilter; 
+  RoleModel? _selectedRoleFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const AppBarApp(title: 'Gestionar Usuarios'),
-      
+
       // Botón Flotante para Agregar
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
@@ -45,7 +47,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
           });
         },
       ),
-      
+
       body: Column(
         children: [
           // --- BARRA DE FILTROS ---
@@ -72,7 +74,7 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                       onChanged: (r) => setState(() => _selectedRoleFilter = r),
                     ),
                     loading: () => const LinearProgressIndicator(),
-                    error: (_,__) => const SizedBox(),
+                    error: (_, __) => const SizedBox(),
                   ),
                 ),
               ],
@@ -88,17 +90,21 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                 // 1. Aplicamos filtros locales
                 final filteredUsers = users.where((u) {
                   final query = _searchQuery.toLowerCase();
-                  final matchesSearch = u.name.toLowerCase().contains(query) || 
-                                        u.userCi.toLowerCase().contains(query);
-                  
-                  final matchesRole = _selectedRoleFilter == null || 
-                                      u.roleId == _selectedRoleFilter!.roleId;
-                                      
+                  final matchesSearch =
+                      u.name.toLowerCase().contains(query) ||
+                      u.userCi.toLowerCase().contains(query);
+
+                  final matchesRole =
+                      _selectedRoleFilter == null ||
+                      u.roleId == _selectedRoleFilter!.roleId;
+
                   return matchesSearch && matchesRole;
                 }).toList();
 
                 if (filteredUsers.isEmpty) {
-                  return const Center(child: Text("No se encontraron usuarios."));
+                  return const Center(
+                    child: Text("No se encontraron usuarios."),
+                  );
                 }
 
                 // 2. Construimos la tabla
@@ -113,54 +119,109 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+                        headingRowColor: WidgetStateProperty.all(
+                          Colors.grey[200],
+                        ),
                         columns: const [
-                          DataColumn(label: Text('CI / Cédula', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Nombre', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('role', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Estado', style: TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataColumn(
+                            label: Text(
+                              'CI / Cédula',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Nombre',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'role',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Estado',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Acciones',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ],
                         rows: filteredUsers.map((user) {
                           // Obtenemos lista de roles para pasar al modal de edición
-                          final roles = rolesAsync.value ?? []; 
-                          
-                          return DataRow(cells: [
-                            DataCell(Text(user.userCi)),
-                            DataCell(Text(user.name)),
-                            DataCell(
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
+                          final roles = rolesAsync.value ?? [];
+
+                          return DataRow(
+                            cells: [
+                              DataCell(Text(user.userCi)),
+                              DataCell(Text(user.name)),
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    user.role?.name ?? 'Sin role',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
-                                child: Text(user.role?.name ?? 'Sin role', 
-                                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                               ),
-                            ),
-                            DataCell(
-                              Icon(
-                                user.status ? Icons.check_circle : Icons.cancel,
-                                color: user.status ? Colors.green : Colors.grey,
-                                size: 20,
-                              )
-                            ),
-                            DataCell(Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  tooltip: 'Editar Usuario',
-                                  onPressed: () => _showEditUserDialog(context, user, roles),
+                              DataCell(
+                                Icon(
+                                  user.status
+                                      ? Icons.check_circle
+                                      : Icons.cancel,
+                                  color: user.status
+                                      ? Colors.green
+                                      : Colors.grey,
+                                  size: 20,
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                  tooltip: 'Eliminar Usuario',
-                                  onPressed: () => _deleteUser(user),
+                              ),
+                              DataCell(
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        color: Colors.blue,
+                                      ),
+                                      tooltip: 'Editar Usuario',
+                                      onPressed: () => _showEditUserDialog(
+                                        context,
+                                        user,
+                                        roles,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Eliminar Usuario',
+                                      onPressed: () => _deleteUser(user),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            )),
-                          ]);
+                              ),
+                            ],
+                          );
                         }).toList(),
                       ),
                     ),
@@ -198,38 +259,46 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Registrar Nuevo Usuario", style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                "Registrar Nuevo Usuario",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const Divider(height: 30),
-              
+
               TextFieldApp(
-                controller: ciCtrl, 
+                controller: ciCtrl,
                 labelText: "Cédula de Identidad",
                 prefixIcon: Icons.badge_outlined,
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
-              
+
               TextFieldApp(
-                controller: nameCtrl, 
+                controller: nameCtrl,
                 labelText: "Nombre Completo",
                 prefixIcon: Icons.person_outline,
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
-              
+
               TextFieldApp(
-                controller: passCtrl, 
-                labelText: "Contraseña", 
+                controller: passCtrl,
+                labelText: "Contraseña",
                 prefixIcon: Icons.lock_outline,
                 obscureText: true,
               ),
               const SizedBox(height: 16),
-              
+
               DropDownApp<RoleModel>(
                 labelText: "Asignar role",
                 prefixIcon: Icons.shield_outlined,
@@ -243,7 +312,8 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                 children: [
                   Checkbox(
                     value: isActive,
-                    onChanged: (val) => setStateModal(() => isActive = val ?? true),
+                    onChanged: (val) =>
+                        setStateModal(() => isActive = val ?? true),
                   ),
                   const SizedBox(width: 8),
                   const Text("Usuario Activo"),
@@ -256,33 +326,52 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                 isLoading: isSaving,
                 onPressed: () async {
                   // Validaciones simples
-                  if (ciCtrl.text.isEmpty || nameCtrl.text.isEmpty || passCtrl.text.isEmpty || selectedRole == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Todos los campos son obligatorios")));
+                  if (ciCtrl.text.isEmpty ||
+                      nameCtrl.text.isEmpty ||
+                      passCtrl.text.isEmpty ||
+                      selectedRole == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Todos los campos son obligatorios"),
+                      ),
+                    );
                     return;
                   }
 
                   setStateModal(() => isSaving = true);
 
                   try {
-                    await ref.read(usersProvider.notifier).createUser(
-                      ciCtrl.text.trim(), 
-                      nameCtrl.text.trim(), 
-                      passCtrl.text, 
-                      selectedRole!.roleId,
-                      isActive,
-                    );
-                    
+                    await ref
+                        .read(usersProvider.notifier)
+                        .createUser(
+                          ciCtrl.text.trim(),
+                          nameCtrl.text.trim(),
+                          passCtrl.text,
+                          selectedRole!.roleId,
+                          isActive,
+                        );
+
                     if (mounted) {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Usuario creado"), backgroundColor: Colors.green));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Usuario creado"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
                     }
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Error: $e"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                   } finally {
-                    if(mounted) setStateModal(() => isSaving = false);
+                    if (mounted) setStateModal(() => isSaving = false);
                   }
                 },
-              )
+              ),
             ],
           ),
         ),
@@ -291,9 +380,13 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
   }
 
   /// Modal para EDITAR Usuario (Nombre y role)
-  void _showEditUserDialog(BuildContext context, UserModel user, List<RoleModel> roles) {
+  void _showEditUserDialog(
+    BuildContext context,
+    UserModel user,
+    List<RoleModel> roles,
+  ) {
     final nameCtrl = TextEditingController(text: user.name);
-    
+
     // Buscamos el role actual en la lista para que el dropdown lo reconozca
     RoleModel? selectedRole;
     try {
@@ -334,28 +427,38 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
             child: const Text("Cancelar"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
             child: const Text("Guardar Cambios"),
             onPressed: () async {
               try {
                 // Llamamos al método genérico de actualización
-                await ref.read(usersProvider.notifier).updateUser(
-                  user.userCi,
-                  name: nameCtrl.text.trim(),
-                  roleId: selectedRole?.roleId,
-                );
-                
+                await ref
+                    .read(usersProvider.notifier)
+                    .updateUser(
+                      user.userCi,
+                      name: nameCtrl.text.trim(),
+                      roleId: selectedRole?.roleId,
+                    );
+
                 if (mounted) {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Usuario actualizado"), backgroundColor: Colors.green),
+                    const SnackBar(
+                      content: Text("Usuario actualizado"),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e"), backgroundColor: Colors.red));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("$e"), backgroundColor: Colors.red),
+                );
               }
             },
-          )
+          ),
         ],
       ),
     );
@@ -367,9 +470,14 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Confirmar Eliminación"),
-        content: Text("¿Estás seguro de eliminar al usuario '${user.name}'? Esta acción no se puede deshacer."),
+        content: Text(
+          "¿Estás seguro de eliminar al usuario '${user.name}'? Esta acción no se puede deshacer.",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancelar")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancelar"),
+          ),
           TextButton(
             child: const Text("Eliminar", style: TextStyle(color: Colors.red)),
             onPressed: () async {
@@ -378,15 +486,21 @@ class _AdminUserManagementPageState extends ConsumerState<AdminUserManagementPag
                 if (mounted) {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Usuario eliminado"), backgroundColor: Colors.green),
+                    const SnackBar(
+                      content: Text("Usuario eliminado"),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               } catch (e) {
+                if (!mounted) return;
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e"), backgroundColor: Colors.red));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("$e"), backgroundColor: Colors.red),
+                );
               }
             },
-          )
+          ),
         ],
       ),
     );

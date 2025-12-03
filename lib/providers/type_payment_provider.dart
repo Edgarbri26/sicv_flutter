@@ -1,4 +1,4 @@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
@@ -9,7 +9,8 @@ final typePaymentServiceProvider = Provider<TypePaymentService>((ref) {
   return TypePaymentService();
 });
 
-class TypePaymentNotifier  extends StateNotifier<AsyncValue<List<TypePaymentModel>>> {
+class TypePaymentNotifier
+    extends StateNotifier<AsyncValue<List<TypePaymentModel>>> {
   final TypePaymentService _service;
 
   TypePaymentNotifier(this._service) : super(const AsyncValue.loading()) {
@@ -31,13 +32,11 @@ class TypePaymentNotifier  extends StateNotifier<AsyncValue<List<TypePaymentMode
       final typePayments = await _service.getAll();
       state = AsyncValue.data(typePayments);
     } catch (e) {
-      print("Error refrescando tipos de pago: $e");
+      debugPrint("Error refrescando tipos de pago: $e");
     }
   }
 
-  Future<void> createTypePayment({
-    required String name,
-  }) async {
+  Future<void> createTypePayment({required String name}) async {
     await _service.create(name);
   }
 
@@ -48,26 +47,24 @@ class TypePaymentNotifier  extends StateNotifier<AsyncValue<List<TypePaymentMode
     await _service.update(id, newName);
   }
 
-  Future<void> deleteTypePayment({
-    required int id,
-  }) async {
+  Future<void> deleteTypePayment({required int id}) async {
     await _service.delete(id);
   }
 
-  Future<void> deactivateTypePayment({
-    required int id,
-  }) async {
+  Future<void> deactivateTypePayment({required int id}) async {
     await _service.deactivate(id);
   }
 
-  Future<void> activateTypePayment({
-    required int id,
-  }) async {
+  Future<void> activateTypePayment({required int id}) async {
     await _service.activate(id);
   }
+}
 
-} 
-final typePaymentProvider = StateNotifierProvider<TypePaymentNotifier, AsyncValue<List<TypePaymentModel>>>((ref) {
-  final service = ref.watch(typePaymentServiceProvider);
-  return TypePaymentNotifier(service);
-});
+final typePaymentProvider =
+    StateNotifierProvider<
+      TypePaymentNotifier,
+      AsyncValue<List<TypePaymentModel>>
+    >((ref) {
+      final service = ref.watch(typePaymentServiceProvider);
+      return TypePaymentNotifier(service);
+    });

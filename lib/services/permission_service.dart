@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/permission_model.dart';
@@ -14,7 +15,7 @@ class PermissionService {
   /// Se usa en RoleEditView para mostrar el listado en el diálogo "Agregar Permiso".
   Future<List<PermissionModel>> getAllPermissions() async {
     // Asegúrate de que esta ruta coincida con tu backend (ej: /permission o /permissions)
-    final uri = Uri.parse('$_baseUrl/permission'); 
+    final uri = Uri.parse('$_baseUrl/permission');
 
     try {
       final response = await _client.get(
@@ -28,13 +29,15 @@ class PermissionService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         final List<dynamic> list = responseData['data'];
-        
+
         return list.map((json) => PermissionModel.fromJson(json)).toList();
       } else {
-        throw Exception('Error al cargar lista de permisos (Código: ${response.statusCode})');
+        throw Exception(
+          'Error al cargar lista de permisos (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
-      print('Error getAllPermissions: $e');
+      debugPrint('Error getAllPermissions: $e');
       // Re-lanzamos el error para que el Provider (AsyncValue) lo capture y muestre en UI
       throw Exception('Error de conexión al obtener permisos.');
     }
@@ -54,15 +57,17 @@ class PermissionService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         final List<dynamic> list = responseData['data'];
-        
+
         return list.map((json) => PermissionModel.fromJson(json)).toList();
       } else {
         // Si falla este (ej: role sin permisos), devolvemos lista vacía para no bloquear el login
-        print('Advertencia: No se pudieron cargar permisos del role $roleId (${response.statusCode})');
+        debugPrint(
+          'Advertencia: No se pudieron cargar permisos del role $roleId (${response.statusCode})',
+        );
         return [];
       }
     } catch (e) {
-      print('Error getPermissionsByRole: $e');
+      debugPrint('Error getPermissionsByRole: $e');
       return [];
     }
   }

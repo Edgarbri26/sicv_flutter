@@ -44,7 +44,7 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
   ProductModel? _selectedProduct;
   DateTime? _expirationDate;
   int? _selectedLotId;
-  
+
   List<StockLotModel> _availableLots = [];
   bool _isLoadingLots = false;
   bool _isSaving = false;
@@ -59,12 +59,12 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
 
   // --- LÓGICA DE LOTES ---
   Future<void> _fetchLots(int productId) async {
-    setState(() { 
-      _isLoadingLots = true; 
-      _availableLots = []; 
-      _selectedLotId = null; 
+    setState(() {
+      _isLoadingLots = true;
+      _availableLots = [];
+      _selectedLotId = null;
     });
-    
+
     try {
       final lots = await _stockLotService.getByProduct(productId);
       lots.sort((a, b) => a.expirationDate.compareTo(b.expirationDate)); // FEFO
@@ -79,7 +79,7 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
   // --- LÓGICA DE GUARDADO ---
   Future<void> _handleSave() async {
     // 1. Obtener usuario (Riverpod 2.0 style)
-    final user = ref.read(authProvider).value; 
+    final user = ref.read(authProvider).value;
     if (user == null) {
       _showError("No hay sesión activa");
       return;
@@ -97,31 +97,39 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
     try {
       // 3. Crear modelo
       final movement = MovementModel.forCreation(
-        depotId: 1, 
+        depotId: 1,
         product: _selectedProduct!,
         type: _selectedType.displayName,
         amount: qty.toDouble(),
         userCi: user.userCi,
-        observation: _reasonCtrl.text.isEmpty ? 'Ajuste Manual' : _reasonCtrl.text,
+        observation: _reasonCtrl.text.isEmpty
+            ? 'Ajuste Manual'
+            : _reasonCtrl.text,
       );
 
       // 4. Enviar al servicio (usando el método genérico que fusiona datos)
       await MovementService().createAdjustment(
         movement,
         extraData: {
-          if (_expirationDate != null) 'date_expiration': _expirationDate!.toIso8601String(),
+          if (_expirationDate != null)
+            'date_expiration': _expirationDate!.toIso8601String(),
           if (_selectedLotId != null) 'stock_lot_id': _selectedLotId,
         },
       );
 
       // 5. Refrescar listas
-      ref.invalidate(productsProvider); // Actualiza el stock en la lista de productos
+      ref.invalidate(
+        productsProvider,
+      ); // Actualiza el stock en la lista de productos
       ref.invalidate(movementsProvider); // Actualiza la tabla de movimientos
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ajuste guardado'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Ajuste guardado'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
@@ -132,9 +140,9 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
   @override
@@ -151,9 +159,12 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Nuevo Ajuste de Inventario', style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            'Nuevo Ajuste de Inventario',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const Divider(height: 24),
-          
+
           Flexible(
             child: SingleChildScrollView(
               child: Column(
@@ -170,16 +181,16 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
                         setState(() {
                           _selectedProduct = p;
                           // Resetear campos dependientes
-                          _expirationDate = null; 
+                          _expirationDate = null;
                           _dateCtrl.clear();
-                          _selectedLotId = null; 
+                          _selectedLotId = null;
                           _availableLots = [];
                         });
                         if (p != null && p.perishable) _fetchLots(p.id);
                       },
                     ),
                     loading: () => const LinearProgressIndicator(),
-                    error: (_,__) => const Text("Error cargando productos"),
+                    error: (_, __) => const Text("Error cargando productos"),
                   ),
                   const SizedBox(height: 16),
 
@@ -188,7 +199,10 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
                     labelText: 'Tipo',
                     prefixIcon: Icons.swap_vert,
                     initialValue: _selectedType,
-                    items: const [MovementType.ajustePositivo, MovementType.ajusteNegativo],
+                    items: const [
+                      MovementType.ajustePositivo,
+                      MovementType.ajusteNegativo,
+                    ],
                     itemToString: (t) => t.displayName,
                     onChanged: (t) {
                       if (t != null) setState(() => _selectedType = t);
@@ -203,13 +217,16 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
                       GestureDetector(
                         onTap: () async {
                           final picked = await showDatePicker(
-                            context: context, initialDate: DateTime.now(),
-                            firstDate: DateTime.now(), lastDate: DateTime(2100)
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100),
                           );
                           if (picked != null) {
                             setState(() {
                               _expirationDate = picked;
-                              _dateCtrl.text = "${picked.year}-${picked.month.toString().padLeft(2,'0')}-${picked.day.toString().padLeft(2,'0')}";
+                              _dateCtrl.text =
+                                  "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                             });
                           }
                         },
@@ -221,38 +238,50 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
                           ),
                         ),
                       ),
-                    
+
                     // Caso Salida: Lote
                     if (_selectedType == MovementType.ajusteNegativo)
-                      _isLoadingLots 
-                        ? const Center(child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: CircularProgressIndicator(),
-                          ))
-                        : _availableLots.isEmpty
+                      _isLoadingLots
+                          ? const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          : _availableLots.isEmpty
                           ? Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.1),
+                                color: Colors.orange.withValues(alpha: 0.1),
                                 border: Border.all(color: Colors.orange),
-                                borderRadius: BorderRadius.circular(8)
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Row(children: [
-                                Icon(Icons.warning, color: Colors.orange), 
-                                SizedBox(width: 8), 
-                                Expanded(child: Text("Sin lotes disponibles"))
-                              ]),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.warning, color: Colors.orange),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text("Sin lotes disponibles"),
+                                  ),
+                                ],
+                              ),
                             )
                           : DropDownApp<int>(
                               labelText: 'Lote a descontar',
                               prefixIcon: Icons.layers,
                               initialValue: _selectedLotId,
-                              items: _availableLots.map((l) => l.stockLotId).toList(),
+                              items: _availableLots
+                                  .map((l) => l.stockLotId)
+                                  .toList(),
                               itemToString: (id) {
-                                final lot = _availableLots.firstWhere((l) => l.stockLotId == id, orElse: () => _availableLots.first);
+                                final lot = _availableLots.firstWhere(
+                                  (l) => l.stockLotId == id,
+                                  orElse: () => _availableLots.first,
+                                );
                                 return lot.displayLabel;
                               },
-                              onChanged: (v) => setState(() => _selectedLotId = v),
+                              onChanged: (v) =>
+                                  setState(() => _selectedLotId = v),
                             ),
                     const SizedBox(height: 16),
                   ],
@@ -277,48 +306,68 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // --- BOTONES (CORREGIDO EL ERROR DE INFINITE WIDTH) ---
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed: () => Navigator.pop(context), 
-                child: const Text("CANCELAR")
+                onPressed: () => Navigator.pop(context),
+                child: const Text("CANCELAR"),
               ),
               const SizedBox(width: 8),
-              
+
               // AQUÍ ESTABA EL ERROR: El estilo del botón no debe tener ancho infinito en un Row
               ElevatedButton.icon(
-                icon: _isSaving ? const SizedBox.shrink() : const Icon(Icons.save),
-                label: _isSaving 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) 
-                  : const Text("GUARDAR"),
+                icon: _isSaving
+                    ? const SizedBox.shrink()
+                    : const Icon(Icons.save),
+                label: _isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("GUARDAR"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   // Usamos Size(0, 45) para que se adapte al contenido, no al infinito
-                  minimumSize: const Size(0, 45), 
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  minimumSize: const Size(0, 45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                onPressed: _isSaving ? null : () {
-                  // Validaciones simples antes de llamar a guardar
-                  if (_selectedProduct == null) return;
-                  if (_quantityCtrl.text.isEmpty) return;
-                  
-                  if (isPerishable) {
-                    if (_selectedType == MovementType.ajustePositivo && _expirationDate == null) return;
-                    if (_selectedType == MovementType.ajusteNegativo && _selectedLotId == null) return;
-                  }
-                  
-                  _handleSave();
-                },
-              )
+                onPressed: _isSaving
+                    ? null
+                    : () {
+                        // Validaciones simples antes de llamar a guardar
+                        if (_selectedProduct == null) return;
+                        if (_quantityCtrl.text.isEmpty) return;
+
+                        if (isPerishable) {
+                          if (_selectedType == MovementType.ajustePositivo &&
+                              _expirationDate == null)
+                            return;
+                          if (_selectedType == MovementType.ajusteNegativo &&
+                              _selectedLotId == null)
+                            return;
+                        }
+
+                        _handleSave();
+                      },
+              ),
             ],
-          )
+          ),
         ],
       ),
     );

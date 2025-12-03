@@ -3,7 +3,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
-import 'package:sicv_flutter/ui/widgets/Info_chip.dart';
+import 'package:sicv_flutter/ui/widgets/info_chip.dart';
 
 class DetailProductCart extends StatelessWidget {
   final ProductModel item;

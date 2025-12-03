@@ -212,14 +212,14 @@ class _UnitsScreenState extends State<UnitsScreen> {
     final unidad = _mostrarResultadosBusqueda
         ? _unidadesFiltradas[index]
         : _unidades[index];
-    print('TODO: Editar $unidad');
+    debugPrint('TODO: Editar $unidad');
   }
 
   void _eliminarUnidad(int index) {
     final unidad = _mostrarResultadosBusqueda
         ? _unidadesFiltradas[index]
         : _unidades[index];
-    print('TODO: Eliminar $unidad');
+    debugPrint('TODO: Eliminar $unidad');
   }
 
   @override
@@ -301,7 +301,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 2,
                         offset: const Offset(0, 1),
                       ),
@@ -318,7 +318,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.1),
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(

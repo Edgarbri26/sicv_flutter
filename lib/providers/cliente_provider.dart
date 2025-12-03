@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/client_model.dart';
@@ -33,7 +34,7 @@ class ClienteProvider extends StateNotifier<AsyncValue<List<ClientModel>>> {
       state = AsyncValue.data(items);
     } catch (e) {
       // Si falla el refresh silencioso, no cambiamos el estado actual
-      print("Error refrescando clientes: $e");
+      debugPrint("Error refrescando clientes: $e");
     }
   }
 

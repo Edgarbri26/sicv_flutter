@@ -20,9 +20,8 @@ class ClientReportView extends ConsumerWidget {
       backgroundColor: const Color(0xFFF9FAFB),
       body: clientStateAsync.when(
         // ESTADO: CARGANDO
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Colors.blue),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: Colors.blue)),
         // ESTADO: ERROR
         error: (err, stack) => Center(
           child: Column(
@@ -40,7 +39,7 @@ class ClientReportView extends ConsumerWidget {
                 onPressed: () => ref.refresh(clientReportProvider),
                 icon: const Icon(Icons.refresh),
                 label: const Text("Reintentar"),
-              )
+              ),
             ],
           ),
         ),
@@ -55,7 +54,7 @@ class ClientReportView extends ConsumerWidget {
               // Grid de KPIs
               _buildKpiGrid(context, data),
               const SizedBox(height: 24),
-              
+
               // Layout principal
               LayoutBuilder(
                 builder: (context, constraints) {
@@ -74,7 +73,11 @@ class ClientReportView extends ConsumerWidget {
   }
 
   // --- Header y Filtros ---
-  Widget _buildHeader(BuildContext context, WidgetRef ref, String currentFilter) {
+  Widget _buildHeader(
+    BuildContext context,
+    WidgetRef ref,
+    String currentFilter,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -84,9 +87,9 @@ class ClientReportView extends ConsumerWidget {
             Text(
               "Reporte de Clientes",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
-                  ),
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1F2937),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -106,8 +109,15 @@ class ClientReportView extends ConsumerWidget {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: currentFilter,
-              icon: const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+              icon: const Icon(
+                Icons.calendar_today,
+                size: 16,
+                color: Colors.grey,
+              ),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
               items: const [
                 DropdownMenuItem(value: 'week', child: Text("Última Semana")),
                 DropdownMenuItem(value: 'month', child: Text("Último Mes")),
@@ -128,27 +138,49 @@ class ClientReportView extends ConsumerWidget {
   // --- Grid de KPIs (CON DATOS REALES) ---
   Widget _buildKpiGrid(BuildContext context, ClientReportState data) {
     final kpis = [
-      _KpiInfo("Total Clientes", "${data.totalClients}", Icons.groups_outlined, Colors.blue),
-      _KpiInfo("Ingreso Total", "\$${data.totalRevenue}", Icons.attach_money, Colors.green),
-      _KpiInfo("Valor Órden Prom.", "\$${data.avgOrderValue}", Icons.trending_up, Colors.orange),
-      _KpiInfo("Cliente Top", data.topClientName, Icons.star_border, Colors.purple),
+      _KpiInfo(
+        "Total Clientes",
+        "${data.totalClients}",
+        Icons.groups_outlined,
+        Colors.blue,
+      ),
+      _KpiInfo(
+        "Ingreso Total",
+        "\$${data.totalRevenue}",
+        Icons.attach_money,
+        Colors.green,
+      ),
+      _KpiInfo(
+        "Valor Órden Prom.",
+        "\$${data.avgOrderValue}",
+        Icons.trending_up,
+        Colors.orange,
+      ),
+      _KpiInfo(
+        "Cliente Top",
+        data.topClientName,
+        Icons.star_border,
+        Colors.purple,
+      ),
     ];
 
-    return LayoutBuilder(builder: (context, constraints) {
-      int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
-      return GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 2.0,
-        ),
-        itemCount: kpis.length,
-        itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
+        return GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 2.0,
+          ),
+          itemCount: kpis.length,
+          itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
+        );
+      },
+    );
   }
 
   // --- LAYOUTS ---
@@ -165,9 +197,9 @@ class ClientReportView extends ConsumerWidget {
                 title: "Top 5 Clientes (Valor Monetario)",
                 child: AspectRatio(
                   aspectRatio: 1.7,
-                  child: data.topClients.isEmpty 
-                    ? const Center(child: Text("Sin data de Top Clientes")) 
-                    : _TopClientsChart(data: data.topClients),
+                  child: data.topClients.isEmpty
+                      ? const Center(child: Text("Sin data de Top Clientes"))
+                      : _TopClientsChart(data: data.topClients),
                 ),
               ),
             ),
@@ -177,7 +209,15 @@ class ClientReportView extends ConsumerWidget {
               child: _ChartContainer(
                 title: "Actividad Reciente",
                 child: data.clientList.isEmpty
-                    ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay clientes en el periodo", style: TextStyle(color: Colors.grey))))
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            "No hay clientes en el periodo",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      )
                     : _ClientList(clients: data.clientList),
               ),
             ),
@@ -190,9 +230,9 @@ class ClientReportView extends ConsumerWidget {
           subtitle: "Eje X: N° Órdenes (Frecuencia) | Eje Y: Valor Total (\$)",
           child: SizedBox(
             height: 350,
-            child: data.correlationData.isEmpty 
-              ? const Center(child: Text("Sin datos de correlación"))
-              : _FrequencyValueScatterChart(points: data.correlationData),
+            child: data.correlationData.isEmpty
+                ? const Center(child: Text("Sin datos de correlación"))
+                : _FrequencyValueScatterChart(points: data.correlationData),
           ),
         ),
       ],
@@ -206,9 +246,9 @@ class ClientReportView extends ConsumerWidget {
           title: "Top 5 Clientes",
           child: AspectRatio(
             aspectRatio: 1.3,
-            child: data.topClients.isEmpty 
-              ? const Center(child: Text("Sin data de Top Clientes")) 
-              : _TopClientsChart(data: data.topClients),
+            child: data.topClients.isEmpty
+                ? const Center(child: Text("Sin data de Top Clientes"))
+                : _TopClientsChart(data: data.topClients),
           ),
         ),
         const SizedBox(height: 24),
@@ -218,17 +258,25 @@ class ClientReportView extends ConsumerWidget {
           subtitle: "Segmentación de clientes",
           child: SizedBox(
             height: 300,
-            child: data.correlationData.isEmpty 
-              ? const Center(child: Text("Sin datos de correlación"))
-              : _FrequencyValueScatterChart(points: data.correlationData),
+            child: data.correlationData.isEmpty
+                ? const Center(child: Text("Sin datos de correlación"))
+                : _FrequencyValueScatterChart(points: data.correlationData),
           ),
         ),
         const SizedBox(height: 24),
         _ChartContainer(
           title: "Actividad Reciente",
           child: data.clientList.isEmpty
-            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay clientes en el periodo", style: TextStyle(color: Colors.grey))))
-            : _ClientList(clients: data.clientList),
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      "No hay clientes en el periodo",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                )
+              : _ClientList(clients: data.clientList),
         ),
       ],
     );
@@ -243,7 +291,11 @@ class _ChartContainer extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget child;
-  const _ChartContainer({required this.title, required this.child, this.subtitle});
+  const _ChartContainer({
+    required this.title,
+    required this.child,
+    this.subtitle,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -252,16 +304,27 @@ class _ChartContainer extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), spreadRadius: 2, blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.05),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(subtitle!, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(
+              subtitle!,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
           ],
           const SizedBox(height: 24),
           child,
@@ -286,8 +349,41 @@ class _KpiCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200)),
-      child: Row(children: [Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: info.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(info.icon, color: info.color, size: 22)), const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [Text(info.value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600]))])]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: info.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(info.icon, color: info.color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                info.value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                info.title,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -297,21 +393,24 @@ class _TopClientsChart extends StatelessWidget {
   const _TopClientsChart({required this.data});
   @override
   Widget build(BuildContext context) {
-    final double maxY = data.isEmpty ? 1 : data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2;
+    final double maxY = data.isEmpty
+        ? 1
+        : data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2;
 
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: maxY, 
-        
+        maxY: maxY,
+
         // 🚀 MODIFICACIÓN CLAVE: Habilitar y Configurar TouchData
         barTouchData: BarTouchData(
           enabled: true, // Habilitar toque
           touchTooltipData: BarTouchTooltipData(
             // Estilo del tooltip
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final client = data[groupIndex]; // Obtener el objeto de datos del cliente
-              
+              final client =
+                  data[groupIndex]; // Obtener el objeto de datos del cliente
+
               // Formato para mostrar el Nombre y el Valor Gastado
               return BarTooltipItem(
                 '${client.name}\n\$${client.value.toStringAsFixed(2)}', // Contenido del tooltip
@@ -325,9 +424,9 @@ class _TopClientsChart extends StatelessWidget {
             // Estilo de la burbuja (opcional)
             getTooltipColor: (group) => Colors.blueGrey,
           ),
-        ), 
+        ),
+
         // -------------------------------------------------------------
-        
         titlesData: FlTitlesData(
           // ... (resto de titlesData sin cambios)
           show: true,
@@ -338,7 +437,10 @@ class _TopClientsChart extends StatelessWidget {
                 if (value.toInt() >= 0 && value.toInt() < data.length) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(data[value.toInt()].name.split(" ")[0], style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    child: Text(
+                      data[value.toInt()].name.split(" ")[0],
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
                   );
                 }
                 return const Text('');
@@ -359,7 +461,9 @@ class _TopClientsChart extends StatelessWidget {
                 toY: entry.value.value,
                 color: entry.value.color,
                 width: 20,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(4),
+                ),
                 backDrawRodData: BackgroundBarChartRodData(
                   show: true,
                   toY: maxY, // Ya corregido en el paso anterior
@@ -387,12 +491,16 @@ class _ClientList extends StatelessWidget {
       separatorBuilder: (_, __) => const Divider(height: 16),
       itemBuilder: (context, index) {
         final client = clients[index];
-        Color statusColor = client.status == "Activo" ? Colors.green : Colors.orange;
+        Color statusColor = client.status == "Activo"
+            ? Colors.green
+            : Colors.orange;
 
         return Row(
           children: [
             CircleAvatar(
-              backgroundColor: client.type == "VIP" ? Colors.amber[100] : Colors.blue[50],
+              backgroundColor: client.type == "VIP"
+                  ? Colors.amber[100]
+                  : Colors.blue[50],
               child: Icon(
                 client.type == "VIP" ? Icons.star : Icons.person,
                 color: client.type == "VIP" ? Colors.amber[800] : Colors.blue,
@@ -404,7 +512,13 @@ class _ClientList extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(client.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    client.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   Text(
                     "${client.type} • Status: ${client.status}", // Usamos Status del provider
                     style: TextStyle(color: Colors.grey[500], fontSize: 11),
@@ -415,7 +529,10 @@ class _ClientList extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text("\$${client.totalSpent.toStringAsFixed(0)}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  "\$${client.totalSpent.toStringAsFixed(0)}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 4),
                 Container(
                   width: 8,
@@ -424,9 +541,9 @@ class _ClientList extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: statusColor,
                   ),
-                )
+                ),
               ],
-            )
+            ),
           ],
         );
       },
@@ -455,32 +572,95 @@ class _FrequencyValueScatterChart extends StatelessWidget {
 
     return ScatterChart(
       ScatterChartData(
-        minX: 0, maxX: maxX, minY: 0, maxY: maxY,
+        minX: 0,
+        maxX: maxX,
+        minY: 0,
+        maxY: maxY,
         gridData: FlGridData(
-          show: true, drawVerticalLine: true, drawHorizontalLine: true,
-          getDrawingHorizontalLine: (val) => FlLine(color: val == highValueThreshold ? Colors.green.shade200 : Colors.grey.withOpacity(0.1), strokeWidth: 2),
-          getDrawingVerticalLine: (val) => FlLine(color: val == highFrequencyThreshold ? Colors.blue.shade200 : Colors.grey.withOpacity(0.1), strokeWidth: 2),
+          show: true,
+          drawVerticalLine: true,
+          drawHorizontalLine: true,
+          getDrawingHorizontalLine: (val) => FlLine(
+            color: val == highValueThreshold
+                ? Colors.green.shade200
+                : Colors.grey.withValues(alpha: 0.1),
+            strokeWidth: 2,
+          ),
+          getDrawingVerticalLine: (val) => FlLine(
+            color: val == highFrequencyThreshold
+                ? Colors.blue.shade200
+                : Colors.grey.withValues(alpha: 0.1),
+            strokeWidth: 2,
+          ),
         ),
         titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(axisNameWidget: const Text("N° Órdenes (Frecuencia)", style: TextStyle(fontSize: 10)), sideTitles: SideTitles(showTitles: true, getTitlesWidget: (val, meta) => Text("${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)))),
-          leftTitles: AxisTitles(axisNameWidget: const Text("Valor Total (\$)", style: TextStyle(fontSize: 10)), sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (val, meta) => Text(val >= 1000 ? "${(val/1000).toStringAsFixed(0)}k" : "${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey)))),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            axisNameWidget: const Text(
+              "N° Órdenes (Frecuencia)",
+              style: TextStyle(fontSize: 10),
+            ),
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (val, meta) => Text(
+                "${val.toInt()}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+            ),
+          ),
+          leftTitles: AxisTitles(
+            axisNameWidget: const Text(
+              "Valor Total (\$)",
+              style: TextStyle(fontSize: 10),
+            ),
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (val, meta) => Text(
+                val >= 1000
+                    ? "${(val / 1000).toStringAsFixed(0)}k"
+                    : "${val.toInt()}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+            ),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
-        borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.withOpacity(0.2))),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
         scatterSpots: points.map((point) {
           bool highFreq = point.ordersCount >= highFrequencyThreshold;
           bool highValue = point.totalSpent >= highValueThreshold;
-          
+
           Color color;
           double radius = 6;
 
-          if (highFreq && highValue) { color = Colors.purple; radius = 10; } 
-          else if (highFreq && !highValue) { color = Colors.orange; } 
-          else if (!highFreq && highValue) { color = Colors.teal; } 
-          else { color = Colors.red; }
+          if (highFreq && highValue) {
+            color = Colors.purple;
+            radius = 10;
+          } else if (highFreq && !highValue) {
+            color = Colors.orange;
+          } else if (!highFreq && highValue) {
+            color = Colors.teal;
+          } else {
+            color = Colors.red;
+          }
 
-          return ScatterSpot(point.ordersCount.toDouble(), point.totalSpent, dotPainter: FlDotCirclePainter(color: color, radius: radius, strokeWidth: 0));
+          return ScatterSpot(
+            point.ordersCount.toDouble(),
+            point.totalSpent,
+            dotPainter: FlDotCirclePainter(
+              color: color,
+              radius: radius,
+              strokeWidth: 0,
+            ),
+          );
         }).toList(),
         scatterTouchData: ScatterTouchData(
           enabled: true,
@@ -488,9 +668,23 @@ class _FrequencyValueScatterChart extends StatelessWidget {
             getTooltipColor: (_) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
               try {
-                final match = points.firstWhere((p) => p.ordersCount.toDouble() == spot.x && p.totalSpent == spot.y);
-                return XAxisTooltipItem(text: "${match.name}\nÓrdenes: ${match.ordersCount}\nValor: \$${match.totalSpent.toStringAsFixed(0)}", textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12));
-              } catch (e) { return null; }
+                final match = points.firstWhere(
+                  (p) =>
+                      p.ordersCount.toDouble() == spot.x &&
+                      p.totalSpent == spot.y,
+                );
+                return XAxisTooltipItem(
+                  text:
+                      "${match.name}\nÓrdenes: ${match.ordersCount}\nValor: \$${match.totalSpent.toStringAsFixed(0)}",
+                  textStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                );
+              } catch (e) {
+                return null;
+              }
             },
           ),
         ),
@@ -500,6 +694,6 @@ class _FrequencyValueScatterChart extends StatelessWidget {
 }
 
 class XAxisTooltipItem extends ScatterTooltipItem {
-
-  XAxisTooltipItem({required String text, required TextStyle textStyle}) : super(text, textStyle: textStyle, bottomMargin: 10);
+  XAxisTooltipItem({required String text, required TextStyle textStyle})
+    : super(text, textStyle: textStyle, bottomMargin: 10);
 }

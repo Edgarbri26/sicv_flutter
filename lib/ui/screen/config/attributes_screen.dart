@@ -12,7 +12,7 @@ class AttributesScreen extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          iconTheme: IconThemeData( color:AppColors.textPrimary),
+          iconTheme: IconThemeData(color: AppColors.textPrimary),
           title: const Text(
             'Atributos y Campos',
             style: TextStyle(
@@ -60,14 +60,14 @@ class GestionListaWidget extends StatelessWidget {
   });
 
   void _agregarItem(BuildContext context) {
-    print('TODO: Agregar $tipo');
+    debugPrint('TODO: Agregar $tipo');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Abriendo formulario para agregar $tipo...')),
     );
   }
 
   void _editarItem(String item) {
-    print('TODO: Editar $item');
+    debugPrint('TODO: Editar $item');
   }
 
   @override

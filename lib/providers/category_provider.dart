@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/category_model.dart';
@@ -34,7 +35,7 @@ class CategoriesNotifier
       state = AsyncValue.data(categories);
     } catch (e) {
       // Si falla el refresh silencioso, no cambiamos el estado actual
-      print("Error refrescando categorías: $e");
+      debugPrint("Error refrescando categorías: $e");
     }
   }
 

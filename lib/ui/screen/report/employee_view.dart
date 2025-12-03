@@ -20,9 +20,8 @@ class EmployeeReportView extends ConsumerWidget {
       backgroundColor: const Color(0xFFF9FAFB),
       body: employeeStateAsync.when(
         // ESTADO: CARGANDO
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Colors.blue),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: Colors.blue)),
         // ESTADO: ERROR
         error: (err, stack) => Center(
           child: Column(
@@ -40,7 +39,7 @@ class EmployeeReportView extends ConsumerWidget {
                 onPressed: () => ref.refresh(employeeReportProvider),
                 icon: const Icon(Icons.refresh),
                 label: const Text("Reintentar"),
-              )
+              ),
             ],
           ),
         ),
@@ -53,10 +52,10 @@ class EmployeeReportView extends ConsumerWidget {
               // Header con filtro
               _buildHeader(context, ref, currentFilter),
               const SizedBox(height: 32),
-              
+
               // Grid de KPIs
               _buildKpiGrid(context, data),
-              
+
               const SizedBox(height: 24),
 
               // Layout Adaptativo (Gráficos y Lista)
@@ -77,7 +76,11 @@ class EmployeeReportView extends ConsumerWidget {
   }
 
   // --- Header y Filtros ---
-  Widget _buildHeader(BuildContext context, WidgetRef ref, String currentFilter) {
+  Widget _buildHeader(
+    BuildContext context,
+    WidgetRef ref,
+    String currentFilter,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -87,9 +90,9 @@ class EmployeeReportView extends ConsumerWidget {
             Text(
               "Reporte de Personal",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
-                  ),
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1F2937),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -109,8 +112,15 @@ class EmployeeReportView extends ConsumerWidget {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: currentFilter,
-              icon: const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+              icon: const Icon(
+                Icons.calendar_today,
+                size: 16,
+                color: Colors.grey,
+              ),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
               items: const [
                 DropdownMenuItem(value: 'week', child: Text("Última Semana")),
                 DropdownMenuItem(value: 'month', child: Text("Último Mes")),
@@ -130,29 +140,51 @@ class EmployeeReportView extends ConsumerWidget {
 
   Widget _buildKpiGrid(BuildContext context, EmployeeReportState data) {
     final kpis = [
-      _KpiInfo("Empleados Activos", "${data.activeEmployees}", Icons.people_alt_outlined, Colors.blue),
-      _KpiInfo("Mejor Desempeño", data.topPerformer, Icons.star_border, Colors.amber),
-      _KpiInfo("Ganancia Total", "\$${data.totalProfit}", Icons.attach_money, Colors.green),
-      _KpiInfo("Promedio Ganancia", "\$${data.avgProfit}", Icons.bar_chart, Colors.purple),
+      _KpiInfo(
+        "Empleados Activos",
+        "${data.activeEmployees}",
+        Icons.people_alt_outlined,
+        Colors.blue,
+      ),
+      _KpiInfo(
+        "Mejor Desempeño",
+        data.topPerformer,
+        Icons.star_border,
+        Colors.amber,
+      ),
+      _KpiInfo(
+        "Ganancia Total",
+        "\$${data.totalProfit}",
+        Icons.attach_money,
+        Colors.green,
+      ),
+      _KpiInfo(
+        "Promedio Ganancia",
+        "\$${data.avgProfit}",
+        Icons.bar_chart,
+        Colors.purple,
+      ),
     ];
 
-    return LayoutBuilder(builder: (context, constraints) {
-      int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
-      double ratio = constraints.maxWidth < 600 ? 1.5 : 2.2;
-      
-      return GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: ratio,
-        ),
-        itemCount: kpis.length,
-        itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
+        double ratio = constraints.maxWidth < 600 ? 1.5 : 2.2;
+
+        return GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: ratio,
+          ),
+          itemCount: kpis.length,
+          itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
+        );
+      },
+    );
   }
 
   // --- LAYOUTS ---
@@ -171,9 +203,14 @@ class EmployeeReportView extends ConsumerWidget {
                 subtitle: "Cantidad de ventas realizadas",
                 child: AspectRatio(
                   aspectRatio: 1.6,
-                  child: data.chartData.isEmpty 
-                    ? const Center(child: Text("Sin datos de ventas", style: TextStyle(color: Colors.grey))) 
-                    : _EmployeeBarChart(data: data.chartData),
+                  child: data.chartData.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "Sin datos de ventas",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : _EmployeeBarChart(data: data.chartData),
                 ),
               ),
             ),
@@ -186,9 +223,14 @@ class EmployeeReportView extends ConsumerWidget {
                 subtitle: "Eje X: N° Ventas | Eje Y: Ganancia (\$)",
                 child: AspectRatio(
                   aspectRatio: 1.6,
-                  child: data.correlationData.isEmpty 
-                    ? const Center(child: Text("Sin datos de correlación", style: TextStyle(color: Colors.grey)))
-                    : _CorrelationChart(data: data.correlationData),
+                  child: data.correlationData.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "Sin datos de correlación",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : _CorrelationChart(data: data.correlationData),
                 ),
               ),
             ),
@@ -199,9 +241,17 @@ class EmployeeReportView extends ConsumerWidget {
         _ChartContainer(
           title: "Detalle de Equipo",
           subtitle: "Estado y ganancias generadas",
-          child: data.employees.isEmpty 
-            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay empleados con ventas", style: TextStyle(color: Colors.grey))))
-            : _EmployeeList(employees: data.employees),
+          child: data.employees.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      "No hay empleados con ventas",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                )
+              : _EmployeeList(employees: data.employees),
         ),
       ],
     );
@@ -215,9 +265,14 @@ class EmployeeReportView extends ConsumerWidget {
           subtitle: "Rendimiento individual",
           child: AspectRatio(
             aspectRatio: 1.3,
-            child: data.correlationData.isEmpty 
-              ? const Center(child: Text("Sin datos", style: TextStyle(color: Colors.grey)))
-              : _CorrelationChart(data: data.correlationData),
+            child: data.correlationData.isEmpty
+                ? const Center(
+                    child: Text(
+                      "Sin datos",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : _CorrelationChart(data: data.correlationData),
           ),
         ),
         const SizedBox(height: 24),
@@ -226,18 +281,31 @@ class EmployeeReportView extends ConsumerWidget {
           subtitle: "Cantidad total",
           child: AspectRatio(
             aspectRatio: 1.5,
-            child: data.chartData.isEmpty 
-              ? const Center(child: Text("Sin datos", style: TextStyle(color: Colors.grey)))
-              : _EmployeeBarChart(data: data.chartData),
+            child: data.chartData.isEmpty
+                ? const Center(
+                    child: Text(
+                      "Sin datos",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : _EmployeeBarChart(data: data.chartData),
           ),
         ),
         const SizedBox(height: 24),
         _ChartContainer(
           title: "Detalle de Equipo",
           subtitle: "Estado actual",
-          child: data.employees.isEmpty 
-            ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No hay empleados con ventas", style: TextStyle(color: Colors.grey))))
-            : _EmployeeList(employees: data.employees),
+          child: data.employees.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      "No hay empleados con ventas",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                )
+              : _EmployeeList(employees: data.employees),
         ),
       ],
     );
@@ -250,7 +318,11 @@ class _ChartContainer extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget child;
-  const _ChartContainer({required this.title, required this.subtitle, required this.child});
+  const _ChartContainer({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -259,19 +331,30 @@ class _ChartContainer extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), spreadRadius: 2, blurRadius: 10, offset: const Offset(0, 4))
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.05),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.15)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 4),
-          Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+          Text(
+            subtitle,
+            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+          ),
           const SizedBox(height: 24),
-          child
-        ]
+          child,
+        ],
       ),
     );
   }
@@ -303,16 +386,29 @@ class _KpiCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: info.color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: info.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(info.icon, color: info.color, size: 20),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(info.value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-              Text(info.title, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              Text(
+                info.value,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                info.title,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -326,42 +422,83 @@ class _EmployeeBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     // Calculamos el máximo dinámico para el eje Y
     double maxY = 0;
-    for(var item in data) { if(item.value > maxY) maxY = item.value; }
+    for (var item in data) {
+      if (item.value > maxY) maxY = item.value;
+    }
     maxY = (maxY == 0 ? 10 : maxY) * 1.2;
 
-    return BarChart(BarChartData(
-      alignment: BarChartAlignment.spaceAround, 
-      maxY: maxY, 
-      barTouchData: BarTouchData(enabled: true, touchTooltipData: BarTouchTooltipData(getTooltipColor: (group) => Colors.blueGrey, tooltipBorderRadius: BorderRadius.circular(8), getTooltipItem: (group, groupIndex, rod, rodIndex) => BarTooltipItem(rod.toY.toInt().toString(), const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
-      titlesData: FlTitlesData(
-        show: true, 
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true, 
-            getTitlesWidget: (val, meta) {
-              if (val.toInt() >= 0 && val.toInt() < data.length) {
-                return Padding(
-                  padding: const EdgeInsets.only(top:8.0),
-                  child: Text(data[val.toInt()].name, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold))
-                );
-              }
-              return const Text('');
-            }
-          )
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxY,
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (group) => Colors.blueGrey,
+            tooltipBorderRadius: BorderRadius.circular(8),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                BarTooltipItem(
+                  rod.toY.toInt().toString(),
+                  const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+          ),
         ),
-        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (val, meta) {
+                if (val.toInt() >= 0 && val.toInt() < data.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      data[val.toInt()].name,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+                return const Text('');
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: maxY / 5,
+          getDrawingHorizontalLine: (val) =>
+              FlLine(color: Colors.grey.withValues(alpha: 0.1), strokeWidth: 1),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: data
+            .asMap()
+            .entries
+            .map(
+              (e) => BarChartGroupData(
+                x: e.key,
+                barRods: [
+                  BarChartRodData(
+                    toY: e.value.value,
+                    color: e.value.color,
+                    width: 16,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              ),
+            )
+            .toList(),
       ),
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: false,
-        horizontalInterval: maxY / 5,
-        getDrawingHorizontalLine: (val) => FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
-      ),
-      borderData: FlBorderData(show: false),
-      barGroups: data.asMap().entries.map((e) => BarChartGroupData(x: e.key, barRods: [BarChartRodData(toY: e.value.value, color: e.value.color, width: 16, borderRadius: BorderRadius.circular(4))])).toList(),
-    ));
+    );
   }
 }
 
@@ -381,105 +518,196 @@ class _CorrelationChart extends StatelessWidget {
 
     return ScatterChart(
       ScatterChartData(
-        minX: 0, maxX: maxX, minY: 0, maxY: maxY,
-        gridData: FlGridData(show: true, drawVerticalLine: true, drawHorizontalLine: true, getDrawingHorizontalLine: (val) => FlLine(color: Colors.grey.withOpacity(0.1)), getDrawingVerticalLine: (val) => FlLine(color: Colors.grey.withOpacity(0.1))),
+        minX: 0,
+        maxX: maxX,
+        minY: 0,
+        maxY: maxY,
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: true,
+          drawHorizontalLine: true,
+          getDrawingHorizontalLine: (val) =>
+              FlLine(color: Colors.grey.withValues(alpha: 0.1)),
+          getDrawingVerticalLine: (val) =>
+              FlLine(color: Colors.grey.withValues(alpha: 0.1)),
+        ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
-            axisNameWidget: const Text("Ganancia (\$)", style: TextStyle(fontSize: 10)),
-            sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (val, meta) => Text(val >= 1000 ? "${(val/1000).toStringAsFixed(0)}k" : "${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey))),
+            axisNameWidget: const Text(
+              "Ganancia (\$)",
+              style: TextStyle(fontSize: 10),
+            ),
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (val, meta) => Text(
+                val >= 1000
+                    ? "${(val / 1000).toStringAsFixed(0)}k"
+                    : "${val.toInt()}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+            ),
           ),
           bottomTitles: AxisTitles(
-            axisNameWidget: const Text("Cantidad de Ventas", style: TextStyle(fontSize: 10)),
-            sideTitles: SideTitles(showTitles: true, getTitlesWidget: (val, meta) => Text("${val.toInt()}", style: const TextStyle(fontSize: 10, color: Colors.grey))),
+            axisNameWidget: const Text(
+              "Cantidad de Ventas",
+              style: TextStyle(fontSize: 10),
+            ),
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (val, meta) => Text(
+                "${val.toInt()}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+            ),
           ),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
-        borderData: FlBorderData(show: true, border: Border.all(color: Colors.grey.withOpacity(0.2))),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+        ),
         scatterSpots: data.map((point) {
-          return ScatterSpot(point.salesCount, point.totalProfit, dotPainter: FlDotCirclePainter(color: point.color, radius: 8, strokeWidth: 0));
+          return ScatterSpot(
+            point.salesCount,
+            point.totalProfit,
+            dotPainter: FlDotCirclePainter(
+              color: point.color,
+              radius: 8,
+              strokeWidth: 0,
+            ),
+          );
         }).toList(),
-        scatterTouchData: ScatterTouchData(enabled: true, touchTooltipData: ScatterTouchTooltipData(getTooltipColor: (spot) => Colors.blueGrey, getTooltipItems: (ScatterSpot spot) {
+        scatterTouchData: ScatterTouchData(
+          enabled: true,
+          touchTooltipData: ScatterTouchTooltipData(
+            getTooltipColor: (spot) => Colors.blueGrey,
+            getTooltipItems: (ScatterSpot spot) {
               try {
                 // Buscamos el punto más cercano para mostrar el tooltip
                 final employee = data.firstWhere(
-                  (e) => (e.salesCount - spot.x).abs() < 0.1 && (e.totalProfit - spot.y).abs() < 0.1,
-                  orElse: () => EmployeePerformancePoint("Desconocido", 0, 0, Colors.grey)
+                  (e) =>
+                      (e.salesCount - spot.x).abs() < 0.1 &&
+                      (e.totalProfit - spot.y).abs() < 0.1,
+                  orElse: () => EmployeePerformancePoint(
+                    "Desconocido",
+                    0,
+                    0,
+                    Colors.grey,
+                  ),
                 );
                 return XAxisTooltipItem(
-                  text: "${employee.name}\nVentas: ${spot.x.toInt()}\nGanancia: \$${spot.y.toStringAsFixed(0)}",
-                  textStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  text:
+                      "${employee.name}\nVentas: ${spot.x.toInt()}\nGanancia: \$${spot.y.toStringAsFixed(0)}",
+                  textStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 );
-              } catch (e) { return null; }
-            })),
+              } catch (e) {
+                return null;
+              }
+            },
+          ),
+        ),
       ),
     );
   }
 }
 
 class XAxisTooltipItem extends ScatterTooltipItem {
-  XAxisTooltipItem({required String text, required TextStyle textStyle}) : super(text, textStyle: textStyle, bottomMargin: 10);
+  XAxisTooltipItem({required String text, required TextStyle textStyle})
+    : super(text, textStyle: textStyle, bottomMargin: 10);
 }
 
 class _EmployeeList extends StatelessWidget {
   final List<EmployeeRow> employees;
   const _EmployeeList({required this.employees});
-  
+
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: employees.length,
-      separatorBuilder: (c, i) => Divider(color: Colors.grey.withOpacity(0.1)),
+      separatorBuilder: (c, i) =>
+          Divider(color: Colors.grey.withValues(alpha: 0.1)),
       itemBuilder: (context, index) {
         final emp = employees[index];
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0), 
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.blue.shade50, 
-                radius: 20, 
+                backgroundColor: Colors.blue.shade50,
+                radius: 20,
                 child: Text(
-                  emp.name.length > 0 ? emp.name.substring(0, 1) : "?", 
-                  style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)
-                )
-              ), 
-              const SizedBox(width: 12), 
+                  emp.name.length > 0 ? emp.name.substring(0, 1) : "?",
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, 
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(emp.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)), 
-                    Text(emp.role, style: TextStyle(color: Colors.grey[500], fontSize: 12))
-                  ]
-                )
-              ), 
+                    Text(
+                      emp.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      emp.role,
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.end, 
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   // FIX: Usamos profitGenerated, que es el valor real que viene del backend
                   Text(
-                    "\$${emp.profitGenerated.toStringAsFixed(0)}", 
-                    style: const TextStyle(fontWeight: FontWeight.bold)
-                  ), 
-                  const SizedBox(height: 4), 
+                    "\$${emp.profitGenerated.toStringAsFixed(0)}",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), 
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: emp.status == "Activo" ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1), 
-                      borderRadius: BorderRadius.circular(10)
-                    ), 
+                      color: emp.status == "Activo"
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Text(
-                      emp.status, 
-                      style: TextStyle(fontSize: 10, color: emp.status == "Activo" ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)
-                    )
-                  )
-                ]
-              )
-            ]
-          )
+                      emp.status,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: emp.status == "Activo"
+                            ? Colors.green
+                            : Colors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
@@ -34,7 +35,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
       final products = await _service.getAll();
       state = AsyncValue.data(products);
     } catch (e) {
-      print("Error refrescando productos: $e");
+      debugPrint("Error refrescando productos: $e");
     }
   }
 
@@ -88,17 +89,16 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
       // 2. Refrescamos la lista para asegurar que tenemos los datos más recientes
       // (especialmente útil si la imagen cambió de URL en el servidor)
       await refresh();
-      
     } catch (e) {
       // Re-lanzamos el error para que la UI (el SnackBar) lo pueda mostrar
-      throw e;
+      rethrow;
     }
   }
 
   // Eliminar producto
   Future<void> deleteProduct(ProductModel product) async {
     final previousState = state;
-    
+
     if (state.hasValue) {
       state = AsyncValue.data(
         state.value!.where((p) => p.id != product.id).toList(),
@@ -109,13 +109,16 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
       await _service.deactivateProduct(product.id);
     } catch (e) {
       state = previousState;
-      throw e; 
+      rethrow;
     }
   }
 }
 
 // 3. El Proveedor Global
-final productsProvider = StateNotifierProvider<ProductsNotifier, AsyncValue<List<ProductModel>>>((ref) {
-  final service = ref.watch(productServiceProvider);
-  return ProductsNotifier(service);
-});
+final productsProvider =
+    StateNotifierProvider<ProductsNotifier, AsyncValue<List<ProductModel>>>((
+      ref,
+    ) {
+      final service = ref.watch(productServiceProvider);
+      return ProductsNotifier(service);
+    });

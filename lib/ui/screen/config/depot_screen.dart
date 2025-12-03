@@ -103,7 +103,9 @@ class _DepotScreemState extends State<DepotScreem> {
                 final name = nameController.text.trim();
                 final location = locationController.text.trim();
 
-                if (name.isEmpty) return;
+                if (name.isEmpty) {
+                  return;
+                }
 
                 try {
                   final newDepot = await _depotService.createDepot(
@@ -111,15 +113,16 @@ class _DepotScreemState extends State<DepotScreem> {
                     location: location,
                   );
 
-                  if (!mounted) return;
-                  Navigator.of(context).pop();
-
+                  if (!mounted) {
+                    return;
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Almacén "${newDepot.name}" creado'),
                       backgroundColor: Colors.green,
                     ),
                   );
+                  Navigator.of(context).pop();
 
                   setState(() {
                     _depotsFuture = _fetchDepots();
@@ -185,7 +188,9 @@ class _DepotScreemState extends State<DepotScreem> {
                     final name = nameController.text.trim();
                     final location = locationController.text.trim();
 
-                    if (name.isEmpty) return;
+                    if (name.isEmpty) {
+                      return;
+                    }
 
                     try {
                       await _depotService.updateDepot(
@@ -195,15 +200,16 @@ class _DepotScreemState extends State<DepotScreem> {
                         status: currentStatus,
                       );
 
-                      if (!mounted) return;
-                      Navigator.of(context).pop();
-
+                      if (!mounted) {
+                        return;
+                      }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Almacén "$name" actualizado'),
                           backgroundColor: Colors.green,
                         ),
                       );
+                      Navigator.of(context).pop();
 
                       setState(() {
                         _depotsFuture = _fetchDepots();
@@ -249,9 +255,9 @@ class _DepotScreemState extends State<DepotScreem> {
                   // 1. Llama al servicio de desactivación
                   await _depotService.deactivateDepot(depot.depotId);
 
-                  if (!mounted) return;
-                  Navigator.of(context).pop(); // Cierra el diálogo
-
+                  if (!mounted) {
+                    return;
+                  }
                   // 2. Muestra confirmación
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -259,13 +265,16 @@ class _DepotScreemState extends State<DepotScreem> {
                       backgroundColor: Colors.green,
                     ),
                   );
+                  Navigator.of(context).pop(); // Cierra el diálogo
 
                   // 3. Recarga la lista
                   setState(() {
                     _depotsFuture = _fetchDepots();
                   });
                 } catch (e) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -303,21 +312,24 @@ class _DepotScreemState extends State<DepotScreem> {
                 try {
                   await _depotService.activateDepot(depot.depotId);
 
-                  if (!mounted) return;
-                  Navigator.of(context).pop();
-
+                  if (!mounted) {
+                    return;
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Almacén "${depot.name}" activado'),
                       backgroundColor: Colors.green,
                     ),
                   );
+                  Navigator.of(context).pop();
 
                   setState(() {
                     _depotsFuture = _fetchDepots();
                   });
                 } catch (e) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -393,8 +405,8 @@ class _DepotScreemState extends State<DepotScreem> {
                             ),
                           ),
                           backgroundColor: depot.status
-                              ? Colors.green.withOpacity(0.15)
-                              : Colors.red.withOpacity(0.15),
+                              ? Colors.green.withValues(alpha: 0.15)
+                              : Colors.red.withValues(alpha: 0.15),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 4,
                             vertical: 0,

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
@@ -11,9 +12,10 @@ class ProductService {
     final url = Uri.parse('$_baseUrl/product');
 
     try {
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
@@ -21,7 +23,9 @@ class ProductService {
 
         return jsonList.map((json) => ProductModel.fromJson(json)).toList();
       } else {
-        throw Exception('Failed to load products (Código: ${response.statusCode})');
+        throw Exception(
+          'Failed to load products (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -32,9 +36,10 @@ class ProductService {
     final url = Uri.parse('$_baseUrl/product/$id');
 
     try {
-      final response = await http.get(url, headers: {
-        'Content-Type': 'application/json',
-      });
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
@@ -42,7 +47,9 @@ class ProductService {
 
         return ProductModel.fromJson(productJson);
       } else {
-        throw Exception('Failed to load product (Código: ${response.statusCode})');
+        throw Exception(
+          'Failed to load product (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -57,28 +64,33 @@ class ProductService {
     required double price,
     required Uint8List? imageUrl,
     required int minStock,
-    required bool isPerishable
+    required bool isPerishable,
   }) async {
     final url = Uri.parse('$_baseUrl/product');
 
     try {
-      final response = await http.post(url, headers: {
-        'Content-Type': 'application/json',
-      }, body: json.encode({
-        'name': name,
-        'sku': sku,
-        'description': description,
-        'category_id': categoryId,
-        'base_price': price,
-        'image_url': imageUrl, // Nota: Asegúrate de que tu backend acepte bytes o Base64 aquí
-        'min_stock': minStock,
-        'perishable': isPerishable
-      }));
-      
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'name': name,
+          'sku': sku,
+          'description': description,
+          'category_id': categoryId,
+          'base_price': price,
+          'image_url':
+              imageUrl, // Nota: Asegúrate de que tu backend acepte bytes o Base64 aquí
+          'min_stock': minStock,
+          'perishable': isPerishable,
+        }),
+      );
+
       if (response.statusCode == 201) {
         return true;
       } else {
-        throw Exception('Failed to create product (Código: ${response.statusCode})');
+        throw Exception(
+          'Failed to create product (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
@@ -104,7 +116,8 @@ class ProductService {
     request.fields['name'] = name;
     request.fields['sku'] = sku;
     request.fields['description'] = description;
-    request.fields['category_id'] = categoryId.toString(); // Multer espera strings
+    request.fields['category_id'] = categoryId
+        .toString(); // Multer espera strings
     request.fields['base_price'] = price.toString();
 
     // 3. Agregamos la imagen SI existe
@@ -113,7 +126,8 @@ class ProductService {
       final file = http.MultipartFile.fromBytes(
         'image', // El nombre del campo que espera Multer (upload.single('image'))
         imageUrl,
-        filename: 'product_update.jpg', // Nombre genérico, Multer lo renombrará o Cloudinary lo usará
+        filename:
+            'product_update.jpg', // Nombre genérico, Multer lo renombrará o Cloudinary lo usará
         // contentType: MediaType('image', 'jpeg'), // Opcional si quieres ser estricto
       );
       request.files.add(file);
@@ -122,14 +136,14 @@ class ProductService {
     try {
       // 4. Enviamos la petición
       final streamedResponse = await request.send();
-      
+
       // 5. Obtenemos la respuesta
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         return true;
       } else {
-        print("Error Backend: ${response.body}");
+        debugPrint("Error Backend: ${response.body}");
         throw Exception('Error al actualizar (Código: ${response.statusCode})');
       }
     } catch (e) {

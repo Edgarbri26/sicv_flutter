@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/provider_model.dart';
@@ -6,7 +7,6 @@ import 'package:sicv_flutter/services/provider_service.dart';
 final providersServiceProvider = Provider<ProviderService>((ref) {
   return ProviderService();
 });
-
 
 class ProvidersNotifier extends StateNotifier<AsyncValue<List<ProviderModel>>> {
   final ProviderService _service;
@@ -30,7 +30,7 @@ class ProvidersNotifier extends StateNotifier<AsyncValue<List<ProviderModel>>> {
       final providers = await _service.getAll();
       state = AsyncValue.data(providers);
     } catch (e) {
-      print("Error refrescando proveedores: $e");
+      debugPrint("Error refrescando proveedores: $e");
     }
   }
 
@@ -38,10 +38,7 @@ class ProvidersNotifier extends StateNotifier<AsyncValue<List<ProviderModel>>> {
     required String name,
     required String located,
   }) async {
-    await _service.create({
-      'name': name,
-      'located': located,
-    });
+    await _service.create({'name': name, 'located': located});
     await refresh();
   }
 
@@ -50,36 +47,30 @@ class ProvidersNotifier extends StateNotifier<AsyncValue<List<ProviderModel>>> {
     required String newName,
     required String located,
   }) async {
-    await _service.update(id, {
-      'name': newName,
-      'located': located,
-    });
+    await _service.update(id, {'name': newName, 'located': located});
     await refresh();
   }
 
-  Future<void> deleteProvider({
-    required int id,
-  }) async {
+  Future<void> deleteProvider({required int id}) async {
     await _service.delete(id);
     await refresh();
   }
 
-  Future<void> deactivateProvider({
-    required int id,
-  }) async {
+  Future<void> deactivateProvider({required int id}) async {
     await _service.deactivate(id);
     await refresh();
   }
 
-  Future<void> activateProvider({
-    required int id,
-  }) async {
+  Future<void> activateProvider({required int id}) async {
     await _service.activate(id);
     await refresh();
   }
 }
 
-final providersProvider = StateNotifierProvider<ProvidersNotifier, AsyncValue<List<ProviderModel>>>((ref) {
-  final service = ref.watch(providersServiceProvider);
-  return ProvidersNotifier(service);
-});
+final providersProvider =
+    StateNotifierProvider<ProvidersNotifier, AsyncValue<List<ProviderModel>>>((
+      ref,
+    ) {
+      final service = ref.watch(providersServiceProvider);
+      return ProvidersNotifier(service);
+    });

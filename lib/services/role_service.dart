@@ -1,6 +1,7 @@
 // services/role_service.dart
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/role_model.dart'; // Asegúrate que la ruta sea correcta
@@ -37,7 +38,7 @@ class RoleService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener el role.');
     }
   }
@@ -70,7 +71,7 @@ class RoleService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al obtener los roles.');
     }
   }
@@ -101,7 +102,7 @@ class RoleService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al crear el role.');
     }
   }
@@ -123,7 +124,7 @@ class RoleService {
         body: json.encode({'name': name, 'permission_ids': permissionIds}),
       );
 
-      print(response.body);
+      debugPrint(response.body);
       if (response.statusCode == 200) {
         // 200 OK
         // // ACTUALIZACIÓN: Asumimos que la respuesta también está envuelta
@@ -139,7 +140,7 @@ class RoleService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al actualizar el role.');
     }
   }
@@ -165,7 +166,7 @@ class RoleService {
         );
       }
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       throw Exception('Error de conexión al eliminar el role.');
     }
   }
@@ -181,7 +182,10 @@ class RoleService {
           'Content-Type': 'application/json',
           //
         },
-        body: json.encode({'role_id': roleId, 'permission_code': permissionCode}),
+        body: json.encode({
+          'role_id': roleId,
+          'permission_code': permissionCode,
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -196,7 +200,7 @@ class RoleService {
         );
       }
     } catch (e) {
-      print('Error verificando permiso: $e');
+      debugPrint('Error verificando permiso: $e');
       return false;
     }
   }

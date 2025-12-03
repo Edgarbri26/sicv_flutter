@@ -80,7 +80,7 @@ class SummaryReportProvider extends ChangeNotifier {
       // For now, keep comprasData empty or mock until we have an endpoint
       _purchasesData = [];
     } catch (e) {
-      print("Error loading report data: $e");
+      debugPrint("Error loading report data: $e");
       // Handle error state if necessary
       _salesData = [];
     } finally {

@@ -54,7 +54,9 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                 try {
                   await _service.activate(typePayment.typePaymentId);
 
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +72,9 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                     _paymentTypesFuture = _service.getAll();
                   });
                 } catch (e) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -108,11 +112,11 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
               onPressed: () async {
                 try {
                   // 1. Llama al servicio de desactivación
-                  await _service.deactivate(
-                    typePayment.typePaymentId,
-                  );
+                  await _service.deactivate(typePayment.typePaymentId);
 
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop(); // Cierra el diálogo
 
                   // 2. Muestra confirmación
@@ -130,7 +134,9 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                     _paymentTypesFuture = _service.getAll();
                   });
                 } catch (e) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -151,18 +157,22 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Gestión de Tipos de Pago', actions: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: IconButton(
+      appBar: AppBarApp(
+        title: 'Gestión de Tipos de Pago',
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _loadPaymentTypes,
             ),
-        ),
+          ),
         ],
       ),
       body: Center(
-        
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
           child: FutureBuilder<List<TypePaymentModel>>(
@@ -172,7 +182,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-          
+
               // 2. Estado de Error
               if (snapshot.hasError) {
                 return Center(
@@ -182,17 +192,17 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                   ),
                 );
               }
-          
+
               // 3. Estado de Éxito (pero sin datos)
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(
                   child: Text('No se encontraron tipos de pago.'),
                 );
               }
-          
+
               // 4. Estado de Éxito (con datos)
               final paymentTypes = snapshot.data!;
-          
+
               return ListView.builder(
                 itemCount: paymentTypes.length,
                 itemBuilder: (context, index) {
@@ -205,18 +215,26 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                       children: [
                         // Botón EDITAR (Update)
                         IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                          icon: const Icon(
+                            Icons.edit,
+                            color: Colors.blueAccent,
+                          ),
                           onPressed: () => _showFormDialog(context, type: type),
                         ),
                         // Botón BORRAR (Delete)
                         type.status
                             ? IconButton(
-                                icon: const Icon(Icons.block, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.block,
+                                  color: Colors.red,
+                                ),
                                 tooltip: 'Desactivar',
-                                onPressed: () => _showDeactivateConfirmDialog(type),
+                                onPressed: () =>
+                                    _showDeactivateConfirmDialog(type),
                               )
                             : IconButton(
-                                onPressed: () => _showActivateConfirmDialog(type),
+                                onPressed: () =>
+                                    _showActivateConfirmDialog(type),
                                 tooltip: 'Activar',
                                 icon: const Icon(
                                   Icons.restore,
@@ -318,9 +336,15 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
   Future<void> _performCreate(BuildContext context, String name) async {
     try {
       await _service.create(name);
+      if (!mounted) {
+        return;
+      }
       _showFeedback(context, 'Creado exitosamente.');
       _loadPaymentTypes(); // Recargar la lista
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       _showFeedback(context, 'Error al crear: $e', isError: true);
     }
   }
@@ -328,9 +352,15 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
   Future<void> _performUpdate(BuildContext context, int id, String name) async {
     try {
       await _service.update(id, name);
+      if (!mounted) {
+        return;
+      }
       _showFeedback(context, 'Actualizado exitosamente.');
       _loadPaymentTypes(); // Recargar la lista
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       _showFeedback(context, 'Error al actualizar: $e', isError: true);
     }
   }

@@ -8,6 +8,7 @@ import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 // 2. IMPORTA TU PROVIDER (Donde están InventoryState, ProductMetric, etc.)
 import 'package:sicv_flutter/providers/report/inventory_provider.dart';
 import 'package:sicv_flutter/ui/widgets/kpi_card.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/app_pie_chart.dart';
 
 class InventoryReportView extends ConsumerWidget {
   const InventoryReportView({super.key});
@@ -57,7 +58,7 @@ class InventoryReportView extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // --- GRÁFICO DE EFICIENCIA (DATOS REALES) ---
-              _ChartContainer(
+              ChartContainer(
                 title: "Matriz Rentabilidad vs Volumen",
                 subtitle:
                     "Estrellas (Verde), Vacas (Azul), Interrogantes (Naranja), Perros (Rojo)",
@@ -212,7 +213,7 @@ class InventoryReportView extends ConsumerWidget {
           flex: 4,
           child: Column(
             children: [
-              _ChartContainer(
+              ChartContainer(
                 title: "Distribución por Categoría",
                 child: data.categoryDistribution.isEmpty
                     ? const Center(
@@ -227,15 +228,15 @@ class InventoryReportView extends ConsumerWidget {
                             flex: 3,
                             child: AspectRatio(
                               aspectRatio: 1,
-                              child: _CategoryPieChart(
-                                categories: data.categoryDistribution,
+                              child: AppPieChart(
+                                data: data.categoryDistribution,
                               ),
                             ),
                           ),
                           const SizedBox(width: 20),
                           Expanded(
                             flex: 2,
-                            child: _CategoryLegend(
+                            child: CategoryLegend(
                               categories: data.categoryDistribution,
                             ),
                           ),
@@ -243,9 +244,8 @@ class InventoryReportView extends ConsumerWidget {
                       ),
               ),
               const SizedBox(height: 24),
-              _ChartContainer(
+              ChartContainer(
                 title: "Alertas de Stock Bajo",
-                isAlert: true,
                 child: _LowStockList(items: data.lowStockItems),
               ),
             ],
@@ -254,7 +254,7 @@ class InventoryReportView extends ConsumerWidget {
         const SizedBox(width: 24),
         Expanded(
           flex: 3,
-          child: _ChartContainer(
+          child: ChartContainer(
             title: "Top Productos Vendidos",
             // AQUÍ SE USA EL WIDGET ACTUALIZADO
             child: _TopProductsList(products: data.topProducts),
@@ -267,7 +267,7 @@ class InventoryReportView extends ConsumerWidget {
   Widget _buildMobileLayout(BuildContext context, InventoryState data) {
     return Column(
       children: [
-        _ChartContainer(
+        ChartContainer(
           title: "Distribución por Categoría",
           child: data.categoryDistribution.isEmpty
               ? const Center(
@@ -280,23 +280,21 @@ class InventoryReportView extends ConsumerWidget {
                   children: [
                     AspectRatio(
                       aspectRatio: 1.3,
-                      child: _CategoryPieChart(
-                        categories: data.categoryDistribution,
-                      ),
+                      child: AppPieChart(data: data.categoryDistribution),
                     ),
                     const SizedBox(height: 20),
-                    _CategoryLegend(categories: data.categoryDistribution),
+                    CategoryLegend(categories: data.categoryDistribution),
                   ],
                 ),
         ),
         const SizedBox(height: 24),
-        _ChartContainer(
+        ChartContainer(
           title: "Top Productos Vendidos",
           // AQUÍ SE USA EL WIDGET ACTUALIZADO
           child: _TopProductsList(products: data.topProducts),
         ),
         const SizedBox(height: 24),
-        _ChartContainer(
+        ChartContainer(
           title: "Alertas de Stock Bajo",
           child: _LowStockList(items: data.lowStockItems),
         ),
@@ -373,9 +371,10 @@ class _TopProductsList extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation<Color>(
                     index == 0
                         ? const Color(0xFF6366F1)
-                        : Colors.blue.withOpacity(
-                            // FIX: Usamos clamp para asegurar que la opacidad nunca sea menor a 0.2 ni mayor a 1.0
-                            (0.8 - (index * 0.05)).clamp(0.2, 1.0),
+                        : Colors.blue.withValues(
+                            alpha:
+                                // FIX: Usamos clamp para asegurar que la opacidad nunca sea menor a 0.2 ni mayor a 1.0
+                                (0.8 - (index * 0.05)).clamp(0.2, 1.0),
                           ),
                   ),
                 ),
@@ -531,12 +530,12 @@ class XAxisTooltipItem extends ScatterTooltipItem {
     : super(text, textStyle: textStyle, bottomMargin: 10);
 }
 
-class _ChartContainer extends StatelessWidget {
+class ChartContainer extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget child;
   final bool isAlert;
-  const _ChartContainer({
+  const ChartContainer({
     required this.title,
     required this.child,
     this.isAlert = false,
@@ -608,38 +607,9 @@ class _ChartContainer extends StatelessWidget {
   }
 }
 
-class _CategoryPieChart extends StatelessWidget {
-  final List<CategoryData> categories;
-  const _CategoryPieChart({required this.categories});
-  @override
-  Widget build(BuildContext context) {
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 2,
-        centerSpaceRadius: 40,
-        sections: categories
-            .map(
-              (cat) => PieChartSectionData(
-                color: cat.color,
-                value: cat.value,
-                title: '${cat.value.toInt()}%',
-                radius: 50,
-                titleStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _CategoryLegend extends StatelessWidget {
-  final List<CategoryData> categories;
-  const _CategoryLegend({required this.categories});
+class CategoryLegend extends StatelessWidget {
+  final List<AppPieChartData> categories;
+  const CategoryLegend({super.key, required this.categories});
   @override
   Widget build(BuildContext context) {
     return Column(

@@ -7,7 +7,7 @@ import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
 // --- IMPORTACIONES AÑADIDAS ---
-import 'package:sicv_flutter/models/category_model.dart'; 
+import 'package:sicv_flutter/models/category_model.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'; // Reemplaza con tu ruta real
 import 'package:sicv_flutter/ui/widgets/atomic/checkbox_field_app.dart'; // Reemplaza con tu ruta real
 
@@ -90,8 +90,8 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
                             ),
                           ),
                           backgroundColor: category.status
-                              ? Colors.green.withOpacity(0.15)
-                              : Colors.red.withOpacity(0.15),
+                              ? Colors.green.withValues(alpha: 0.15)
+                              : Colors.red.withValues(alpha: 0.15),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 3,
                             vertical: 0,
@@ -116,7 +116,7 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
                               : (category.description.isNotEmpty
                                     ? Text(category.description)
                                     : null),
-                          onTap: () => print(
+                          onTap: () => debugPrint(
                             'TODO: Ver subcategorías de ${category.name}',
                           ),
                           trailing: Row(
@@ -326,12 +326,15 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
 
                     try {
                       // 1. Llama al servicio de actualización
-                      await ref.read(categoryProvider.notifier).updateCategory(
-                        id: categoria.id, // El ID de la categoría
-                        name: name,
-                        description: description,
-                        status: currentStatus, // El estado (activo/inactivo)
-                      );
+                      await ref
+                          .read(categoryProvider.notifier)
+                          .updateCategory(
+                            id: categoria.id, // El ID de la categoría
+                            name: name,
+                            description: description,
+                            status:
+                                currentStatus, // El estado (activo/inactivo)
+                          );
 
                       if (!mounted) return;
                       Navigator.of(context).pop(); // Cierra el diálogo
@@ -380,7 +383,9 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               onPressed: () async {
                 try {
-                  await ref.read(categoryProvider.notifier).deactivateCategory(category.id);
+                  await ref
+                      .read(categoryProvider.notifier)
+                      .deactivateCategory(category.id);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -428,8 +433,9 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
               style: TextButton.styleFrom(foregroundColor: Colors.green),
               onPressed: () async {
                 try {
-                  await ref.read(categoryProvider.notifier).activateCategory(category.id);
-                  
+                  await ref
+                      .read(categoryProvider.notifier)
+                      .activateCategory(category.id);
 
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -440,7 +446,6 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
                       backgroundColor: Colors.green,
                     ),
                   );
-
                 } catch (e) {
                   if (!mounted) return;
                   Navigator.of(context).pop();

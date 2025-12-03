@@ -9,7 +9,10 @@ class AppLineChartData extends LineChartBarData {
         color: color,
         barWidth: 3,
         dotData: FlDotData(show: false),
-        belowBarData: BarAreaData(show: true, color: color.withOpacity(0.15)),
+        belowBarData: BarAreaData(
+          show: true,
+          color: color.withValues(alpha: 0.15),
+        ),
         preventCurveOverShooting: true,
       );
 }

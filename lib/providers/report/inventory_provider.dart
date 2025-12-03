@@ -6,11 +6,11 @@ import 'package:sicv_flutter/services/report_service.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
 // --- CLASES DE DATOS ---
-class CategoryData {
+class AppPieChartData {
   final String name;
   final double value;
   final Color color;
-  CategoryData(this.name, this.value, this.color);
+  AppPieChartData(this.name, this.value, this.color);
 }
 
 class ProductMetric {
@@ -33,9 +33,9 @@ class InventoryState {
   final List<InventoryEfficiencyPoint> efficiencyData;
   final String totalInventoryValue;
   final int totalItems;
-  final List<CategoryData> categoryDistribution;
+  final List<AppPieChartData> categoryDistribution;
   final List<ProductMetric> topProducts; // <--- AHORA ES REAL
-  
+
   // Datos Mock (Pendientes de endpoint)
   final int lowStockAlerts;
   final String monthlyTurnover;
@@ -65,11 +65,11 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
 
   // EJECUTAMOS 5 PETICIONES EN PARALELO
   final results = await Future.wait([
-    service.getInventoryEfficiency(filter),   // [0] Scatter Chart
-    service.getInventoryValue(),              // [1] Valor USD
-    service.getTotalItems(),                  // [2] Total Items
-    service.getInventoryByCategory(),         // [3] Pie Chart
-    service.getTopSellingProducts(filter),    // [4] NUEVO: Top List
+    service.getInventoryEfficiency(filter), // [0] Scatter Chart
+    service.getInventoryValue(), // [1] Valor USD
+    service.getTotalItems(), // [2] Total Items
+    service.getInventoryByCategory(), // [3] Pie Chart
+    service.getTopSellingProducts(filter), // [4] NUEVO: Top List
   ]);
 
   // 1. Extraemos resultados
@@ -77,7 +77,8 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
   final inventoryValue = results[1] as double;
   final totalItems = results[2] as int;
   final categoryRawData = results[3] as List<Map<String, dynamic>>;
-  final topProductsRawData = results[4] as List<Map<String, dynamic>>; // <--- NUEVO
+  final topProductsRawData =
+      results[4] as List<Map<String, dynamic>>; // <--- NUEVO
 
   // 2. Procesamiento de Colores para Categorías
   Color parseColor(String hexString) {
@@ -88,7 +89,7 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
   }
 
   final categoryDistribution = categoryRawData.map((item) {
-    return CategoryData(
+    return AppPieChartData(
       item['name'] as String,
       (item['percentage'] as num).toDouble(),
       parseColor(item['color'] as String),
@@ -100,7 +101,8 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
     return ProductMetric(
       item['name'] as String,
       item['soldCount'] as int,
-      (item['percentage'] as num).toDouble(), // Aseguramos que sea double (0.0 - 1.0)
+      (item['percentage'] as num)
+          .toDouble(), // Aseguramos que sea double (0.0 - 1.0)
     );
   }).toList();
 
@@ -112,7 +114,6 @@ final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
     totalItems: totalItems,
     categoryDistribution: categoryDistribution,
     topProducts: topProducts, // <--- Inyectamos datos reales
-    
     // Mocks restantes (Solo falta el de Alertas de Stock)
     lowStockItems: [
       StockAlert("Adaptador HDMI", 2, "Crítico"),

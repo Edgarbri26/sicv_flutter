@@ -61,14 +61,18 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                 final name = nameController.text.trim();
                 final located = locatedController.text.trim();
 
-                if (name.isEmpty) return;
+                if (name.isEmpty) {
+                  return;
+                }
 
                 try {
                   await ref
                       .read(providersProvider.notifier)
                       .createProvider(name: name, located: located);
 
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -125,7 +129,9 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                 final name = nameController.text.trim();
                 final located = locatedController.text.trim();
 
-                if (name.isEmpty) return;
+                if (name.isEmpty) {
+                  return;
+                }
 
                 try {
                   await ref
@@ -136,7 +142,9 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                         located: located,
                       );
 
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -184,7 +192,9 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                       .read(providersProvider.notifier)
                       .deactivateProvider(id: provider.id);
 
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -194,7 +204,9 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                     ),
                   );
                 } catch (e) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -234,7 +246,9 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                       .read(providersProvider.notifier)
                       .activateProvider(id: provider.id);
 
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -244,7 +258,9 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
                     ),
                   );
                 } catch (e) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

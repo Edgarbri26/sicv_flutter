@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/role_model.dart';
@@ -34,7 +35,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
       final roles = await _service.getAllRoles();
       state = AsyncValue.data(roles);
     } catch (e) {
-      print("Error refrescando roles: $e");
+      debugPrint("Error refrescando roles: $e");
     }
   }
 
@@ -48,7 +49,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
       // Recargamos la lista para ver el nuevo role
       await refresh();
     } catch (e) {
-      throw e; // Re-lanzamos para mostrar SnackBar en la vista
+      rethrow; // Re-lanzamos para mostrar SnackBar en la vista
     }
   }
 
@@ -62,7 +63,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
       await _service.updateRole(id, name, permissionIds);
       await refresh();
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -82,7 +83,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
     } catch (e) {
       // Si falla, revertimos al estado anterior
       state = previousState;
-      throw e;
+      rethrow;
     }
   }
 
@@ -91,7 +92,7 @@ class RolesNotifier extends StateNotifier<AsyncValue<List<RoleModel>>> {
       final hasPerm = await _service.hasPermission(roleId, permissionCode);
       return hasPerm;
     } catch (e) {
-      print("Error obteniendo permiso: $e");
+      debugPrint("Error obteniendo permiso: $e");
       return false;
     }
   }

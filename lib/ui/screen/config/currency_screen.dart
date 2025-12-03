@@ -46,7 +46,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   void _guardarConfiguracion() async {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
-    print(
+    debugPrint(
       'Moneda: ${_monedaSeleccionada.value}, Símbolo: ${_simboloController.text}',
     );
     setState(() => _isLoading = false);
@@ -67,12 +67,13 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Configuración de Moneda', iconColor: AppColors.textPrimary,),
+      appBar: AppBarApp(
+        title: 'Configuración de Moneda',
+        iconColor: AppColors.textPrimary,
+      ),
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: 600,
-          ),
+          constraints: BoxConstraints(maxWidth: 600),
           child: ListView(
             padding: const EdgeInsets.all(16.0),
             children: [

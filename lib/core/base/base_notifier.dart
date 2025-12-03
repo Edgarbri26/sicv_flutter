@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/core/base/services_base.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +29,7 @@ abstract class BaseNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
       final items = await _service.getAll();
       state = AsyncValue.data(items);
     } catch (e) {
-      print("Error refrescando: $e");
+      debugPrint("Error refrescando: $e");
     }
   }
 
@@ -40,7 +41,7 @@ abstract class BaseNotifier<T> extends StateNotifier<AsyncValue<List<T>>> {
       await refresh(); // Recargamos la lista para ver los cambios
     } catch (e, stack) {
       // Opcional: Manejar error global o mostrar snackbar aquí
-      state = AsyncValue.error(e, stack); 
+      state = AsyncValue.error(e, stack);
     }
   }
 }
