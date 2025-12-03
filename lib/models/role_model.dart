@@ -30,7 +30,7 @@ class RoleModel {
     return RoleModel(
       // 💡 MEJORA DE SEGURIDAD 1: Usa 'as int?' y proporciona un valor por defecto.
       // Esto evita crashes si 'rolId' es nulo o falta.
-      rolId: json['rol_id'], 
+      rolId: json['role_id'], 
       
       // 💡 MEJORA DE SEGURIDAD 2: Usa 'as String?' y proporciona un valor por defecto.
       // Esto evita crashes si 'name' es nulo o falta.
@@ -46,7 +46,7 @@ class RoleModel {
   /// Método de conveniencia para convertir la instancia a un Map.
   Map<String, dynamic> toMap() {
     return {
-      'rol_id': rolId,
+      'role_id': rolId,
       'name': name,
       'permissions': permissions.map((p) => p.toMap()).toList(),
     };

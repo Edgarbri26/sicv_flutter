@@ -44,7 +44,7 @@ class UserService {
           'user_ci': userCi,
           'name': name,
           'password': password,
-          'role_id': roleId, // Asegúrate que el backend espera 'role_id' o 'rol_id'
+          'role_id': roleId, // Asegúrate que el backend espera 'role_id' o 'role_id'
         }),
       );
 

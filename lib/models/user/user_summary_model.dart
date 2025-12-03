@@ -13,9 +13,9 @@ class UserSummaryModel {
     return UserSummaryModel(
       userCi: json['user_ci'] as String? ?? '0',
       name: json['name'] as String? ?? 'Usuario Desconocido',
-      rolId: json['rol_id'] is int 
-          ? json['rol_id'] 
-          : int.tryParse(json['rol_id'].toString()) ?? 0,
+      rolId: json['role_id'] is int 
+          ? json['role_id'] 
+          : int.tryParse(json['role_id'].toString()) ?? 0,
     );  
   }
   
@@ -23,7 +23,7 @@ class UserSummaryModel {
     return {
       'user_ci': userCi,
       'name': name,
-      'rol_id': rolId,
+      'role_id': rolId,
     };
   }
 }

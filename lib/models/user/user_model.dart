@@ -27,9 +27,9 @@ class UserModel {
       userCi: json['user_ci'] as String? ?? '0',
       name: json['name'] as String? ?? 'Usuario Desconocido',
       password: json['password'],
-      rolId: json['rol_id'] is int 
-          ? json['rol_id'] 
-          : int.tryParse(json['rol_id'].toString()) ?? 0,
+      rolId: json['role_id'] is int 
+          ? json['role_id'] 
+          : int.tryParse(json['role_id'].toString()) ?? 0,
       status: json['status'] as bool? ?? false,
       rol: rolJson != null 
           ? RoleModel.fromJson(rolJson)
@@ -42,7 +42,7 @@ class UserModel {
       'user_ci': userCi,
       'name': name,
       'password': password,
-      'rol_id': rolId,
+      'role_id': rolId,
       'status': status,
     };
   }
