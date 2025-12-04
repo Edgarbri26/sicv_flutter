@@ -49,11 +49,11 @@ class InventoryApp extends ConsumerWidget {
       //HomePage(controller: _controller),
       onGenerateRoute: (settings) {
         switch (settings.name) {
-          case AppRoutes.home:
-            _controller.selectIndex(0);
-            return MaterialPageRoute(
-              builder: (context) => HomePage(controller: _controller),
-            );
+          // case AppRoutes.home:
+          //   _controller.selectIndex(0);
+          //   return MaterialPageRoute(
+          //     builder: (context) => HomePage(controller: _controller),
+          //   );
           case AppRoutes.settings:
             // _controller.selectIndex(_controller.previousIndex);
             return MaterialPageRoute(

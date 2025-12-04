@@ -77,8 +77,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           Navigator.pushReplacementNamed(context, AppRoutes.inventory);
         } else if (hasAccessReports) {
           Navigator.pushReplacementNamed(context, AppRoutes.reportDashboard);
-        } else {
-          Navigator.pushReplacementNamed(context, AppRoutes.home);
         }
       } else {
         // ERROR: Mostrar feedback
