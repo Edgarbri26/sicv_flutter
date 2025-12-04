@@ -5,7 +5,8 @@ import 'package:sicv_flutter/models/permission_model.dart';
 import 'package:sicv_flutter/models/role_model.dart';
 import 'package:sicv_flutter/providers/role_provider.dart';
 // IMPORTANTE: Importamos el nuevo provider que creamos en el Paso 1
-import 'package:sicv_flutter/providers/all_permissions_provider.dart'; 
+import 'package:sicv_flutter/providers/all_permissions_provider.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart'; 
 
 class RoleEditView extends ConsumerStatefulWidget {
   final RoleModel? role;
@@ -89,8 +90,8 @@ class _RoleEditViewState extends ConsumerState<RoleEditView> {
     final isEditing = widget.role != null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isEditing ? 'Editar role' : 'Nuevo role'),
+      appBar: AppBarApp(
+        title: isEditing ? 'Editar role' : 'Nuevo role',
         actions: [
           if (_isSaving)
             const Padding(

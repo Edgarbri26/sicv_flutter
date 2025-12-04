@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 class PrimaryButtonApp extends StatelessWidget {
   
@@ -49,7 +50,7 @@ class PrimaryButtonApp extends StatelessWidget {
           // --- FIN DEL CAMBIO ---
             
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: AppColors.primary,
             foregroundColor: Theme.of(context).colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             shape: RoundedRectangleBorder(

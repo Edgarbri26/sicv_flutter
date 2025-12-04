@@ -26,7 +26,7 @@ class AppColors {
   AppColors._();
 
   /// Color principal de la aplicación.
-  static const Color primary = Color(0xFF6750a4);
+  static const Color primary = Color.fromARGB(255, 45, 63, 87);
 
   /// Color secundario, típico para fondos o elementos neutrales.
   static const Color secondary = Color(0xFFFFFFFF);

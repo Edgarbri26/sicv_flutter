@@ -749,8 +749,8 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                           constraints: const BoxConstraints(maxWidth: 250),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.primary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             ),

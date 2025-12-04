@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
@@ -52,9 +53,14 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
           drawer: isWide ? null : MySideBar(controller: widget.controller),
           
           floatingActionButton:  hasAccessCreateMovements ? FloatingActionButton.extended(
-            icon: const Icon(Icons.add),
-            label: const Text('Ajuste'),
+            backgroundColor: AppColors.primary,
+            icon: Icon(Symbols.add, color: AppColors.secondary),
+            label: Text(
+              "Agregar Movimiento",
+              style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold),
+            ),
             onPressed: () => AddMovementModal.show(context),
+            
           ) : null,
 
           body: isWide
