@@ -37,7 +37,7 @@ class _AppPieChartState extends State<AppPieChart> {
         final double centerSpaceRadius = minDimension * 0.15;
 
         // La fuente base será el 4% del tamaño total
-        final double baseFontSize = minDimension * 0.04;
+        final double baseFontSize = minDimension * 0.07;
 
         return PieChart(
           PieChartData(

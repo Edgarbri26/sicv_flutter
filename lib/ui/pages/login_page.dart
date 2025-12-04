@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart'; // Asegúrate de importar el provider correcto
+import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
@@ -36,6 +38,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // --- LÓGICA DE NEGOCIO ---
 
   Future<void> _submit() async {
+    final userPermissions = ref.watch(currentUserPermissionsProvider);
+    final hasAccessSales = userPermissions.can(AppPermissions.createSale);
+    final hasAccessPurchases = userPermissions.can(
+      AppPermissions.createPurchase,
+    );
+    final hasAccessProducts = userPermissions.can(AppPermissions.readProducts);
+    final hasAccessReports = userPermissions.can(AppPermissions.readReports);
+
     // 1. Validar formulario
     if (!_formKey.currentState!.validate()) return;
 
@@ -59,7 +69,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (success) {
         // ÉXITO: Navegar al Home y reemplazar la ruta de login para que no puedan volver atrás
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        if (hasAccessSales) {
+          Navigator.pushReplacementNamed(context, AppRoutes.sales);
+        } else if (hasAccessPurchases) {
+          Navigator.pushReplacementNamed(context, AppRoutes.purchase);
+        } else if (hasAccessProducts) {
+          Navigator.pushReplacementNamed(context, AppRoutes.inventory);
+        } else if (hasAccessReports) {
+          Navigator.pushReplacementNamed(context, AppRoutes.reportDashboard);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
       } else {
         // ERROR: Mostrar feedback
         _showErrorSnackBar('Credenciales incorrectas o error de conexión.');
@@ -87,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     // LayoutBuilder decide si mostrar vista Móvil o Escritorio
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo limpio
+      backgroundColor: AppColors.background, // Fondo limpio
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

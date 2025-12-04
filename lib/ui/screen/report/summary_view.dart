@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // <--- Riverpod
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/report/summary_report_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:sicv_flutter/ui/widgets/kpi_card.dart';

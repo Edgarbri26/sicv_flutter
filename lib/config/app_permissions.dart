@@ -45,7 +45,7 @@ class AppPermissions {
   // 3. VENTAS
   // ==========================================================
 
-  /// Permite registrar nuevas ventas.
+  /// Permite registrar nuevas ventas y ver la vista de ventas.
   static const String createSale = "create:sale";
 
   /// Permite gestionar ventas.

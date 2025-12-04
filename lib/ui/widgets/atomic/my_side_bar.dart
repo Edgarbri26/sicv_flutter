@@ -19,6 +19,8 @@ class MySideBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.value;
     final userPermissions = ref.watch(currentUserPermissionsProvider);
 
     final hasAccessMovements = userPermissions.can(
@@ -86,13 +88,27 @@ class MySideBar extends ConsumerWidget {
       ),
       headerBuilder: (context, extended) {
         return SizedBox(
-          height: 100,
-          child: const Padding(
-            padding: EdgeInsets.all(16.0),
+          height: extended ? 130 : 80,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Icon(Icons.person, size: 40, color: Colors.grey),
-                Text("Usuario", style: TextStyle(color: Colors.grey)),
+                const Icon(Icons.person, size: 40, color: Colors.grey),
+                if (extended) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    user?.name ?? "Usuario",
+                    style: const TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    user?.role?.name ?? "Usuario",
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ],
             ),
           ),

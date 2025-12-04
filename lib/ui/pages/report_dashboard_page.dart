@@ -108,6 +108,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
       builder: (context, constraints) {
         bool isWide = constraints.maxWidth > AppSizes.breakpoint;
         return Scaffold(
+          backgroundColor: AppColors.background,
           appBar: !isWide
               ? AppBarApp(
                   title: 'Dashboard de Reportes',
@@ -171,42 +172,6 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
             label: item.label,
           ),
         ),
-
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.dashboard_outlined),
-        //   activeIcon: Icon(Icons.dashboard),
-        //   label: 'Resumen',
-        // ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.bar_chart_outlined),
-        //   activeIcon: Icon(Icons.bar_chart),
-        //   label: 'Finanzas',
-        // ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.inventory_2_outlined),
-        //   activeIcon: Icon(Icons.inventory_2),
-        //   label: 'Inventario',
-        // ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.people_outline),
-        //   activeIcon: Icon(Icons.people),
-        //   label: 'Empleados',
-        // ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.person_outline),
-        //   activeIcon: Icon(Icons.person),
-        //   label: 'Clientes',
-        // ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.local_shipping_outlined),
-        //   activeIcon: Icon(Icons.local_shipping),
-        //   label: 'Proveedores',
-        // ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.analytics_outlined),
-        //   activeIcon: Icon(Icons.analytics),
-        //   label: 'Análisis',
-        // ),
       ],
     );
   }

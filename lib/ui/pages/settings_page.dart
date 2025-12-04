@@ -4,6 +4,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -13,23 +14,39 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _darkModeEnabled = true;
+  // bool _darkModeEnabled = true; // Removed local state
   bool _notificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
     final userPermissions = ref.watch(currentUserPermissionsProvider);
+    // final themeMode = ref.watch(themeProvider);
+    // final isDarkMode = themeMode == ThemeMode.dark;
 
-    final hasAccessUserManagement = userPermissions.can(AppPermissions.manageUsers);
-    final hasAccessClientManagement = userPermissions.can(AppPermissions.manageClients);
-    final hasAccessProviderManagement = userPermissions.can(AppPermissions.manageProvider);
-    final hasAccessCategoryManagement = userPermissions.can(AppPermissions.manageCategories);
-    final hasAccessRoleManagement = userPermissions.can(AppPermissions.manageRoles);
-    final hasAccessDepotManagement = userPermissions.can(AppPermissions.manageDepots);
-    final hasAccessTypePaymentManagement = userPermissions.can(AppPermissions.managePaymentTypes);
+    final hasAccessUserManagement = userPermissions.can(
+      AppPermissions.manageUsers,
+    );
+    final hasAccessClientManagement = userPermissions.can(
+      AppPermissions.manageClients,
+    );
+    final hasAccessProviderManagement = userPermissions.can(
+      AppPermissions.manageProvider,
+    );
+    final hasAccessCategoryManagement = userPermissions.can(
+      AppPermissions.manageCategories,
+    );
+    final hasAccessRoleManagement = userPermissions.can(
+      AppPermissions.manageRoles,
+    );
+    final hasAccessDepotManagement = userPermissions.can(
+      AppPermissions.manageDepots,
+    );
+    final hasAccessTypePaymentManagement = userPermissions.can(
+      AppPermissions.managePaymentTypes,
+    );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -100,6 +117,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.person,
                       routeName: AppRoutes.perfil,
                     ),
+
                     /*_buildConfigTile(
                       context: context,
                       title: 'Configuración de Moneda',
@@ -107,19 +125,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.attach_money,
                       routeName: AppRoutes.currency,
                     ),*/
-                    
                     if (hasAccessTypePaymentManagement)
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Configuración de Los Tipos de Pago',
-                      subtitle: 'Tipo de pago, Pago Movil, Transferencia, etc.',
-                      icon: Icons.payment,
-                      routeName: AppRoutes.typePayment,
-                    ),
+                      _buildConfigTile(
+                        context: context,
+                        title: 'Configuración de Los Tipos de Pago',
+                        subtitle:
+                            'Tipo de pago, Pago Movil, Transferencia, etc.',
+                        icon: Icons.payment,
+                        routeName: AppRoutes.typePayment,
+                      ),
                     const SizedBox(height: 16),
 
                     if (hasAccessCategoryManagement || hasAccessDepotManagement)
-                    _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
+                      _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
+
                     /*_buildConfigTile(
                       context: context,
                       title: 'Unidades de Medida',
@@ -127,7 +146,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.square_foot,
                       routeName: AppRoutes.units,
                     ),*/
-                    
                     if (hasAccessCategoryManagement)
                       _buildConfigTile(
                         context: context,
@@ -144,7 +162,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.warning_amber,
                       routeName: AppRoutes.stock,
                     ),*/
-
                     if (hasAccessDepotManagement)
                       _buildConfigTile(
                         context: context,
@@ -155,8 +172,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
 
                     const SizedBox(height: 16),
-                    if (hasAccessRoleManagement || hasAccessUserManagement || hasAccessClientManagement || hasAccessProviderManagement)
-                    _buildSectionTitle('CONFIGURACIÓN DE USUARIOS'),
+                    if (hasAccessRoleManagement ||
+                        hasAccessUserManagement ||
+                        hasAccessClientManagement ||
+                        hasAccessProviderManagement)
+                      _buildSectionTitle('CONFIGURACIÓN DE USUARIOS'),
 
                     if (hasAccessRoleManagement)
                       _buildConfigTile(
@@ -227,15 +247,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.cloud_upload,
                       routeName: AppRoutes.backup,
                     ),*/
-                    const SizedBox(height: 16),
-                    _buildSectionTitle('PREFERENCIAS DEL SISTEMA'),
-                    _buildSwitchTile(
-                      title: 'Modo Oscuro',
-                      value: _darkModeEnabled,
-                      onChanged: (value) =>
-                          setState(() => _darkModeEnabled = value),
-                      icon: Icons.dark_mode,
-                    ),
+                    // const SizedBox(height: 16),
+                    // _buildSectionTitle('PREFERENCIAS DEL SISTEMA'),
+                    // _buildSwitchTile(
+                    //   title: 'Modo Oscuro',
+                    //   value: isDarkMode,
+                    //   onChanged: (value) {
+                    //     // ref.read(themeProvider.notifier).toggleTheme(value);
+                    //     // setState(() => isDarkMode = value);
+                    //   },
+                    //   icon: Icons.dark_mode,
+                    // ),
                     _buildSwitchTile(
                       title: 'Notificaciones',
                       value: _notificationsEnabled,

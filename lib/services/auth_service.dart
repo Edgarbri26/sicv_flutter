@@ -27,6 +27,7 @@ class AuthService {
         if (data != null) {
           final String? token = data['token'];
           final Map<String, dynamic>? userJson = data['user'];
+          print(userJson);
 
           if (token != null && userJson != null) {
             await _saveToken(token);
@@ -65,6 +66,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     // Aseguramos que el JSON tenga el formato correcto para el modelo
     final userModel = UserModel.fromJson(userJson);
+    print(userModel.toJson());
     await prefs.setString(_userDataKey, json.encode(userModel.toJson()));
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU PROVIDER (Donde están definidos los modelos y el estado)
 // Ajusta la ruta si tu archivo se llama diferente
@@ -17,7 +18,7 @@ class EmployeeReportView extends ConsumerWidget {
     final currentFilter = ref.watch(employeeFilterProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.background,
       body: employeeStateAsync.when(
         // ESTADO: CARGANDO
         loading: () =>
@@ -221,7 +222,8 @@ class EmployeeReportView extends ConsumerWidget {
               child: _ChartContainer(
                 title: "Análisis de Desempeño: Cantidad vs Ganancia",
                 // Subtítulo más limpio o vacío, ya que usaremos la guía visual
-                subtitle: "Relación entre el esfuerzo de venta y el retorno financiero",
+                subtitle:
+                    "Relación entre el esfuerzo de venta y el retorno financiero",
                 child: Column(
                   children: [
                     // --- GUÍA DE INTERPRETACIÓN (NUEVA LEYENDA) ---
@@ -232,30 +234,30 @@ class EmployeeReportView extends ConsumerWidget {
                         children: [
                           // Explicación Eje Vertical
                           _buildGuideItem(
-                            Icons.attach_money, 
-                            Colors.green, 
-                            "Eje Vertical", 
-                            "Rentabilidad Total"
+                            Icons.attach_money,
+                            Colors.green,
+                            "Eje Vertical",
+                            "Rentabilidad Total",
                           ),
                           // Explicación Eje Horizontal
                           _buildGuideItem(
-                            Icons.shopping_cart, 
-                            Colors.blue, 
-                            "Eje Horizontal", 
-                            "Volumen de Ventas"
+                            Icons.shopping_cart,
+                            Colors.blue,
+                            "Eje Horizontal",
+                            "Volumen de Ventas",
                           ),
                           // Explicación de la Meta (Dónde mirar)
                           _buildGuideItem(
-                            Icons.trending_up, 
-                            Colors.orange, 
-                            "Objetivo", 
-                            "Zona Superior Derecha"
+                            Icons.trending_up,
+                            Colors.orange,
+                            "Objetivo",
+                            "Zona Superior Derecha",
                           ),
                         ],
                       ),
                     ),
-                    // ----------------------------------------------
 
+                    // ----------------------------------------------
                     AspectRatio(
                       aspectRatio: 1.6,
                       child: data.correlationData.isEmpty
@@ -547,17 +549,14 @@ Widget _buildGuideItem(IconData icon, Color color, String label, String value) {
       Text(
         label,
         style: const TextStyle(
-          fontSize: 10, 
-          color: Colors.grey, 
-          fontWeight: FontWeight.w500
+          fontSize: 10,
+          color: Colors.grey,
+          fontWeight: FontWeight.w500,
         ),
       ),
       Text(
         value,
-        style: const TextStyle(
-          fontSize: 11, 
-          fontWeight: FontWeight.bold
-        ),
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
       ),
     ],
   );

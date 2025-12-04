@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // --- PROVIDER ---
 final analyticsProvider = Provider<AnalyticsState>((ref) {
@@ -57,7 +58,7 @@ class AnalyticsReportView extends ConsumerWidget {
     final data = ref.watch(analyticsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(

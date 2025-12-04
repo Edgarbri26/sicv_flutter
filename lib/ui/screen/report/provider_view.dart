@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/app_pie_chart.dart';
+import 'package:sicv_flutter/providers/report/inventory_provider.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // --- PROVIDER SIMULADO ---
 final supplierReportProvider = Provider<SupplierReportState>((ref) {
@@ -14,11 +16,11 @@ class SupplierReportState {
   final String efficiency = "92%"; // Entregas a tiempo
 
   // Distribución de gastos por proveedor
-  final List<SupplierPieData> costDistribution = [
-    SupplierPieData("Samsung", 40, const Color(0xFF5C6BC0)), // Indigo
-    SupplierPieData("Apple Inc", 30, const Color(0xFFAB47BC)), // Purple
-    SupplierPieData("Xiaomi", 15, const Color(0xFFFF7043)), // Deep Orange
-    SupplierPieData("Logitech", 15, const Color(0xFF78909C)), // Blue Grey
+  final List<AppPieChartData> costDistribution = [
+    AppPieChartData("Samsung", 40, const Color(0xFF5C6BC0)), // Indigo
+    AppPieChartData("Apple Inc", 30, const Color(0xFFAB47BC)), // Purple
+    AppPieChartData("Xiaomi", 15, const Color(0xFFFF7043)), // Deep Orange
+    AppPieChartData("Logitech", 15, const Color(0xFF78909C)), // Blue Grey
   ];
 
   // Lista de Deudas / Estado
@@ -29,13 +31,6 @@ class SupplierReportState {
     SupplierRow("Logitech Supply", 450, "Por vencer", true),
     SupplierRow("Cables & Co", 0, "Al día", false),
   ];
-}
-
-class SupplierPieData {
-  final String name;
-  final double value;
-  final Color color;
-  SupplierPieData(this.name, this.value, this.color);
 }
 
 class SupplierRow {
@@ -56,7 +51,7 @@ class SupplierReportView extends ConsumerWidget {
     final data = ref.watch(supplierReportProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -153,29 +148,54 @@ class SupplierReportView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          flex: 1,
-          child: _ChartContainer(
-            title: "Distribución de Compras",
-            child: Row(
+          flex: 4,
+          child: SizedBox(
+            height: 640,
+            child: Column(
               children: [
-                Expanded(
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: _CostPieChart(data: data.costDistribution),
+                _ChartContainer(
+                  height: 396,
+                  title: "Distribución de Compras",
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          height: 290,
+                          child: AppPieChart(data: data.costDistribution),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        flex: 2,
+                        child: _CostLegend(data: data.costDistribution),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(child: _CostLegend(data: data.costDistribution)),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: _ChartContainer(
+                    title: "Estado de Cuentas",
+                    child: Expanded(
+                      child: SingleChildScrollView(
+                        child: _SupplierList(suppliers: data.supplierStatus),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
         const SizedBox(width: 24),
         Expanded(
-          flex: 1,
+          flex: 5,
           child: _ChartContainer(
-            title: "Estado de Cuentas",
-            child: _SupplierList(suppliers: data.supplierStatus),
+            height: 640,
+            title: "Top Proveedores",
+            child: _TopSuppliersList(suppliers: data.costDistribution),
           ),
         ),
       ],
@@ -191,7 +211,7 @@ class SupplierReportView extends ConsumerWidget {
             children: [
               AspectRatio(
                 aspectRatio: 1.3,
-                child: _CostPieChart(data: data.costDistribution),
+                child: AppPieChart(data: data.costDistribution),
               ),
               const SizedBox(height: 20),
               _CostLegend(data: data.costDistribution),
@@ -213,10 +233,21 @@ class SupplierReportView extends ConsumerWidget {
 class _ChartContainer extends StatelessWidget {
   final String title;
   final Widget child;
-  const _ChartContainer({required this.title, required this.child});
+  final double? height;
+  final double? width;
+
+  const _ChartContainer({
+    required this.title,
+    required this.child,
+    this.height,
+    this.width,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height,
+      width: width,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -300,36 +331,8 @@ class _KpiCard extends StatelessWidget {
 
 // --- GRÁFICOS Y LISTAS ESPECÍFICOS ---
 
-class _CostPieChart extends StatelessWidget {
-  final List<SupplierPieData> data;
-  const _CostPieChart({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 0,
-        centerSpaceRadius: 30,
-        sections: data.map((item) {
-          return PieChartSectionData(
-            color: item.color,
-            value: item.value,
-            title: '${item.value.toInt()}%',
-            radius: 40,
-            titleStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
 class _CostLegend extends StatelessWidget {
-  final List<SupplierPieData> data;
+  final List<AppPieChartData> data;
   const _CostLegend({required this.data});
 
   @override
@@ -419,6 +422,81 @@ class _SupplierList extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+}
+
+class _TopSuppliersList extends StatelessWidget {
+  final List<AppPieChartData> suppliers;
+  const _TopSuppliersList({required this.suppliers});
+
+  @override
+  Widget build(BuildContext context) {
+    if (suppliers.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            "No hay datos de proveedores.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    // Sort by value descending just in case
+    final sortedSuppliers = List<AppPieChartData>.from(suppliers)
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: sortedSuppliers.length,
+      itemBuilder: (context, index) {
+        final supplier = sortedSuppliers[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      supplier.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "${supplier.value.toStringAsFixed(1)}%",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: supplier.value / 100,
+                  minHeight: 8,
+                  backgroundColor: Colors.grey[100],
+                  valueColor: AlwaysStoppedAnimation<Color>(supplier.color),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

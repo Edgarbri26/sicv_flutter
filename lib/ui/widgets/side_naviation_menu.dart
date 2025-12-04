@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
 
 class SideNavigationMenu extends StatefulWidget {
@@ -9,15 +10,11 @@ class SideNavigationMenu extends StatefulWidget {
   final TabController? tabController;
   final PageController? pageController;
 
-  final Color backgroundColor;
-
   const SideNavigationMenu({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.menuItems,
-    this.backgroundColor =
-        Colors.white, // Valor por defecto o AppColors.background
     this.tabController,
     this.pageController,
   });
@@ -50,7 +47,7 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
       // Estilo y Configuración
       labelType: NavigationRailLabelType.all,
       groupAlignment: 0.0, // Centro vertical
-      backgroundColor: widget.backgroundColor,
+      backgroundColor: AppColors.background,
 
       // Estado
       selectedIndex: _currentIndex,

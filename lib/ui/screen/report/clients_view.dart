@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // Importa los modelos y el provider de tu proyecto
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
@@ -18,7 +19,7 @@ class ClientReportView extends ConsumerWidget {
     final currentFilter = ref.watch(clientFilterProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.background,
       body: clientStateAsync.when(
         // ESTADO: CARGANDO
         loading: () =>
@@ -194,32 +195,41 @@ class ClientReportView extends ConsumerWidget {
           children: [
             Expanded(
               flex: 2,
-              child: _ChartContainer(
-                title: "Top 5 Clientes (Valor Monetario)",
-                child: AspectRatio(
-                  aspectRatio: 1.7,
-                  child: data.topClients.isEmpty
-                      ? const Center(child: Text("Sin data de Top Clientes"))
-                      : _TopClientsChart(data: data.topClients),
+              child: SizedBox(
+                height: 400, // Altura fija para ambos
+                child: _ChartContainer(
+                  title: "Top 5 Clientes (Valor Monetario)",
+                  child: Expanded(
+                    child: data.topClients.isEmpty
+                        ? const Center(child: Text("Sin data de Top Clientes"))
+                        : _TopClientsChart(data: data.topClients),
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 24),
             Expanded(
               flex: 1,
-              child: _ChartContainer(
-                title: "Actividad Reciente",
-                child: data.clientList.isEmpty
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text(
-                            "No hay clientes en el periodo",
-                            style: TextStyle(color: Colors.grey),
+              child: SizedBox(
+                height: 400, // Altura fija para ambos
+                child: _ChartContainer(
+                  title: "Actividad Reciente",
+                  child: data.clientList.isEmpty
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text(
+                              "No hay clientes en el periodo",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        )
+                      : Expanded(
+                          child: SingleChildScrollView(
+                            child: _ClientList(clients: data.clientList),
                           ),
                         ),
-                      )
-                    : _ClientList(clients: data.clientList),
+                ),
               ),
             ),
           ],
@@ -241,24 +251,40 @@ class ClientReportView extends ConsumerWidget {
                   runSpacing: 8,
                   children: [
                     // Morado: Compran mucho y seguido
-                    _buildSegmentItem(Colors.purple, "VIP", "Alto Valor / Frecuentes"),
-                    
+                    _buildSegmentItem(
+                      Colors.purple,
+                      "VIP",
+                      "Alto Valor / Frecuentes",
+                    ),
+
                     // Teal: Compran caro pero rara vez
-                    _buildSegmentItem(Colors.teal, "Potenciales", "Alto Valor / Ocasionales"),
-                    
+                    _buildSegmentItem(
+                      Colors.teal,
+                      "Potenciales",
+                      "Alto Valor / Ocasionales",
+                    ),
+
                     // Naranja: Compran barato pero seguido
-                    _buildSegmentItem(Colors.orange, "Recurrentes", "Bajo Valor / Frecuentes"),
-                    
+                    _buildSegmentItem(
+                      Colors.orange,
+                      "Recurrentes",
+                      "Bajo Valor / Frecuentes",
+                    ),
+
                     // Rojo: Compran poco y barato
-                    _buildSegmentItem(Colors.red, "Esporádicos", "Bajo Valor / Ocasionales"),
+                    _buildSegmentItem(
+                      Colors.red,
+                      "Esporádicos",
+                      "Bajo Valor / Ocasionales",
+                    ),
                   ],
                 ),
               ),
-              // -------------------------------
 
+              // -------------------------------
               SizedBox(
                 // Puedes cambiar esto a 300 para tu vista móvil si prefieres
-                height: 350, 
+                height: 350,
                 child: data.correlationData.isEmpty
                     ? const Center(
                         child: Text(
@@ -304,24 +330,40 @@ class ClientReportView extends ConsumerWidget {
                   runSpacing: 8,
                   children: [
                     // Morado: Compran mucho y seguido
-                    _buildSegmentItem(Colors.purple, "VIP", "Alto Valor / Frecuentes"),
-                    
+                    _buildSegmentItem(
+                      Colors.purple,
+                      "VIP",
+                      "Alto Valor / Frecuentes",
+                    ),
+
                     // Teal: Compran caro pero rara vez
-                    _buildSegmentItem(Colors.teal, "Potenciales", "Alto Valor / Ocasionales"),
-                    
+                    _buildSegmentItem(
+                      Colors.teal,
+                      "Potenciales",
+                      "Alto Valor / Ocasionales",
+                    ),
+
                     // Naranja: Compran barato pero seguido
-                    _buildSegmentItem(Colors.orange, "Recurrentes", "Bajo Valor / Frecuentes"),
-                    
+                    _buildSegmentItem(
+                      Colors.orange,
+                      "Recurrentes",
+                      "Bajo Valor / Frecuentes",
+                    ),
+
                     // Rojo: Compran poco y barato
-                    _buildSegmentItem(Colors.red, "Esporádicos", "Bajo Valor / Ocasionales"),
+                    _buildSegmentItem(
+                      Colors.red,
+                      "Esporádicos",
+                      "Bajo Valor / Ocasionales",
+                    ),
                   ],
                 ),
               ),
-              // -------------------------------
 
+              // -------------------------------
               SizedBox(
                 // Puedes cambiar esto a 300 para tu vista móvil si prefieres
-                height: 350, 
+                height: 350,
                 child: data.correlationData.isEmpty
                     ? const Center(
                         child: Text(
@@ -635,10 +677,7 @@ Widget _buildSegmentItem(Color color, String title, String subtitle) {
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Column(
@@ -646,17 +685,11 @@ Widget _buildSegmentItem(Color color, String title, String subtitle) {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
             ),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 9,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 9),
             ),
           ],
         ),
@@ -681,7 +714,7 @@ class _FrequencyValueScatterChart extends StatelessWidget {
       if (p.ordersCount > maxX) maxX = p.ordersCount.toDouble();
       if (p.totalSpent > maxY) maxY = p.totalSpent;
     }
-    
+
     // Aseguramos que no sea 0 para evitar errores
     maxX = (maxX == 0 ? 30 : maxX) * 1.2;
     maxY = (maxY == 0 ? 10000 : maxY) * 1.2;
@@ -702,7 +735,9 @@ class _FrequencyValueScatterChart extends StatelessWidget {
           getDrawingHorizontalLine: (val) => FlLine(
             color: val == highValueThreshold
                 ? Colors.green.shade200
-                : Colors.grey.withOpacity(0.1), // Usamos withOpacity por compatibilidad
+                : Colors.grey.withOpacity(
+                    0.1,
+                  ), // Usamos withOpacity por compatibilidad
             strokeWidth: 2,
           ),
           getDrawingVerticalLine: (val) => FlLine(
@@ -742,8 +777,12 @@ class _FrequencyValueScatterChart extends StatelessWidget {
               ),
             ),
           ),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         borderData: FlBorderData(
           show: true,
@@ -776,7 +815,9 @@ class _FrequencyValueScatterChart extends StatelessWidget {
             point.ordersCount.toDouble() + jitterX, // <--- Aplicamos aquí
             point.totalSpent,
             dotPainter: FlDotCirclePainter(
-              color: color.withOpacity(0.7), // Transparencia para ver superposiciones
+              color: color.withOpacity(
+                0.7,
+              ), // Transparencia para ver superposiciones
               radius: radius,
               strokeWidth: 0,
             ),
@@ -792,7 +833,7 @@ class _FrequencyValueScatterChart extends StatelessWidget {
                 final match = points.firstWhere(
                   (p) =>
                       // Aumentamos la tolerancia a 0.5 porque movimos el punto con jitter
-                      (p.ordersCount.toDouble() - spot.x).abs() < 0.5 && 
+                      (p.ordersCount.toDouble() - spot.x).abs() < 0.5 &&
                       (p.totalSpent - spot.y).abs() < 0.1,
                 );
                 return XAxisTooltipItem(

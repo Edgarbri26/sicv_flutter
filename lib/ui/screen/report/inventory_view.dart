@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU MODELO DE EFICIENCIA
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
@@ -21,7 +22,7 @@ class InventoryReportView extends ConsumerWidget {
     final currentFilter = ref.watch(inventoryFilterProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.background,
       body: inventoryStateAsync.when(
         loading: () =>
             const Center(child: CircularProgressIndicator(color: Colors.blue)),
@@ -62,7 +63,7 @@ class InventoryReportView extends ConsumerWidget {
               ChartContainer(
                 title: "Matriz Rentabilidad vs Volumen",
                 // Dejamos el subtítulo vacío o con una breve descripción general
-                subtitle: "Distribución de productos según su desempeño", 
+                subtitle: "Distribución de productos según su desempeño",
                 child: Column(
                   children: [
                     // --- NUEVA LEYENDA VISUAL ---
@@ -75,24 +76,36 @@ class InventoryReportView extends ConsumerWidget {
                         children: [
                           // Verde: Venden mucho y ganan mucho
                           _buildLegendItem(
-                              Colors.green, "Líderes", "Alta Venta / Alta Ganancia"),
-                          
+                            Colors.green,
+                            "Líderes",
+                            "Alta Venta / Alta Ganancia",
+                          ),
+
                           // Azul: Venden mucho pero ganancia normal/baja (Mueven flujo de caja)
                           _buildLegendItem(
-                              Colors.blue, "Alta Rotación", "Alta Venta / Baja Ganancia"),
-                          
+                            Colors.blue,
+                            "Alta Rotación",
+                            "Alta Venta / Baja Ganancia",
+                          ),
+
                           // Naranja: Ganan mucho pero se venden poco (Productos de nicho)
                           _buildLegendItem(
-                              Colors.orange, "Alta Margen", "Baja Venta / Alta Ganancia"),
-                          
+                            Colors.orange,
+                            "Alta Margen",
+                            "Baja Venta / Alta Ganancia",
+                          ),
+
                           // Rojo: No aportan ni volumen ni ganancia
                           _buildLegendItem(
-                              Colors.red, "Bajo Desempeño", "Baja Venta / Baja Ganancia"),
+                            Colors.red,
+                            "Bajo Desempeño",
+                            "Baja Venta / Baja Ganancia",
+                          ),
                         ],
                       ),
                     ),
-                    // -----------------------------
 
+                    // -----------------------------
                     SizedBox(
                       height: 350,
                       child: data.efficiencyData.isEmpty
@@ -102,7 +115,9 @@ class InventoryReportView extends ConsumerWidget {
                                 style: TextStyle(color: Colors.grey),
                               ),
                             )
-                          : _InventoryEfficiencyChart(points: data.efficiencyData),
+                          : _InventoryEfficiencyChart(
+                              points: data.efficiencyData,
+                            ),
                     ),
                   ],
                 ),
@@ -247,6 +262,7 @@ class InventoryReportView extends ConsumerWidget {
           child: Column(
             children: [
               ChartContainer(
+                height: 396,
                 title: "Distribución por Categoría",
                 child: data.categoryDistribution.isEmpty
                     ? const Center(
@@ -259,8 +275,9 @@ class InventoryReportView extends ConsumerWidget {
                         children: [
                           Expanded(
                             flex: 3,
-                            child: AspectRatio(
-                              aspectRatio: 1,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              height: 290,
                               child: AppPieChart(
                                 data: data.categoryDistribution,
                               ),
@@ -286,8 +303,9 @@ class InventoryReportView extends ConsumerWidget {
         ),
         const SizedBox(width: 24),
         Expanded(
-          flex: 3,
+          flex: 5,
           child: ChartContainer(
+            height: 640,
             title: "Top Productos Vendidos",
             // AQUÍ SE USA EL WIDGET ACTUALIZADO
             child: _TopProductsList(products: data.topProducts),
@@ -427,10 +445,7 @@ Widget _buildLegendItem(Color color, String title, String subtitle) {
       Container(
         width: 12,
         height: 12,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       ),
       const SizedBox(width: 6),
       Column(
@@ -438,17 +453,11 @@ Widget _buildLegendItem(Color color, String title, String subtitle) {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold, 
-              fontSize: 12,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: Colors.grey, 
-              fontSize: 10,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 10),
           ),
         ],
       ),
@@ -480,8 +489,8 @@ class _InventoryEfficiencyChart extends StatelessWidget {
     // --- CAMBIO 1: UMBRALES MÁS SUAVES ---
     // Antes tenías * 0.4 (40%). Lo bajamos a 0.25 (25%) para que
     // sea más fácil que un producto sea considerado "Bueno" (Verde/Azul).
-    final double targetSales = maxX * 0.25; 
-    final double targetProfit = maxY * 0.25; 
+    final double targetSales = maxX * 0.25;
+    final double targetProfit = maxY * 0.25;
 
     return ScatterChart(
       ScatterChartData(
@@ -531,8 +540,12 @@ class _InventoryEfficiencyChart extends StatelessWidget {
               ),
             ),
           ),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         borderData: FlBorderData(
           show: true,
@@ -543,7 +556,7 @@ class _InventoryEfficiencyChart extends StatelessWidget {
           Color color;
           bool highSales = point.quantitySold >= targetSales;
           bool highProfit = point.totalProfit >= targetProfit;
-          
+
           if (highSales && highProfit) {
             color = Colors.green; // Líderes
           } else if (highSales && !highProfit) {
@@ -556,24 +569,27 @@ class _InventoryEfficiencyChart extends StatelessWidget {
 
           // --- CAMBIO 2: JITTER (RUIDO VISUAL) ---
           // Generamos un pequeño número aleatorio entre -0.4 y +0.4
-          // Esto hace que si tienes 10 productos con venta = 1, 
+          // Esto hace que si tienes 10 productos con venta = 1,
           // no se pongan uno encima del otro, sino un poquito al lado.
           double jitterX = (random.nextDouble() * 0.8) - 0.4;
-          
+
           // Opcional: Jitter en Y (Ganancia) muy leve
-          double jitterY = (random.nextDouble() * (maxY * 0.02)) - (maxY * 0.01);
+          double jitterY =
+              (random.nextDouble() * (maxY * 0.02)) - (maxY * 0.01);
 
           return ScatterSpot(
             point.quantitySold + jitterX, // <--- Aplicamos Jitter X
-            point.totalProfit + jitterY,  // <--- Aplicamos Jitter Y
+            point.totalProfit + jitterY, // <--- Aplicamos Jitter Y
             dotPainter: FlDotCirclePainter(
-              color: color.withOpacity(0.7), // Bajamos opacidad para ver superposiciones
+              color: color.withOpacity(
+                0.7,
+              ), // Bajamos opacidad para ver superposiciones
               radius: (color == Colors.green || color == Colors.red) ? 8 : 6,
               strokeWidth: 0,
             ),
           );
         }).toList(),
-        
+
         scatterTouchData: ScatterTouchData(
           enabled: true,
           touchTooltipData: ScatterTouchTooltipData(
@@ -583,7 +599,8 @@ class _InventoryEfficiencyChart extends StatelessWidget {
                 // Buscamos el punto original más cercano ignorando el jitter
                 final match = points.firstWhere(
                   (p) =>
-                      (p.quantitySold - spot.x).abs() < 0.6 && // Tolerancia aumentada por el jitter
+                      (p.quantitySold - spot.x).abs() <
+                          0.6 && // Tolerancia aumentada por el jitter
                       (p.totalProfit - spot.y).abs() < (maxY * 0.05),
                   orElse: () => InventoryEfficiencyPoint(
                     name: "Item",
@@ -621,15 +638,22 @@ class ChartContainer extends StatelessWidget {
   final String? subtitle;
   final Widget child;
   final bool isAlert;
+  final double? height;
+  final double? width;
   const ChartContainer({
+    super.key,
     required this.title,
     required this.child,
     this.isAlert = false,
     this.subtitle,
+    this.height,
+    this.width,
   });
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: height,
+      width: width,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,

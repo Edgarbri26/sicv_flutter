@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/providers/theme_provider.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/ui/pages/inventario_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
@@ -28,16 +30,20 @@ import 'ui/screen/config/notifications_screen.dart';
 import 'core/theme/themes.dart';
 import 'ui/pages/home_page.dart';
 
-class InventoryApp extends StatelessWidget {
+class InventoryApp extends ConsumerWidget {
   InventoryApp({super.key});
   final _controller = SidebarXController(selectedIndex: 0, extended: true);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // final themeMode = ref.watch(themeProvider);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
+      // darkTheme: Themes.darkTheme,
+      themeMode: ThemeMode.system,
       home: LoginPage(),
 
       //HomePage(controller: _controller),
@@ -68,8 +74,7 @@ class InventoryApp extends StatelessWidget {
           case AppRoutes.purchase:
             return MaterialPageRoute(
               builder: (context) => PurchasePage(controller: _controller),
-          );
-
+            );
 
           case AppRoutes.movements:
             return MaterialPageRoute(
@@ -138,7 +143,7 @@ class InventoryApp extends StatelessWidget {
 
           default:
             return MaterialPageRoute(
-              builder: (context) => HomePage(controller: _controller),
+              builder: (context) => SalePage(controller: _controller),
             );
         }
       },
