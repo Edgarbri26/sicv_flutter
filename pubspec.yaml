@@ -50,6 +50,14 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   riverpod_annotation: ^3.0.3
   cached_network_image: ^3.4.1
+  firebase_messaging: ^16.0.4
+  flutter_local_notifications: ^19.5.0
+  # Core de Firebase y Mensajería Cloud
+  
+  # firebase_messaging: ^14.7.13 # Asegúrate de usar la versión más reciente
+  
+  # Para notificaciones locales (principalmente Windows/Desktop)
+
 
 dev_dependencies:
   flutter_test:
