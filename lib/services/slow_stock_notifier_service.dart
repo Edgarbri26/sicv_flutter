@@ -105,6 +105,7 @@ class SlowStockNotifierService {
     // 5. Suscripción a Tópico Específico
     // ------------------------------------
     await _firebaseMessaging.subscribeToTopic('low_stock');
+    print("Suscrito al tópico 'low_stock'");
 
     final token = await _firebaseMessaging.getToken();
     if (kDebugMode) {
