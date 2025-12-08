@@ -112,7 +112,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
           appBar: !isWide
               ? AppBarApp(
                   title: 'Dashboard de Reportes',
-                  iconColor: AppColors.textPrimary,
+                  // iconColor: AppColors.textPrimary,
                 )
               : null,
           drawer: !isWide ? MySideBar(controller: widget.controller) : null,

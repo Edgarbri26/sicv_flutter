@@ -2,15 +2,18 @@
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // ¡Añadido para Riverpod!
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// 💡 CORRECCIÓN CLAVE: Usamos un prefijo para las clases de notificaciones locales
+// Importamos local_notifications con el prefijo 'fln'
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as fln;
-import 'package:sicv_flutter/models/app_noficacion_model.dart';
 
-// Dependencias de estado (asumo que existen)
+// Importa tus modelos y providers
+import 'package:sicv_flutter/models/app_noficacion_model.dart';
+import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/providers/notificacion_provider.dart';
+import 'package:sicv_flutter/providers/product_provider.dart';
+// import 'package:sicv_flutter/services/product_service.dart'; // Ya no lo usamos directo aqui
 
 // ----------------------------------------------------------------------
 // 1. Manejador de Notificaciones en Background (Top-Level Function)
@@ -18,34 +21,68 @@ import 'package:sicv_flutter/providers/notificacion_provider.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (kDebugMode) {
-    print("🔔 Manejando mensaje en background: ${message.messageId}");
+    print("🔔 Background Handler: ${message.messageId}");
   }
-  // En este punto, no podemos usar Riverpod directamente ya que la app está en background.
-  // Solo se puede manejar la persistencia local (ej: Hive/Isar) si es necesario.
+  // Aquí la app está cerrada o en segundo plano.
+  // No podemos acceder al 'container' de Riverpod directamente aquí sin inicializarlo de nuevo,
+  // pero FCM se encarga de mostrar la notificación nativa si viene con payload 'notification'.
 }
 
+// 🚀 PROVIDER
+final slowStockNotifierProvider = Provider<SlowStockNotifierService>((ref) {
+  return SlowStockNotifierService(ref);
+});
+
 class SlowStockNotifierService {
-  final ProviderContainer
-  container; // 💡 PROPIEDAD AÑADIDA para acceder a Riverpod
+  final Ref ref; // Cambiado de ProviderContainer a Ref
   final _firebaseMessaging = FirebaseMessaging.instance;
-  // Inicializamos el plugin local usando el prefijo fln
   final _localNotifications = fln.FlutterLocalNotificationsPlugin();
 
-  // 💡 CONSTRUCTOR CORREGIDO: Ahora requiere el ProviderContainer
-  SlowStockNotifierService(this.container);
+  SlowStockNotifierService(this.ref) {
+    // 👂 Listener REACTIVO (Debe ir en el constructor)
+    // Escuchamos los cambios de stock. Si cambia y el servicio está listo, revisamos.
+    ref.listen<AsyncValue<List<ProductModel>>>(productsProvider, (
+      previous,
+      next,
+    ) {
+      next.whenData((products) {
+        if (_isReady) _checkLowStock(products);
+      });
+    });
+  }
+
+  bool _isReady = false;
 
   Future<void> initialize() async {
     // ------------------------------------
-    // 1. Request de Permisos (iOS & Web)
+    // 1. Request de Permisos (iOS, Web y Android 13+)
     // ------------------------------------
+
+    // Permisos básicos (iOS/Web)
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
+      announcement: false,
       badge: true,
+      carPlay: false,
+      criticalAlert: true,
+      provisional: false,
       sound: true,
     );
 
     if (kDebugMode) {
-      print('Permisos de notificaciones: ${settings.authorizationStatus}');
+      print('Permiso usuario: ${settings.authorizationStatus}');
+    }
+
+    // 🚨 Permisos específicos para Android 13+ (necesario para ver notificaciones)
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final androidImplementation = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            fln.AndroidFlutterLocalNotificationsPlugin
+          >();
+
+      if (androidImplementation != null) {
+        await androidImplementation.requestNotificationsPermission();
+      }
     }
 
     // ------------------------------------
@@ -57,43 +94,42 @@ class SlowStockNotifierService {
     // 3. Inicialización Local Multiplataforma
     // ------------------------------------
 
-    // 💡 Android, iOS y Web también necesitan configuración de inicialización
+    // Android: Icono de la app (asegúrate que 'ic_launcher' exista en android/app/src/main/res/mipmap-*)
     const initializationSettingsAndroid = fln.AndroidInitializationSettings(
       '@mipmap/ic_launcher',
-    ); // Icono para Android
-    const initializationSettingsIOS = fln.DarwinInitializationSettings();
+    );
 
-    // 💡 CORRECCIÓN DE ERRORES: Usamos 'final' y el prefijo 'fln'
+    // iOS
+    const initializationSettingsIOS = fln.DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    // Windows
     fln.WindowsInitializationSettings? initializationSettingsWindows;
     if (defaultTargetPlatform == TargetPlatform.windows) {
       initializationSettingsWindows = fln.WindowsInitializationSettings(
-        // ⬅️ ¡Aquí la corrección clave!
         appName: 'Inventario App',
         appUserModelId: 'com.sicv.inventario_app',
-        // GUID generado para identificar la app en Windows (necesario para acciones)
         guid: '5d4b8e90-c23a-4e20-91c6-21805628469d',
-        // ... otros parámetros
       );
     }
 
-    // 💡 Inicialización Final:
     final initializationSettings = fln.InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
-      // Solo incluimos Windows si estamos en esa plataforma para evitar errores de compilación innecesarios
       windows: initializationSettingsWindows,
     );
 
     await _localNotifications.initialize(
       initializationSettings,
-      // Manejador al tocar una notificación (ej. abrir el listado de notificaciones)
-      onDidReceiveNotificationResponse:
-          (fln.NotificationResponse response) async {
-            // Lógica de acción al tocar la notificación.
-            if (response.payload != null && kDebugMode) {
-              print('Payload de Notificación Tocado: ${response.payload}');
-            }
-          },
+      onDidReceiveNotificationResponse: (fln.NotificationResponse response) async {
+        if (kDebugMode) {
+          print('🔔 Toco notificación. Payload: ${response.payload}');
+        }
+        // TODO: Aquí puedes añadir lógica de navegación (ej. ir al detalle del producto)
+      },
     );
 
     // ------------------------------------
@@ -102,67 +138,159 @@ class SlowStockNotifierService {
     _setupForegroundMessageHandling();
 
     // ------------------------------------
-    // 5. Suscripción a Tópico Específico
+    // 5. Suscripción a Tópico
     // ------------------------------------
-    await _firebaseMessaging.subscribeToTopic('low_stock');
-    print("Suscrito al tópico 'low_stock'");
+    try {
+      await _firebaseMessaging.subscribeToTopic('low_stock');
+      if (kDebugMode) {
+        print("✅ Suscrito al tópico 'low_stock'");
+      }
+    } catch (e) {
+      debugPrint(
+        "⚠️ No se pudo suscribir al tópico (puede ser normal en Windows/Emuladores sin Google Play): $e",
+      );
+    }
 
-    final token = await _firebaseMessaging.getToken();
-    if (kDebugMode) {
-      print("FCM Token: $token");
+    // ------------------------------------
+    // 6. Configurar el Listener Reactivo (Provider)
+    // ------------------------------------
+    // Escuchamos activamente los cambios en 'productsProvider'.
+    // Cada vez que se actualice la lista (por polling o tras una venta),
+    // esta función se ejecutará automáticamente y de forma síncrona con el cambio.
+    // Listener movido al constructor.
+    _isReady = true;
+
+    // ------------------------------------
+    // 7. Polling de "Refresco"
+    // ------------------------------------
+    // Solo necesitamos refrescar el provider periódicamente para traer cambios del backend.
+    // El listener de arriba se encargará de notificar en cuanto lleguen.
+    _startProviderPolling();
+  }
+
+  void _startProviderPolling() {
+    // Inmediatamente pedimos datos frescos
+    ref.refresh(productsProvider);
+
+    // Repite cada 60 segundos
+    _scheduleNextRefresh();
+  }
+
+  void _scheduleNextRefresh() {
+    Future.delayed(const Duration(seconds: 60), () {
+      if (kDebugMode) print("🔄 Polling: Refrescando lista de productos...");
+      ref.invalidate(productsProvider); // Esto dispara una nueva recarga de red
+      _scheduleNextRefresh();
+    });
+  }
+
+  // Variable para evitar notificar lo mismo repetidamente en corto tiempo
+  final Set<int> _notifiedProducts = {};
+
+  // Ahora recibe la lista del Provider (REACTIVO), no la busca él mismo.
+  void _checkLowStock(List<ProductModel> products) {
+    try {
+      if (kDebugMode)
+        print("🔍 Analizando stock de ${products.length} productos...");
+
+      final lowStockProducts = products
+          .where((p) => p.totalStock <= p.minStock && p.totalStock > 0)
+          .toList();
+
+      for (var product in lowStockProducts) {
+        if (!_notifiedProducts.contains(product.id)) {
+          // Disparamos notificación local
+          _showLocalNotification(
+            RemoteMessage(
+              notification: RemoteNotification(
+                title: "⚠️ Stock Bajo: ${product.name}",
+                body:
+                    "Quedan ${product.totalStock} unidades. Mínimo: ${product.minStock}",
+              ),
+              data: {'productId': product.id},
+            ),
+          );
+
+          // Agregamos al sistema de notificaciones de la app (campanita)
+          final appNotif = AppNotificationModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            title: "Stock Bajo: ${product.name}",
+            body:
+                "El producto ha alcanzado su nivel mínimo de inventario (${product.totalStock}).",
+            timestamp: DateTime.now(),
+            isRead: false,
+            data: {'productId': product.id},
+          );
+          ref.read(notificationProvider.notifier).addNotification(appNotif);
+
+          _notifiedProducts.add(product.id);
+        }
+      }
+
+      // Limpieza simple
+      final currentLowStockIds = lowStockProducts.map((p) => p.id).toSet();
+      _notifiedProducts.removeWhere((id) => !currentLowStockIds.contains(id));
+    } catch (e) {
+      debugPrint("Error analizando stock: $e");
     }
   }
 
   void _setupForegroundMessageHandling() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (kDebugMode) {
-        print('🔔 Mensaje Recibido en Foreground. Data: ${message.data}');
+        print('🔔 Mensaje en Foreground: ${message.data}');
       }
 
-      // 💡 INTEGRACIÓN RIVERPOD: Agregamos la notificación al estado de la campanita
+      // 1. Actualizar Estado (Campanita)
       final newNotification = AppNotificationModel.fromRemoteMessage(message);
-      container
-          .read(notificationProvider.notifier)
-          .addNotification(newNotification);
+      ref.read(notificationProvider.notifier).addNotification(newNotification);
 
-      // Si el mensaje tiene contenido (notification != null) y NO es Android/iOS
-      // (que manejan su propia UI), disparamos la notificación local.
-      if (message.notification != null &&
-          (defaultTargetPlatform == TargetPlatform.windows ||
-              kIsWeb) // Web también requiere el plugin local para funcionar como popup
-          ) {
+      // 2. Mostrar Banner Flotante (Heads-up)
+      if (message.notification != null) {
         _showLocalNotification(message);
       }
     });
   }
 
   // ------------------------------------
-  // Helper para mostrar notificaciones locales (Windows/Desktop/Web)
+  // Helper para mostrar notificaciones (Banner/Sonido/Vibración)
   // ------------------------------------
   void _showLocalNotification(RemoteMessage message) async {
-    // 💡 CORRECCIÓN DE PREFIJOS: Usamos el prefijo 'fln' en NotificationDetails
-    final details = fln.NotificationDetails(
-      android: const fln.AndroidNotificationDetails(
-        'low_stock_channel',
-        'Alertas de Stock Bajo',
-        channelDescription:
-            'Notificaciones sobre productos con bajo inventario.',
-        importance: fln.Importance.max,
-        priority: fln.Priority.high,
-      ),
-      iOS: const fln.DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      ),
-      windows: fln.WindowsNotificationDetails(), // 💡 CORREGIDO: prefijo 'fln'
+    // 🔥 CONFIGURACIÓN ANDROID PARA BANNER FLOTANTE (HEADS-UP)
+    const androidPlatformChannelSpecifics = fln.AndroidNotificationDetails(
+      'high_importance_channel_v2', // ID Nuevo para forzar actualización
+      'Alertas Críticas de Stock', // Nombre del canal
+      channelDescription: 'Muestra banners flotantes cuando el stock es bajo.',
+      importance: fln.Importance.max, // 🚨 CRUCIAL: Max hace que baje el banner
+      priority: fln.Priority.high, // 🚨 CRUCIAL: Alta prioridad
+      ticker: 'ticker',
+      playSound: true,
+      enableVibration: true,
+      styleInformation: fln.BigTextStyleInformation(
+        '',
+      ), // Permite texto largo expandible
     );
 
+    // 🔥 CONFIGURACIÓN IOS PARA BANNER
+    const darwinPlatformChannelSpecifics = fln.DarwinInitializationSettings(
+      defaultPresentAlert: true, // Mostrar banner
+      defaultPresentSound: true, // Sonido
+      defaultPresentBanner: true, // Banner (iOS 14+)
+    );
+
+    // Detalles generales
+    const platformChannelSpecifics = fln.NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      windows:
+          fln.WindowsNotificationDetails(), // Windows usa la config por defecto del sistema
+    );
+
+    // Mostrar la notificación
     await _localNotifications.show(
-      message.hashCode,
+      message.hashCode, // ID único
       message.notification?.title,
       message.notification?.body,
-      details,
+      platformChannelSpecifics,
       payload: message.data['productId']?.toString(),
     );
   }

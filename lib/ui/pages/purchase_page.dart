@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sidebarx/sidebarx.dart';
 
@@ -32,22 +33,7 @@ class _PurchasePageState extends State<PurchasePage> {
           backgroundColor: AppColors.background,
 
           // --- APP BAR (Solo móvil) ---
-          appBar: !isWide
-              ? AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  centerTitle: true,
-                  title: Text(
-                    'Registro de Compra',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  iconTheme: IconThemeData(color: AppColors.textPrimary),
-                )
-              : null,
+          appBar: !isWide ? AppBarApp(title: 'Registro de Compra') : null,
 
           // --- DRAWER (Solo móvil) ---
           drawer: isWide ? null : MySideBar(controller: widget.controller),

@@ -8,6 +8,7 @@ import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/screen/home/sale_screen.dart';
 
 // Importaciones requeridas por tu widget 'Menu'
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/side_naviation_menu.dart';
 import 'package:sicv_flutter/ui/widgets/wide_layuout.dart';
@@ -89,22 +90,7 @@ class _HomePageState extends State<HomePage>
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: !isWide
-              ? AppBar(
-                  backgroundColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  title: Text(
-                    _screenTitles[_selectedIndex],
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  toolbarHeight: 64.0,
-                  actions: [const SizedBox(width: 16)],
-                  iconTheme: IconThemeData(color: AppColors.textPrimary),
-                )
+              ? AppBarApp(title: _screenTitles[_selectedIndex])
               : null,
 
           drawer: isWide ? null : MySideBar(controller: widget.controller),

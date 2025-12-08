@@ -4,6 +4,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/providers/notificacion_provider.dart';
+import 'package:sicv_flutter/ui/pages/notification_page.dart';
 
 class AppBarApp extends ConsumerWidget implements PreferredSizeWidget {
   /// El texto que se mostrará en el título.
@@ -63,8 +64,9 @@ class AppBarApp extends ConsumerWidget implements PreferredSizeWidget {
         // 🔔 Botón de Notificaciones con Badge
         IconButton(
           onPressed: () {
-            // TODO: Navegar a pantalla de notificaciones o abrir popup
-            print("Abrir notificaciones");
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const NotificationPage()));
           },
           icon: Badge(
             isLabelVisible: unreadCount > 0,

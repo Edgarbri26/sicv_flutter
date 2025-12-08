@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,17 +48,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Configuración',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      appBar: AppBarApp(
+        title: 'Configuración',
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),

@@ -8,6 +8,7 @@ import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/movement/movement_type.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/providers/movement_provider.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/my_side_bar.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/modals/add_movement_modal.dart';
@@ -44,24 +45,28 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
 
-        final hasAccessCreateMovements = userPermissions.can(AppPermissions.createMovements);
+        final hasAccessCreateMovements = userPermissions.can(
+          AppPermissions.createMovements,
+        );
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: !isWide
-              ? AppBar(title: const Text('Movimientos'), backgroundColor: Colors.transparent, elevation: 0)
-              : null,
+          appBar: !isWide ? AppBarApp(title: 'Movimientos') : null,
           drawer: isWide ? null : MySideBar(controller: widget.controller),
-          
-          floatingActionButton:  hasAccessCreateMovements ? FloatingActionButton.extended(
-            backgroundColor: AppColors.primary,
-            icon: Icon(Symbols.add, color: AppColors.secondary),
-            label: Text(
-              "Agregar Movimiento",
-              style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold),
-            ),
-            onPressed: () => AddMovementModal.show(context),
-            
-          ) : null,
+
+          floatingActionButton: hasAccessCreateMovements
+              ? FloatingActionButton.extended(
+                  backgroundColor: AppColors.primary,
+                  icon: Icon(Symbols.add, color: AppColors.secondary),
+                  label: Text(
+                    "Agregar Movimiento",
+                    style: TextStyle(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () => AddMovementModal.show(context),
+                )
+              : null,
 
           body: isWide
               ? WideLayout(
@@ -75,7 +80,13 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, List<dynamic> movements, bool isLoading, bool isWide) {
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    List<dynamic> movements,
+    bool isLoading,
+    bool isWide,
+  ) {
     return Column(
       children: [
         // --- FILTROS ---
@@ -86,10 +97,10 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
           child: isLoading
               ? const Center(child: CircularProgressIndicator())
               : movements.isEmpty
-                  ? const Center(child: Text("No se encontraron movimientos."))
-                  : isWide
-                      ? _buildDataTable(movements)
-                      : _buildListView(movements),
+              ? const Center(child: Text("No se encontraron movimientos."))
+              : isWide
+              ? _buildDataTable(movements)
+              : _buildListView(movements),
         ),
       ],
     );
@@ -107,10 +118,11 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
             constraints: const BoxConstraints(maxWidth: 300),
             child: TextFieldApp(
               // CAMBIO 3: Pasamos el controlador requerido
-              controller: _searchController, 
+              controller: _searchController,
               labelText: 'Buscar producto...',
               prefixIcon: Icons.search,
-              onChanged: (val) => ref.read(movementSearchProvider.notifier).state = val,
+              onChanged: (val) =>
+                  ref.read(movementSearchProvider.notifier).state = val,
             ),
           ),
           // Filtro Tipo
@@ -119,16 +131,25 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
             value: ref.watch(movementTypeFilterProvider),
             items: [
               const DropdownMenuItem(value: null, child: Text("Todos")),
-              ...MovementType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.displayName)))
+              ...MovementType.values.map(
+                (t) => DropdownMenuItem(value: t, child: Text(t.displayName)),
+              ),
             ],
-            onChanged: (v) => ref.read(movementTypeFilterProvider.notifier).state = v,
+            onChanged: (v) =>
+                ref.read(movementTypeFilterProvider.notifier).state = v,
           ),
           // Filtro Fecha
           DropdownButton<String>(
             value: ref.watch(movementDateRangeProvider),
-            items: ['Hoy', 'Ayer', 'Últimos 7 días', 'Este mes', 'Todos']
-                .map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-            onChanged: (v) => ref.read(movementDateRangeProvider.notifier).state = v!,
+            items: [
+              'Hoy',
+              'Ayer',
+              'Últimos 7 días',
+              'Este mes',
+              'Todos',
+            ].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+            onChanged: (v) =>
+                ref.read(movementDateRangeProvider.notifier).state = v!,
           ),
         ],
       ),
@@ -143,7 +164,7 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(8)
+          borderRadius: BorderRadius.circular(8),
         ),
         child: DataTable(
           headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
@@ -156,16 +177,23 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
           ],
           rows: movements.map((m) {
             final isPos = m.amount >= 0;
-            return DataRow(cells: [
-              DataCell(Text(dateFormat.format(m.movedAt))),
-              DataCell(Text(m.productName)),
-              DataCell(Text(m.type)),
-              DataCell(Text(
-                m.amount.toStringAsFixed(0),
-                style: TextStyle(color: isPos ? Colors.green : Colors.red, fontWeight: FontWeight.bold),
-              )),
-              DataCell(Text(m.userName)),
-            ]);
+            return DataRow(
+              cells: [
+                DataCell(Text(dateFormat.format(m.movedAt))),
+                DataCell(Text(m.productName)),
+                DataCell(Text(m.type)),
+                DataCell(
+                  Text(
+                    m.amount.toStringAsFixed(0),
+                    style: TextStyle(
+                      color: isPos ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                DataCell(Text(m.userName)),
+              ],
+            );
           }).toList(),
         ),
       ),
@@ -177,22 +205,34 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
     final dateFormat = DateFormat('dd/MM HH:mm');
     return ListView.separated(
       itemCount: movements.length,
-      separatorBuilder: (_,__) => const Divider(height: 1),
+      separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final m = movements[index];
         final isPos = m.amount >= 0;
         return ListTile(
           leading: CircleAvatar(
             backgroundColor: isPos ? Colors.green[100] : Colors.red[100],
-            child: Icon(isPos ? Icons.arrow_downward : Icons.arrow_upward, 
-              color: isPos ? Colors.green : Colors.red, size: 20),
+            child: Icon(
+              isPos ? Icons.arrow_downward : Icons.arrow_upward,
+              color: isPos ? Colors.green : Colors.red,
+              size: 20,
+            ),
           ),
-          title: Text(m.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text('${dateFormat.format(m.movedAt)} • ${m.userName}\n${m.observation}'),
+          title: Text(
+            m.productName,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            '${dateFormat.format(m.movedAt)} • ${m.userName}\n${m.observation}',
+          ),
           isThreeLine: true,
           trailing: Text(
             "${isPos ? '+' : ''}${m.amount.toStringAsFixed(0)}",
-            style: TextStyle(color: isPos ? Colors.green : Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: isPos ? Colors.green : Colors.red,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       },

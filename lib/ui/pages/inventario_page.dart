@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 // Imports internos (Asegúrate de que las rutas sean correctas en tu proyecto)
@@ -58,27 +59,16 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
 
-        final hasAccessProducts = userPermissions.can(AppPermissions.createProduct);
+        final hasAccessProducts = userPermissions.can(
+          AppPermissions.createProduct,
+        );
 
         return Scaffold(
           backgroundColor: AppColors.background,
           // AppBar solo para móvil
           appBar: !isWide
-              ? AppBar(
-                  backgroundColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  title: const Text(
-                    'Gestión del Inventario',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  toolbarHeight: 64.0,
-                  actions: const [SizedBox(width: 16)],
-                  iconTheme: const IconThemeData(color: AppColors.textPrimary),
+              ? AppBarApp(
+                  title: 'Gestión del Inventario',
                 )
               : null,
 
@@ -86,17 +76,23 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
           drawer: isWide ? null : MySideBar(controller: widget.controller),
 
           // FAB conectado al formulario de creación
-          floatingActionButton: hasAccessProducts ? FloatingActionButton.extended(
-            onPressed: () => showProductForm(),
-            backgroundColor: AppColors.primary,
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text('Nuevo Producto', style: TextStyle(color: Colors.white)),
-          ) : null,
+          floatingActionButton: hasAccessProducts
+              ? FloatingActionButton.extended(
+                  onPressed: () => showProductForm(),
+                  backgroundColor: AppColors.primary,
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text(
+                    'Nuevo Producto',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              : null,
 
           // Cuerpo de la aplicación
           body: productsState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, stack) => Center(child: Text('Error cargando inventario: $err')),
+            error: (err, stack) =>
+                Center(child: Text('Error cargando inventario: $err')),
             data: (allProducts) {
               // Calculamos los productos filtrados "al vuelo"
               final displayProducts = _getFilteredProducts(allProducts);
@@ -120,7 +116,10 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                         elevation: 0.0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
-                          side: const BorderSide(color: AppColors.border, width: 3.0),
+                          side: const BorderSide(
+                            color: AppColors.border,
+                            width: 3.0,
+                          ),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: LayoutBuilder(
@@ -257,9 +256,7 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
       (sum, item) => sum + (item.price * item.totalStock),
     );
     int lowStockItems = products
-        .where(
-          (p) => p.totalStock > 0 && p.totalStock <= p.minStock,
-        )
+        .where((p) => p.totalStock > 0 && p.totalStock <= p.minStock)
         .length;
 
     return Padding(
@@ -452,8 +449,12 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
 
   Widget _buildDataTable(List<ProductModel> products) {
     final userPermissions = ref.watch(currentUserPermissionsProvider);
-    final hasAccessUpdateProducts = userPermissions.can(AppPermissions.updateProduct);
-    final hasAccessDeleteProducts = userPermissions.can(AppPermissions.deleteProduct);
+    final hasAccessUpdateProducts = userPermissions.can(
+      AppPermissions.updateProduct,
+    );
+    final hasAccessDeleteProducts = userPermissions.can(
+      AppPermissions.deleteProduct,
+    );
 
     final showActions = hasAccessUpdateProducts || hasAccessDeleteProducts;
 
@@ -473,24 +474,39 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
           ),
         ),
         DataColumn(
-          label: const Text('Producto', style: TextStyle(fontWeight: FontWeight.bold)),
+          label: const Text(
+            'Producto',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           onSort: _onSort,
         ),
         DataColumn(
-          label: const Text('SKU', style: TextStyle(fontWeight: FontWeight.bold)),
+          label: const Text(
+            'SKU',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           onSort: _onSort,
         ),
         DataColumn(
-          label: const Text('Categoría', style: TextStyle(fontWeight: FontWeight.bold)),
+          label: const Text(
+            'Categoría',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           onSort: _onSort,
         ),
         DataColumn(
-          label: const Text('Stock', style: TextStyle(fontWeight: FontWeight.bold)),
+          label: const Text(
+            'Stock',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           numeric: true,
           onSort: _onSort,
         ),
         DataColumn(
-          label: const Text('Precio', style: TextStyle(fontWeight: FontWeight.bold)),
+          label: const Text(
+            'Precio',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           numeric: true,
           onSort: _onSort,
         ),
@@ -543,33 +559,47 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                 ),
               ),
             ),
-            DataCell(Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text('\$${product.price.toStringAsFixed(2)}'),
-            )),
+            DataCell(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text('\$${product.price.toStringAsFixed(2)}'),
+              ),
+            ),
             if (showActions)
               DataCell(
                 SizedBox(
                   width: 80, // MISMO Ancho FIJO que el header
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center, // Centramos los botones en ese ancho
+                    mainAxisAlignment: MainAxisAlignment
+                        .center, // Centramos los botones en ese ancho
                     children: [
                       if (hasAccessUpdateProducts)
                         IconButton(
-                          icon: Icon(Icons.edit, size: 20, color: Colors.blue.shade700),
+                          icon: Icon(
+                            Icons.edit,
+                            size: 20,
+                            color: Colors.blue.shade700,
+                          ),
                           tooltip: 'Editar Producto',
                           // Visual adjustment: IconButtons have internal padding, reducing it helps alignment
-                          padding: EdgeInsets.zero, 
-                          constraints: const BoxConstraints(), // Optional: makes button compact
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(), // Optional: makes button compact
                           onPressed: () => _editProduct(product),
                         ),
-                      
+
                       if (hasAccessUpdateProducts && hasAccessDeleteProducts)
-                        const SizedBox(width: 15.0), // Un poco más de aire entre iconos
+                        const SizedBox(
+                          width: 15.0,
+                        ), // Un poco más de aire entre iconos
 
                       if (hasAccessDeleteProducts)
                         IconButton(
-                          icon: Icon(Icons.delete, size: 20, color: Colors.red.shade700),
+                          icon: Icon(
+                            Icons.delete,
+                            size: 20,
+                            color: Colors.red.shade700,
+                          ),
                           tooltip: 'Eliminar Producto',
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -619,17 +649,29 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
   void showProductForm({ProductModel? productToEdit}) async {
     final bool isEditing = productToEdit != null;
 
-    final nameController = TextEditingController(text: isEditing ? productToEdit.name : '');
-    final descriptionController = TextEditingController(text: isEditing ? productToEdit.description : '');
-    final priceController = TextEditingController(text: isEditing ? productToEdit.price.toString() : '');
-    final skuController = TextEditingController(text: isEditing ? productToEdit.sku : '');
-    final minStockController = TextEditingController(text: isEditing ? productToEdit.minStock.toString() : '');
+    final nameController = TextEditingController(
+      text: isEditing ? productToEdit.name : '',
+    );
+    final descriptionController = TextEditingController(
+      text: isEditing ? productToEdit.description : '',
+    );
+    final priceController = TextEditingController(
+      text: isEditing ? productToEdit.price.toString() : '',
+    );
+    final skuController = TextEditingController(
+      text: isEditing ? productToEdit.sku : '',
+    );
+    final minStockController = TextEditingController(
+      text: isEditing ? productToEdit.minStock.toString() : '',
+    );
     bool isPerishable = isEditing ? productToEdit.perishable : false;
 
     CategoryModel? selectedCategory;
     if (isEditing) {
       try {
-        selectedCategory = _allCategories.firstWhere((c) => c.id == productToEdit.category.id);
+        selectedCategory = _allCategories.firstWhere(
+          (c) => c.id == productToEdit.category.id,
+        );
       } catch (e) {
         selectedCategory = null;
       }
@@ -651,7 +693,9 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
             builder: (context, setStateModal) {
               Future<void> pickImage() async {
                 final ImagePicker picker = ImagePicker();
-                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.gallery,
+                );
 
                 if (image != null) {
                   if (kIsWeb) {
@@ -674,7 +718,9 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                 imageToShow = MemoryImage(selectedImageBytes!);
               } else if (!kIsWeb && selectedImageFile != null) {
                 imageToShow = FileImage(selectedImageFile!);
-              } else if (isEditing && productToEdit.imageUrl != null && productToEdit.imageUrl!.isNotEmpty) {
+              } else if (isEditing &&
+                  productToEdit.imageUrl != null &&
+                  productToEdit.imageUrl!.isNotEmpty) {
                 imageToShow = NetworkImage(productToEdit.imageUrl!);
               }
 
@@ -687,8 +733,11 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      isEditing ? 'Editar Producto' : 'Registrar Nuevo Producto',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      isEditing
+                          ? 'Editar Producto'
+                          : 'Registrar Nuevo Producto',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const Divider(height: 24),
                     Expanded(
@@ -704,21 +753,40 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                     decoration: BoxDecoration(
                                       color: AppColors.secondary,
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppColors.border, width: 2),
+                                      border: Border.all(
+                                        color: AppColors.border,
+                                        width: 2,
+                                      ),
                                       image: imageToShow != null
-                                          ? DecorationImage(image: imageToShow, fit: BoxFit.cover)
+                                          ? DecorationImage(
+                                              image: imageToShow,
+                                              fit: BoxFit.cover,
+                                            )
                                           : null,
                                     ),
                                     child: imageToShow == null
                                         ? const Center(
-                                            child: Icon(Icons.add_a_photo_outlined, size: 40, color: AppColors.textSecondary),
+                                            child: Icon(
+                                              Icons.add_a_photo_outlined,
+                                              size: 40,
+                                              color: AppColors.textSecondary,
+                                            ),
                                           )
                                         : null,
                                   ),
                                   const SizedBox(height: 8),
                                   TextButton.icon(
-                                    icon: Icon(imageToShow == null ? Icons.add : Icons.edit, size: 18),
-                                    label: Text(imageToShow == null ? 'Añadir Imagen' : 'Cambiar Imagen'),
+                                    icon: Icon(
+                                      imageToShow == null
+                                          ? Icons.add
+                                          : Icons.edit,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      imageToShow == null
+                                          ? 'Añadir Imagen'
+                                          : 'Cambiar Imagen',
+                                    ),
                                     onPressed: pickImage,
                                   ),
                                 ],
@@ -745,7 +813,8 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                               prefixIcon: Icons.category,
                               initialValue: selectedCategory,
                               items: _allCategories,
-                              itemToString: (CategoryModel categoria) => categoria.name,
+                              itemToString: (CategoryModel categoria) =>
+                                  categoria.name,
                               onChanged: (newValue) {
                                 setStateModal(() {
                                   selectedCategory = newValue!;
@@ -762,7 +831,9 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                     labelText: 'Precio',
                                     prefixIcon: Icons.attach_money,
                                     keyboardType: TextInputType.number,
-                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
                                     onChanged: (_) => refresh(),
                                   ),
                                 ),
@@ -773,7 +844,9 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                     labelText: 'Stock mínimo',
                                     prefixIcon: Icons.store_mall_directory,
                                     keyboardType: TextInputType.number,
-                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
                                     onChanged: (_) => refresh(),
                                   ),
                                 ),
@@ -815,16 +888,24 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                           constraints: const BoxConstraints(maxWidth: 250),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                              foregroundColor: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
-                            onPressed: (nameController.text.isEmpty ||
+                            onPressed:
+                                (nameController.text.isEmpty ||
                                     skuController.text.isEmpty ||
                                     selectedCategory == null ||
                                     priceController.text.isEmpty ||
-                                    (!isEditing && minStockController.text.isEmpty) ||
+                                    (!isEditing &&
+                                        minStockController.text.isEmpty) ||
                                     descriptionController.text.isEmpty)
                                 ? null
                                 : () async {
@@ -832,55 +913,95 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                     if (kIsWeb) {
                                       imageBytesToSend = selectedImageBytes;
                                     } else if (selectedImageFile != null) {
-                                      imageBytesToSend = await selectedImageFile!.readAsBytes();
+                                      imageBytesToSend =
+                                          await selectedImageFile!
+                                              .readAsBytes();
                                     }
 
                                     if (selectedCategory == null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Selecciona una categoría')),
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Selecciona una categoría',
+                                          ),
+                                        ),
                                       );
                                       return;
                                     }
 
                                     try {
                                       if (isEditing) {
-                                        await ref.read(productsProvider.notifier).updateProduct(
+                                        await ref
+                                            .read(productsProvider.notifier)
+                                            .updateProduct(
                                               id: productToEdit.id,
                                               name: nameController.text,
                                               sku: skuController.text,
                                               categoryId: selectedCategory!.id,
-                                              description: descriptionController.text,
-                                              price: double.tryParse(priceController.text) ?? 0.0,
+                                              description:
+                                                  descriptionController.text,
+                                              price:
+                                                  double.tryParse(
+                                                    priceController.text,
+                                                  ) ??
+                                                  0.0,
                                               imageUrl: imageBytesToSend,
                                             );
 
                                         if (mounted) {
                                           Navigator.of(modalContext).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Producto actualizado con éxito')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Producto actualizado con éxito',
+                                              ),
+                                            ),
                                           );
                                         }
                                       } else {
-                                        await ref.read(productsProvider.notifier).createProduct(
+                                        await ref
+                                            .read(productsProvider.notifier)
+                                            .createProduct(
                                               name: nameController.text,
                                               sku: skuController.text,
                                               categoryId: selectedCategory!.id,
-                                              description: descriptionController.text,
-                                              price: double.tryParse(priceController.text) ?? 0.0,
-                                              minStock: int.tryParse(minStockController.text) ?? 0,
+                                              description:
+                                                  descriptionController.text,
+                                              price:
+                                                  double.tryParse(
+                                                    priceController.text,
+                                                  ) ??
+                                                  0.0,
+                                              minStock:
+                                                  int.tryParse(
+                                                    minStockController.text,
+                                                  ) ??
+                                                  0,
                                               imageUrl: imageBytesToSend,
                                               isPerishable: false,
                                             );
 
                                         if (mounted) {
                                           Navigator.of(modalContext).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Producto creado con éxito')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Producto creado con éxito',
+                                              ),
+                                            ),
                                           );
                                         }
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(content: Text('Error: $e')),
                                       );
                                     }
@@ -888,11 +1009,19 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(isEditing ? Icons.save_as : Icons.check, size: 20),
+                                Icon(
+                                  isEditing ? Icons.save_as : Icons.check,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  isEditing ? 'ACTUALIZAR PRODUCTO' : 'GUARDAR PRODUCTO',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                  isEditing
+                                      ? 'ACTUALIZAR PRODUCTO'
+                                      : 'GUARDAR PRODUCTO',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ],
                             ),

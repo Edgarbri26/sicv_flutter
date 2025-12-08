@@ -1010,6 +1010,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       await SaleService().createSale(sale);
 
       // 🔄 Actualizamos el stock de productos
+      // Esto disparará automáticamente el listener del SlowStockNotifierService
       await ref.read(productsProvider.notifier).refresh();
 
       if (mounted) Navigator.of(context).pop(); // Cerrar loading
