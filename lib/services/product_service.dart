@@ -105,6 +105,7 @@ class ProductService {
     required String description,
     required int categoryId,
     required double price,
+    required int minStock,
     Uint8List? imageUrl, // Los bytes de la imagen
   }) async {
     final url = Uri.parse('$_baseUrl/product/$id');
@@ -119,6 +120,7 @@ class ProductService {
     request.fields['category_id'] = categoryId
         .toString(); // Multer espera strings
     request.fields['base_price'] = price.toString();
+    request.fields['min_stock'] = minStock.toString();
 
     // 3. Agregamos la imagen SI existe
     if (imageUrl != null) {

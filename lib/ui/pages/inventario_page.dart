@@ -861,6 +861,7 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                               onChanged: (_) => refresh(),
                             ),
                             const SizedBox(height: 16),
+                            if (!isEditing)
                             SwitchListTile(
                               title: const Text('Producto Perecible'),
                               value: isPerishable,
@@ -904,8 +905,7 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                     skuController.text.isEmpty ||
                                     selectedCategory == null ||
                                     priceController.text.isEmpty ||
-                                    (!isEditing &&
-                                        minStockController.text.isEmpty) ||
+                                    minStockController.text.isEmpty ||
                                     descriptionController.text.isEmpty)
                                 ? null
                                 : () async {
@@ -942,6 +942,11 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                               categoryId: selectedCategory!.id,
                                               description:
                                                   descriptionController.text,
+                                              minStock:
+                                                  int.tryParse(
+                                                    minStockController.text,
+                                                  ) ??
+                                                  0,
                                               price:
                                                   double.tryParse(
                                                     priceController.text,

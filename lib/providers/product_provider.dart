@@ -70,6 +70,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
     required String sku,
     required int categoryId,
     required String description,
+    required int minStock,
     required double price,
     Uint8List? imageUrl, // Puede ser null si no se cambió la imagen
   }) async {
@@ -83,6 +84,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
         categoryId: categoryId,
         description: description,
         price: price,
+        minStock: minStock,
         imageUrl: imageUrl,
       );
 
