@@ -23,9 +23,9 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
     try {
       state = const AsyncValue.loading();
       final products = await _service.getAll();
-      state = AsyncValue.data(products);
+      if (mounted) state = AsyncValue.data(products);
     } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
+      if (mounted) state = AsyncValue.error(e, stack);
     }
   }
 
@@ -33,7 +33,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
   Future<void> refresh() async {
     try {
       final products = await _service.getAll();
-      state = AsyncValue.data(products);
+      if (mounted) state = AsyncValue.data(products);
     } catch (e) {
       debugPrint("Error refrescando productos: $e");
     }
