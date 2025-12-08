@@ -781,7 +781,8 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                           sku: skuController.text,
                                           categoryId: selectedCategory!.id,
                                           description: descriptionController.text,
-                                          price: double.tryParse(priceController.text) ?? 0.0,
+                                          price: double.tryParse(priceController.text) ?? productToEdit.price,
+                                          minStock: int.tryParse(minStockController.text) ?? productToEdit.minStock,
                                           // Solo enviamos imagen si el usuario seleccionó una nueva.
                                           // Tu provider debe manejar que si es null, no la borre del backend.
                                           imageUrl: imageBytesToSend, 
