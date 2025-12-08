@@ -10,30 +10,26 @@ import 'package:sicv_flutter/services/remote_config_service.dart';
 import 'package:sicv_flutter/services/slow_stock_notifier_service.dart';
 
 Future<void> main() async {
-  // 1. Asegúrate de que Flutter esté inicializado
+  print("🔴 1. Iniciando Flutter...");
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Inicializa Firebase
+  print("🔴 2. Conectando a Firebase...");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // 3. Inicializa Remote Config
+  print("🔴 3. Cargando Remote Config...");
   await RemoteConfigService().initialize();
 
-  // -----------------------------------------------------------
-  // 🚀 CAMBIO CRÍTICO: Inicialización Manual de Riverpod
-  // -----------------------------------------------------------
-
-  // A. Creamos el contenedor de estado (el cerebro de Riverpod) manualmente.
-  // Esto nos permite usarlo en lógica pura de Dart antes de lanzar la UI.
   final container = ProviderContainer();
+  
+  print("🔴 4. Iniciando Notificaciones de Stock...");
+  container.read(slowStockNotifierProvider).initialize().then((_) {
+    print("✅ Notificaciones listas (Cargaron en segundo plano)");
+  }).catchError((e) {
+    print("⚠️ Error inicializando notificaciones: $e");
+  });
 
-  // B. Inicializamos el servicio de notificaciones usando el provider
-  await container.read(slowStockNotifierProvider).initialize();
-
-  // 4. Ejecuta tu app
+  print("🟢 5. ¡Todo listo! Lanzando la App...");
   runApp(
-    // C. Usamos UncontrolledProviderScope en lugar de ProviderScope.
-    // Esto le dice a Flutter: "Usa este contenedor que ya creé y configuré arriba".
     UncontrolledProviderScope(container: container, child: InventoryApp()),
   );
 }

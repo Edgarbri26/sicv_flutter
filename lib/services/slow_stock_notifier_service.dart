@@ -138,33 +138,31 @@ class SlowStockNotifierService {
     _setupForegroundMessageHandling();
 
     // ------------------------------------
-    // 5. Suscripción a Tópico
+    // 5. Suscripción a Tópico (CON TRY-CATCH MEJORADO)
     // ------------------------------------
     try {
-      await _firebaseMessaging.subscribeToTopic('low_stock');
-      if (kDebugMode) {
-        print("✅ Suscrito al tópico 'low_stock'");
-      }
-    } catch (e) {
-      debugPrint(
-        "⚠️ No se pudo suscribir al tópico (puede ser normal en Windows/Emuladores sin Google Play): $e",
+      // En Web, a veces suscribirse tarda mucho, le ponemos un timeout de 3 segundos
+      // para no bloquear nada si Firebase está lento.
+      await _firebaseMessaging.subscribeToTopic('low_stock').timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          if (kDebugMode) print("⚠️ Timeout al suscribirse al tópico (Web es lento a veces)");
+          return; // Retornamos void
+        },
       );
+      if (kDebugMode) print("✅ Suscrito al tópico 'low_stock'");
+      
+    } catch (e) {
+      // Es muy común que falle en Windows o Web Localhost, no pasa nada.
+      debugPrint("⚠️ Aviso: No se pudo suscribir a FCM (Normal en Dev): $e");
     }
 
     // ------------------------------------
-    // 6. Configurar el Listener Reactivo (Provider)
+    // 6. Configurar el Listener y Polling
     // ------------------------------------
-    // Escuchamos activamente los cambios en 'productsProvider'.
-    // Cada vez que se actualice la lista (por polling o tras una venta),
-    // esta función se ejecutará automáticamente y de forma síncrona con el cambio.
-    // Listener movido al constructor.
     _isReady = true;
-
-    // ------------------------------------
-    // 7. Polling de "Refresco"
-    // ------------------------------------
-    // Solo necesitamos refrescar el provider periódicamente para traer cambios del backend.
-    // El listener de arriba se encargará de notificar en cuanto lleguen.
+    
+    // Iniciamos el polling aunque las notificaciones fallaran
     _startProviderPolling();
   }
 
