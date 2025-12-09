@@ -53,6 +53,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     String? userJsonString = prefs.getString(_userDataKey);
     if (userJsonString == null) return null;
+    print("User JSON String from SharedPreferences: $userJsonString");
     return UserModel.fromJson(json.decode(userJsonString));
   }
 
