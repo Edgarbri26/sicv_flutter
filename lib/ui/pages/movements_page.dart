@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
+import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/movement/movement_type.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/providers/movement_provider.dart';
@@ -179,7 +180,7 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
             final isPos = m.amount >= 0;
             return DataRow(
               cells: [
-                DataCell(Text(dateFormat.format(m.movedAt))),
+                DataCell(Text(DateFormatter.format(m.movedAt))),
                 DataCell(Text(m.productName)),
                 DataCell(Text(m.type)),
                 DataCell(
@@ -202,7 +203,6 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
 
   // Vista Lista (Móvil)
   Widget _buildListView(List<dynamic> movements) {
-    final dateFormat = DateFormat('dd/MM HH:mm');
     return ListView.separated(
       itemCount: movements.length,
       separatorBuilder: (_, __) => const Divider(height: 1),
@@ -223,7 +223,7 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(
-            '${dateFormat.format(m.movedAt)} • ${m.userName}\n${m.observation}',
+            '${DateFormatter.format(m.movedAt)} • ${m.userName}\n${m.observation}',
           ),
           isThreeLine: true,
           trailing: Text(

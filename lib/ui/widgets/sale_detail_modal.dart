@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
 
 class SaleDetailModal extends StatelessWidget {
@@ -11,9 +12,7 @@ class SaleDetailModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(symbol: '\$');
-    final date = DateFormat(
-      'dd MMM yyyy, HH:mm',
-    ).format(sale.soldAt); // Usa sale.createdAt si lo tienes
+    final date = DateFormatter.format(sale.soldAt); // Usa sale.createdAt si lo tienes
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,

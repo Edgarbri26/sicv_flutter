@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/purchase/purchase_model.dart'; // Asegúrate de importar tu modelo de COMPRA
 
 class PurchaseDetailModal extends StatelessWidget {
@@ -12,7 +13,7 @@ class PurchaseDetailModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(symbol: '\$');
     // Usamos boughtAt, que es la fecha de compra
-    final date = DateFormat('dd MMM yyyy, HH:mm').format(purchase.boughtAt);
+    final date = DateFormatter.format(purchase.boughtAt);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
