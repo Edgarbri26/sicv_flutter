@@ -6,6 +6,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart'; // Asegúrate de importar el provider correcto
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
+import 'package:sicv_flutter/services/biometric_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -24,9 +25,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // Estado Local
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _rememberMe = false;
+  bool _canCheckBiometrics = false;
+  bool _hasStoredCredentials = false;
+
+  final _biometricService = BiometricService();
 
   // Constante de diseño
   static const double kDesktopBreakpoint = 640.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometrics();
+    _checkStoredCredentials();
+  }
+
+  Future<void> _checkBiometrics() async {
+    final canCheck = await _biometricService.checkBiometrics();
+    if (mounted) setState(() => _canCheckBiometrics = canCheck);
+  }
+
+  Future<void> _checkStoredCredentials() async {
+    final creds = await ref.read(authServiceProvider).getCredentials();
+    if (mounted && creds != null) {
+      setState(() {
+        _hasStoredCredentials = true;
+        // Opcional: Pre-llenar usuario si se desea
+        // _userCtrl.text = creds['user_ci']!;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -41,6 +70,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // 1. Validar formulario
     if (!_formKey.currentState!.validate()) return;
 
+    _performLogin(_userCtrl.text.trim(), _passCtrl.text);
+  }
+
+  Future<void> _performLogin(String user, String pass) async {
     // 2. Ocultar teclado
     FocusScope.of(context).unfocus();
 
@@ -50,16 +83,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       // 4. Llamar al Provider
       // Usamos ref.read porque es un evento puntual (tap), no una escucha activa
-      final success = await ref
-          .read(authProvider.notifier)
-          .login(_userCtrl.text.trim(), _passCtrl.text);
+      final success = await ref.read(authProvider.notifier).login(user, pass);
 
       final userPermissions = ref.watch(currentUserPermissionsProvider);
       final hasAccessSales = userPermissions.can(AppPermissions.createSale);
       final hasAccessPurchases = userPermissions.can(
         AppPermissions.createPurchase,
       );
-      final hasAccessProducts = userPermissions.can(AppPermissions.readProducts);
+      final hasAccessProducts = userPermissions.can(
+        AppPermissions.readProducts,
+      );
       final hasAccessReports = userPermissions.can(AppPermissions.readReports);
 
       // 5. Verificar si el widget sigue montado antes de usar 'context'
@@ -68,15 +101,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       setState(() => _isLoading = false);
 
       if (success) {
+        // Guardar o Borrar credenciales según "Recuérdame"
+        final authService = ref.read(authServiceProvider);
+        if (_rememberMe) {
+          await authService.saveCredentials(user, pass);
+        } else {
+          await authService.clearCredentials();
+        }
+
         // ÉXITO: Navegar al Home y reemplazar la ruta de login para que no puedan volver atrás
         if (hasAccessSales) {
           Navigator.pushReplacementNamed(context, AppRoutes.sales);
         } else if (hasAccessPurchases) {
           Navigator.pushReplacementNamed(context, AppRoutes.purchase);
-        } else if (hasAccessProducts) {
-          Navigator.pushReplacementNamed(context, AppRoutes.inventory);
         } else if (hasAccessReports) {
           Navigator.pushReplacementNamed(context, AppRoutes.reportDashboard);
+        } else if (hasAccessProducts) {
+          Navigator.pushReplacementNamed(context, AppRoutes.inventory);
         }
       } else {
         // ERROR: Mostrar feedback
@@ -86,6 +127,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
       setState(() => _isLoading = false);
       _showErrorSnackBar('Ocurrió un error inesperado: $e');
+    }
+  }
+
+  Future<void> _loginWithBiometrics() async {
+    final authenticated = await _biometricService.authenticate();
+    if (authenticated) {
+      final creds = await ref.read(authServiceProvider).getCredentials();
+      if (creds != null) {
+        setState(() => _isLoading = true);
+        await _performLogin(creds['user_ci']!, creds['password']!);
+      } else {
+        _showErrorSnackBar('No hay credenciales guardadas.');
+      }
     }
   }
 
@@ -231,6 +285,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               onPressed: () =>
                   setState(() => _obscurePassword = !_obscurePassword),
             ),
+          ),
+
+          // 3.5 Remember Me & Biometrics toggle
+          Row(
+            children: [
+              Checkbox(
+                value: _rememberMe,
+                activeColor: primaryColor,
+                onChanged: (v) => setState(() => _rememberMe = v ?? false),
+              ),
+              const Text('Recuérdame'),
+              const Spacer(),
+              // Mostrar botón biométrico si es posible usarlo y hay algo guardado
+              if (_canCheckBiometrics && _hasStoredCredentials)
+                IconButton(
+                  icon: Icon(Icons.fingerprint, size: 36, color: primaryColor),
+                  tooltip: 'Ingresar con Biometría',
+                  onPressed: _isLoading ? null : _loginWithBiometrics,
+                ),
+            ],
           ),
 
           const SizedBox(height: 24),

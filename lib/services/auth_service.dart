@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/user/user_model.dart';
 
@@ -9,6 +10,11 @@ class AuthService {
   final String baseUrl = ApiUrl().url;
   static const String _userDataKey = 'user_data';
   static const String _tokenKey = 'auth_token';
+
+  // Storage seguro para "Remember Me"
+  final _storage = const FlutterSecureStorage();
+  static const String _keyUserCI = 'secure_user_ci';
+  static const String _keyPassword = 'secure_user_password';
 
   Future<bool> login(String username, String password) async {
     final uri = Uri.parse('$baseUrl/auth/login');
@@ -55,6 +61,28 @@ class AuthService {
     if (userJsonString == null) return null;
     print("User JSON String from SharedPreferences: $userJsonString");
     return UserModel.fromJson(json.decode(userJsonString));
+  }
+
+  // --- Secure Credentials Management ---
+
+  Future<void> saveCredentials(String userCI, String password) async {
+    await _storage.write(key: _keyUserCI, value: userCI);
+    await _storage.write(key: _keyPassword, value: password);
+  }
+
+  Future<Map<String, String>?> getCredentials() async {
+    final userCI = await _storage.read(key: _keyUserCI);
+    final password = await _storage.read(key: _keyPassword);
+
+    if (userCI != null && password != null) {
+      return {'user_ci': userCI, 'password': password};
+    }
+    return null;
+  }
+
+  Future<void> clearCredentials() async {
+    await _storage.delete(key: _keyUserCI);
+    await _storage.delete(key: _keyPassword);
   }
 
   // --- Helpers Privados ---
