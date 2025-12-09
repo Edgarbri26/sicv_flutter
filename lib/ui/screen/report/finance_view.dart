@@ -13,7 +13,7 @@ import 'package:sicv_flutter/ui/widgets/purchase_detail_modal.dart';
 import 'package:sicv_flutter/ui/widgets/sale_detail_modal.dart';
 
 // IMPORTAMOS LOS PROVIDERS Y EL WIDGET DE FILTRO
-import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart'; 
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart'; 
 
 class FinancesView extends ConsumerStatefulWidget {
   const FinancesView({super.key});

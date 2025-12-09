@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 
 class ProductCard extends StatelessWidget {

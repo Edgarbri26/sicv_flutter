@@ -8,7 +8,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
 
 // 2. IMPORTA EL WIDGET DE FILTRO (Ajusta la ruta si corregiste "rerport" a "report")
-import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart';
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
 
 // --- WIDGET PRINCIPAL ---
 

@@ -9,8 +9,8 @@ import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 // 2. IMPORTA TU PROVIDER (Donde están InventoryState, ProductMetric, etc.)
 import 'package:sicv_flutter/providers/report/inventory_provider.dart';
 import 'package:sicv_flutter/ui/widgets/kpi_card.dart';
-import 'package:sicv_flutter/ui/widgets/rerport/app_pie_chart.dart';
-import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart';
+import 'package:sicv_flutter/ui/widgets/report/app_pie_chart.dart';
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
 
 class InventoryReportView extends ConsumerWidget {
   const InventoryReportView({super.key});

@@ -7,7 +7,7 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/report/employee_provider.dart';
 
 // 2. EL BENDITO IMPORT SOLICITADO (Asegúrate de que la carpeta sea 'rerport' o corrige a 'report')
-import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart'; 
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart'; 
 
 class EmployeeReportView extends ConsumerWidget {
   const EmployeeReportView({super.key});

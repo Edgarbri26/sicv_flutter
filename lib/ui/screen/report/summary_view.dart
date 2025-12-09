@@ -4,10 +4,10 @@
   import 'package:fl_chart/fl_chart.dart';
   import 'package:sicv_flutter/ui/widgets/kpi_card.dart';
   import 'package:sicv_flutter/ui/widgets/rerport/app_bar_chart.dart';
-  import 'package:sicv_flutter/ui/widgets/rerport/app_line_chart.dart';
-  import 'package:sicv_flutter/ui/widgets/rerport/app_line_chart_data.dart';
-  import 'package:sicv_flutter/ui/widgets/rerport/chart_container.dart';
-import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart';
+  import 'package:sicv_flutter/ui/widgets/report/app_line_chart.dart';
+  import 'package:sicv_flutter/ui/widgets/report/app_line_chart_data.dart';
+  import 'package:sicv_flutter/ui/widgets/report/chart_container.dart';
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
 
   // Cambiamos a ConsumerWidget para usar Riverpod
   class ResumeView extends ConsumerWidget {
