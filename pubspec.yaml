@@ -61,6 +61,7 @@ dependencies:
   # Para notificaciones locales (principalmente Windows/Desktop)
 
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -75,6 +76,13 @@ dev_dependencies:
   build_runner: ^2.7.1
   custom_lint: ^0.8.0
   riverpod_lint: ^3.0.3
+  flutter_launcher_icons: "^0.13.1"
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/logo.png"
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -89,9 +97,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/pan.jpg
-    - assets/big.jpg
     - .env
+    - assets/logo.png
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
