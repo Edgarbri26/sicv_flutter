@@ -12,6 +12,7 @@ import 'package:sicv_flutter/models/sale/sale_model.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
+import 'package:sicv_flutter/providers/cliente_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
 import 'package:sicv_flutter/providers/type_payment_provider.dart';
@@ -23,6 +24,7 @@ import 'package:sicv_flutter/ui/widgets/add_client_form.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 import 'package:sicv_flutter/ui/widgets/detail_product_cart.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
@@ -38,11 +40,13 @@ class SaleScreen extends ConsumerStatefulWidget {
 class SaleScreenState extends ConsumerState<SaleScreen> {
   final TextEditingController _searchController = TextEditingController();
 
+  final TextEditingController _searchClientController = TextEditingController();
+
   Timer? _debounce;
 
   final List<ProductModel> _itemsForSale = [];
   ClientModel? selectedClient;
-  List<ClientModel> _allClients = [];
+  // List<ClientModel> _allClients = [];
 
   // late List<TypePaymentModel> _allTypePayments = [];
   TypePaymentModel? _selectedTypePayment;
@@ -51,26 +55,23 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    allClients();
-    // allTypePayments();
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
+    _searchClientController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  void allClients() async {
-    _allClients = await ClientService().getAll();
-    debugPrint("Clientes cargados: ${_allClients.length}");
-    setState(() {});
-  }
+  // void allClients() async {
+  //   _allClients = await ClientService().getAll();
+  //   debugPrint("Clientes cargados: ${_allClients.length}");
+  //   setState(() {});
+  // }
 
   void _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-
     _debounce = Timer(const Duration(milliseconds: 300), () {
       ref.read(saleSearchTermProvider.notifier).state = _searchController.text;
     });
@@ -83,7 +84,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     final bool isWide = MediaQuery.of(context).size.width >= 800;
     return Column(
       children: [
-        // --- 1. WIDGET DE BÚSQUEDA ---
         if (isWide) AppBarApp(title: 'Punto de Venta'),
         Padding(
           padding: const EdgeInsets.all(16.0),
@@ -93,10 +93,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
             prefixIcon: Icons.search,
           ),
         ),
-        // --- 2. WIDGET DE FILTRO DE CATEGORÍAS ---
         _buildCategoryFilter(),
 
-        // --- 3. CUADRÍCULA DE PRODUCTOS ---
         Expanded(
           child: productsState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -541,81 +539,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     );
   }
 
-  /*  void showProductSearchModal() {
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return Consumer(
-          builder: (context, ref, child) { 
-            final modalHeight = MediaQuery.of(context).size.height * 0.8;
-            
-          
-                    return Container(
-                      height: modalHeight, 
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Añadir Producto a la Orden',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFieldApp(
-                            controller: _searchController, 
-                            labelText: 'Buscar producto por nombre o SKU',
-                            prefixIcon: Icons.search,
-                            onChanged: filterModalList,
-                          ),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                final product = filteredProducts[index];
-                                // Revisa si ya está en la orden principal
-                                final bool isAlreadyAdded = _purchaseItems.any(
-                                  (item) => item.product.id == product.id,
-                                );
-
-                                return Card(
-                                  elevation: 0.0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    side: BorderSide(
-                                      color: AppColors.border,
-                                      width: 3.0,
-                                    ),
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  color: isAlreadyAdded ? Colors.grey[300] : null,
-                                  child: ListTile(
-                                    title: Text(product.name),
-                                    subtitle: Text('Stock actual: ${product.totalStock}'),
-                                    trailing: isAlreadyAdded
-                                        ? Icon(Icons.check, color: Colors.green)
-                                        : Icon(Icons.add),
-                                    onTap: isAlreadyAdded
-                                        ? null 
-                                        : () => _addProductToPurchase(product),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              }
-    ).whenComplete(
-      () => _searchController.clear(),
-    ); // Limpia el buscador al cerrar el modal
-  }
-*/
-
   void addNewClient() async {
     final bool? clientWasAdded = await showModalBottomSheet<bool>(
       context: context,
@@ -654,6 +577,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         return Consumer(
           builder: (context, ref, child) {
             final typePaymentsState = ref.watch(typePaymentProvider);
+            final clientsState = ref.watch(clientProvider);
+            _searchClientController.addListener(_onSearchChanged);
 
             return StatefulBuilder(
               builder: (BuildContext context, StateSetter modalSetState) {
@@ -674,7 +599,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ... (Tu código de la barra superior y título sigue igual) ...
                           Center(
                             child: Container(
                               width: 40,
@@ -700,21 +624,53 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                           Row(
                             children: [
                               Expanded(
-                                // <-- RECOMENDACIÓN: Envuelve en Expanded si DropDownApp no tiene ancho fijo
-                                child: DropDownApp(
-                                  items: _allClients,
-                                  initialValue: selectedClient,
-                                  onChanged: (newValue) {
-                                    // Usamos modalSetState para que el dropdown cambie visualmente
+                                child: Autocomplete<ClientModel>(
+                                  optionsBuilder:
+                                      (TextEditingValue textEditingValue) {
+                                        if (textEditingValue.text.isEmpty) {
+                                          return const Iterable<
+                                            ClientModel
+                                          >.empty();
+                                        }
+                                        final currentClients =
+                                            ref.read(clientProvider).value ??
+                                            [];
+                                        return currentClients.where((
+                                          ClientModel option,
+                                        ) {
+                                          final term = textEditingValue.text
+                                              .toLowerCase();
+                                          return option.name
+                                                  .toLowerCase()
+                                                  .contains(term) ||
+                                              option.clientCi
+                                                  .toLowerCase()
+                                                  .contains(term);
+                                        });
+                                      },
+                                  displayStringForOption:
+                                      (ClientModel option) =>
+                                          "${option.name} (${option.clientCi})",
+                                  onSelected: (ClientModel selection) {
                                     modalSetState(() {
-                                      selectedClient = newValue;
+                                      selectedClient = selection;
                                     });
-                                    // Opcional: Si necesitas que la pantalla padre también se entere:
-                                    // setState(() => selectedClient = newValue);
                                   },
-                                  itemToString: (client) => client.name,
-                                  labelText: 'Seleccionar Cliente',
-                                  prefixIcon: Icons.person,
+                                  fieldViewBuilder:
+                                      (
+                                        context,
+                                        textEditingController,
+                                        focusNode,
+                                        onFieldSubmitted,
+                                      ) {
+                                        return SearchTextFieldApp(
+                                          controller: textEditingController,
+                                          focusNode: focusNode,
+                                          labelText:
+                                              'Buscar Cliente (Nombre o CI)',
+                                          prefixIcon: Icons.person_search,
+                                        );
+                                      },
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -746,13 +702,16 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                                       ),
                                     );
 
-                                    final clientServiceTemp = ClientService();
-                                    final newClients = await clientServiceTemp
-                                        .getAll(); // O .getAll() según como se llame tu método
+                                    // Refrescamos el provider
+                                    await ref
+                                        .read(clientProvider.notifier)
+                                        .refresh();
 
                                     if (!context.mounted) return;
+
                                     modalSetState(() {
-                                      _allClients = newClients;
+                                      final newClients =
+                                          ref.read(clientProvider).value ?? [];
                                       if (newClients.isNotEmpty) {
                                         selectedClient = newClients.last;
                                       }
@@ -762,6 +721,29 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                               ),
                             ],
                           ),
+
+                          if (selectedClient != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 8.0,
+                                bottom: 8.0,
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppColors.primary),
+                                ),
+                                child: Text(
+                                  "Cliente: ${selectedClient!.name}",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
 
                           const SizedBox(height: 20),
 
@@ -792,7 +774,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Ahora este texto SÍ cambiará cuando edites items
                               Text(
                                 "Total: \$${total.toStringAsFixed(2)}",
                                 style: AppTextStyles.bodyLarge.copyWith(
@@ -802,9 +783,15 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                               PrimaryButtonApp(
                                 text: "Confirmar",
                                 onPressed: () {
-                                  // Validaciones antes de guardar
                                   if (selectedClient == null) {
-                                    // Mostrar error
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Por favor, seleccione un cliente.',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
                                     return;
                                   }
                                   _saveSale();
@@ -922,6 +909,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       if (index != -1) {
         _itemsForSale[index].quantity = _itemsForSale[index].quantity + 1;
       } else {
+        product.quantity = 1;
         _itemsForSale.add(product);
       }
     });
@@ -1028,7 +1016,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
             duration: Duration(seconds: 2),
           ),
         );
-        
+
         ref.invalidate(productsProvider);
 
         setState(() {

@@ -2,13 +2,24 @@
 
 import 'dart:convert';
 
+/// Represents a user permission within the system.
 class PermissionModel {
+  /// Unique identifier for the permission.
   final int permissionId;
+
+  /// The unique code string representing the permission (e.g., 'READ_USER').
   final String code;
+
+  /// The human-readable name of the permission.
   final String name;
+
+  /// A description of what the permission allows.
   final String description;
+
+  /// The active status of the permission.
   bool status;
 
+  /// Creates a new [PermissionModel].
   PermissionModel({
     required this.permissionId,
     required this.code,
@@ -17,7 +28,7 @@ class PermissionModel {
     required this.status,
   });
 
-  /// Factory constructor para crear una instancia de Permission desde un Map (JSON).
+  /// Factory constructor to create a [PermissionModel] from a JSON map.
   factory PermissionModel.fromJson(Map<String, dynamic> json) {
     return PermissionModel(
       // Mapeamos 'permission_id' del JSON a 'permissionId' en Dart.
@@ -31,10 +42,10 @@ class PermissionModel {
     );
   }
 
-  /// Método de conveniencia para convertir un Map a String (útil para debugging).
+  /// Converts this [PermissionModel] instance to a JSON string.
   String toJson() => json.encode(toMap());
 
-  /// Método de conveniencia para convertir la instancia a un Map.
+  /// Converts this [PermissionModel] instance to a Map.
   Map<String, dynamic> toMap() {
     return {
       'permission_id': permissionId,

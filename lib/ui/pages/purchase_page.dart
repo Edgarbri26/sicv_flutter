@@ -42,10 +42,7 @@ class _PurchasePageState extends State<PurchasePage> {
           body: isWide
               ? Row(
                   children: [
-                    SizedBox(
-                      width: 250,
-                      child: MySideBar(controller: widget.controller),
-                    ),
+                    MySideBar(controller: widget.controller),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 16.0),

@@ -41,12 +41,7 @@ class _SalePageState extends State<SalePage> {
           body: isWide
               ? Row(
                   children: [
-                    // 1. Sidebar Fijo en Desktop
-                    SizedBox(
-                      width: 250, // O el ancho que defina tu MySideBar/Theme
-                      child: MySideBar(controller: widget.controller),
-                    ),
-                    // 2. Contenido de Ventas
+                    MySideBar(controller: widget.controller),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(
@@ -57,7 +52,7 @@ class _SalePageState extends State<SalePage> {
                     ),
                   ],
                 )
-              : SaleScreen(key: _saleScreenKey), // Vista directa en móvil
+              : SaleScreen(key: _saleScreenKey),
           // --- FLOATING ACTION BUTTON (Exclusivo para Venta) ---
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () {

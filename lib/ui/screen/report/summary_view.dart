@@ -3,7 +3,7 @@
   import 'package:sicv_flutter/providers/report/summary_report_provider.dart';
   import 'package:fl_chart/fl_chart.dart';
   import 'package:sicv_flutter/ui/widgets/kpi_card.dart';
-import 'package:sicv_flutter/ui/widgets/report/app_bar_Chart.dart' show AppBarChart;
+  import 'package:sicv_flutter/ui/widgets/report/app_bar_chart.dart';
   import 'package:sicv_flutter/ui/widgets/report/app_line_chart.dart';
   import 'package:sicv_flutter/ui/widgets/report/app_line_chart_data.dart';
   import 'package:sicv_flutter/ui/widgets/report/chart_container.dart';
