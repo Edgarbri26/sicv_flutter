@@ -443,4 +443,39 @@ class ReportService {
       throw Exception('Error al obtener historial de compras: $e');
     }
   }
+
+  Future<Map<String, dynamic>> getSupplierAnalysis(
+    String period, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final Map<String, String> queryParams = {
+      'period': period,
+    };
+
+    if (startDate != null && endDate != null) {
+      final formatter = DateFormat('yyyy-MM-dd');
+      queryParams['startDate'] = formatter.format(startDate);
+      queryParams['endDate'] = formatter.format(endDate);
+    }
+
+    final uri = Uri.parse('$_baseUrl/report/provider_analysis')
+        .replace(queryParameters: queryParams);
+
+    try {
+      final response = await _client.get(uri);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        // Retornamos el mapa 'data' directamente
+        return jsonResponse['data'] as Map<String, dynamic>;
+      } else {
+        throw Exception(
+            'Error ${response.statusCode}: No se pudo cargar el análisis de proveedores.');
+      }
+    } catch (e) {
+      debugPrint('Error en ReportService.getSupplierAnalysis: $e');
+      throw Exception('Fallo la conexión o el procesamiento de datos.');
+    }
+  }
 }

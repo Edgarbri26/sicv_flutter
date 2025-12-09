@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
-import 'package:sicv_flutter/ui/screen/report/anality_review.dart';
 import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
 import 'package:sicv_flutter/ui/screen/report/finance_view.dart';
 import 'package:sicv_flutter/ui/screen/report/provider_view.dart';
@@ -67,12 +66,6 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
       icon: Icons.local_shipping_outlined,
       iconActive: Icons.local_shipping,
     ),
-    MenuItemData(
-      index: 6,
-      label: 'Análisis',
-      icon: Icons.analytics_outlined,
-      iconActive: Icons.analytics,
-    ),
   ];
 
   @override
@@ -99,7 +92,6 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
     EmployeeReportView(),
     ClientReportView(),
     SupplierReportView(),
-    AnalyticsReportView(),
   ];
 
   @override

@@ -1,142 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sicv_flutter/ui/widgets/report/app_pie_chart.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:sicv_flutter/providers/report/inventory_provider.dart' show AppPieChartData;
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
 
-import '../../../providers/report/inventory_provider.dart' show AppPieChartData;
+// Importamos el provider y el widget de filtro
+import 'package:sicv_flutter/providers/report/supplier_provider.dart';
 
-// --- 1. NUEVOS MODELOS DE DATOS ---
-
-class SupplierReportState {
-  final String totalSpentGlobal; // Dinero total gastado en compras
-  final int totalTransactions;   // Cantidad total de compras registradas
-  final int totalSuppliers;      // Cantidad de proveedores registrados
-  final String topSupplierName;  // El proveedor al que más le has comprado
-
-  // Distribución para la gráfica (Top 4 + Otros)
-  final List<AppPieChartData> spendingDistribution;
-
-  // Lista detallada de proveedores con sus métricas
-  final List<SupplierPerformanceRow> suppliersList;
-
-  SupplierReportState({
-    required this.totalSpentGlobal,
-    required this.totalTransactions,
-    required this.totalSuppliers,
-    required this.topSupplierName,
-    required this.spendingDistribution,
-    required this.suppliersList,
-  });
-}
-
-class SupplierPerformanceRow {
-  final String name;
-  final double totalSpent;    // Cuánto le has comprado en total ($)
-  final int purchaseCount;    // Cuántas veces le has comprado
-  final double percentage;    // Qué % representa de tus gastos totales
-  
-  SupplierPerformanceRow({
-    required this.name,
-    required this.totalSpent,
-    required this.purchaseCount,
-    required this.percentage,
-  });
-}
-
-// --- 2. PROVIDER SIMULADO (MOCK DATA) ---
-// En el futuro, esto calculará los totales sumando tus compras filtradas por fecha.
-
-final supplierReportProvider = Provider<SupplierReportState>((ref) {
-  return SupplierReportState(
-    totalSpentGlobal: "12,450.00",
-    totalTransactions: 45,
-    totalSuppliers: 8,
-    topSupplierName: "Samsung",
-    
-    spendingDistribution: [
-      AppPieChartData("Samsung", 45, const Color(0xFF5C6BC0)), 
-      AppPieChartData("Apple", 30, const Color(0xFFAB47BC)), 
-      AppPieChartData("Xiaomi", 15, const Color(0xFFFF7043)), 
-      AppPieChartData("Logitech", 10, const Color(0xFF78909C)), 
-    ],
-    
-    suppliersList: [
-      SupplierPerformanceRow(name: "Samsung Electronics", totalSpent: 5602.50, purchaseCount: 12, percentage: 45),
-      SupplierPerformanceRow(name: "Apple Distributor", totalSpent: 3735.00, purchaseCount: 8, percentage: 30),
-      SupplierPerformanceRow(name: "Xiaomi Global", totalSpent: 1867.50, purchaseCount: 15, percentage: 15), // Compra mucho pero barato
-      SupplierPerformanceRow(name: "Logitech Supply", totalSpent: 1245.00, purchaseCount: 10, percentage: 10),
-    ],
-  );
-});
-
-// --- 3. VISTA PRINCIPAL ---
+import '../../widgets/report/app_pie_chart.dart';
 
 class SupplierReportView extends ConsumerWidget {
   const SupplierReportView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final data = ref.watch(supplierReportProvider);
+    // 1. Escuchamos los providers
+    final supplierStateAsync = ref.watch(supplierReportProvider);
+    final filterState = ref.watch(supplierFilterProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 32),
-            
-            // KPIs de Volumen y Gasto
-            _buildKpiGrid(context, data),
-            
-            const SizedBox(height: 24),
-            
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 900) {
-                  return _buildDesktopLayout(context, data);
-                } else {
-                  return _buildMobileLayout(context, data);
-                }
-              },
-            ),
-          ],
+      body: supplierStateAsync.when(
+        // CARGANDO
+        loading: () => const Center(child: CircularProgressIndicator()),
+        // ERROR
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text("Error: $err", style: const TextStyle(color: Colors.grey)),
+              TextButton(
+                onPressed: () => ref.refresh(supplierReportProvider),
+                child: const Text("Reintentar"),
+              )
+            ],
+          ),
+        ),
+        // DATA
+        data: (data) => SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header con Filtro
+              _buildHeader(context, ref, filterState),
+              const SizedBox(height: 32),
+
+              // Grid de KPIs
+              _buildKpiGrid(context, data),
+              const SizedBox(height: 24),
+
+              // Layout Responsivo
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 900) {
+                    return _buildDesktopLayout(context, data);
+                  } else {
+                    return _buildMobileLayout(context, data);
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // --- Header Actualizado con DateFilterSelector ---
+  Widget _buildHeader(BuildContext context, WidgetRef ref, FilterState filterState) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          "Análisis de Proveedores", // Título cambiado
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
-              ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Análisis de Proveedores",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Volumen de compras y distribución de gastos",
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          "Volumen de compras y distribución de gastos", // Descripción ajustada
-          style: TextStyle(color: Colors.grey[500], fontSize: 14),
+        
+        // WIDGET DE FILTRO DE FECHAS
+        DateFilterSelector(
+          selectedFilter: filterState.period,
+          selectedDateRange: filterState.customRange,
+          onFilterChanged: (newFilter) {
+            ref.read(supplierFilterProvider.notifier).state =
+                filterState.copyWith(period: newFilter);
+          },
+          onDateRangeChanged: (newRange) {
+            ref.read(supplierFilterProvider.notifier).state =
+                filterState.copyWith(period: 'custom', customRange: newRange);
+          },
         ),
       ],
     );
   }
 
   Widget _buildKpiGrid(BuildContext context, SupplierReportState data) {
-    // KPIs enfocados en Gasto Histórico
     final kpis = [
       _KpiInfo(
         "Gasto Total",
         "\$${data.totalSpentGlobal}",
         Icons.attach_money,
-        Colors.green, // Verde porque es dinero (aunque sea salida, es volumen)
+        Colors.green,
       ),
       _KpiInfo(
         "Compras Realizadas",
@@ -153,7 +133,7 @@ class SupplierReportView extends ConsumerWidget {
       _KpiInfo(
         "Top Proveedor",
         data.topSupplierName,
-        Icons.emoji_events_outlined, // Copa o Estrella
+        Icons.emoji_events_outlined,
         Colors.amber,
       ),
     ];
@@ -181,7 +161,6 @@ class SupplierReportView extends ConsumerWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Columna Izquierda: Gráfico
         Expanded(
           flex: 4,
           child: Column(
@@ -189,34 +168,37 @@ class SupplierReportView extends ConsumerWidget {
               _ChartContainer(
                 title: "Distribución del Gasto",
                 subtitle: "¿A quién le compro más? (% del dinero)",
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: SizedBox(
-                        height: 250,
-                        child: AppPieChart(data: data.spendingDistribution),
+                child: data.spendingDistribution.isEmpty
+                    ? const Center(child: Text("Sin datos"))
+                    : Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: SizedBox(
+                              height: 250,
+                              child: AppPieChart(data: data.spendingDistribution),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            flex: 2,
+                            child: _CostLegend(data: data.spendingDistribution),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      flex: 2,
-                      child: _CostLegend(data: data.spendingDistribution),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
         ),
         const SizedBox(width: 24),
-        // Columna Derecha: Lista Detallada
         Expanded(
           flex: 5,
           child: _ChartContainer(
             title: "Detalle por Proveedor",
             subtitle: "Historial de compras acumulado",
-            child: _SupplierList(suppliers: data.suppliersList),
+            child: data.suppliersList.isEmpty
+                ? const Center(child: Text("Sin datos"))
+                : _SupplierList(suppliers: data.suppliersList),
           ),
         ),
       ],
@@ -228,21 +210,25 @@ class SupplierReportView extends ConsumerWidget {
       children: [
         _ChartContainer(
           title: "Distribución del Gasto",
-          child: Column(
-            children: [
-              AspectRatio(
-                aspectRatio: 1.3,
-                child: AppPieChart(data: data.spendingDistribution),
-              ),
-              const SizedBox(height: 20),
-              _CostLegend(data: data.spendingDistribution),
-            ],
-          ),
+          child: data.spendingDistribution.isEmpty
+              ? const Center(child: Text("Sin datos"))
+              : Column(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 1.3,
+                      child: AppPieChart(data: data.spendingDistribution),
+                    ),
+                    const SizedBox(height: 20),
+                    _CostLegend(data: data.spendingDistribution),
+                  ],
+                ),
         ),
         const SizedBox(height: 24),
         _ChartContainer(
           title: "Detalle por Proveedor",
-          child: _SupplierList(suppliers: data.suppliersList),
+          child: data.suppliersList.isEmpty
+              ? const Center(child: Text("Sin datos"))
+              : _SupplierList(suppliers: data.suppliersList),
         ),
       ],
     );
@@ -416,7 +402,6 @@ class _SupplierList extends StatelessWidget {
         final item = suppliers[index];
         return Row(
           children: [
-            // Icono / Avatar
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -426,8 +411,6 @@ class _SupplierList extends StatelessWidget {
               child: Icon(Icons.business, size: 20, color: Colors.blue.shade700),
             ),
             const SizedBox(width: 16),
-            
-            // Info Principal
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,7 +423,6 @@ class _SupplierList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Barra de progreso visual del % de gasto
                   Row(
                     children: [
                       Expanded(
@@ -466,10 +448,7 @@ class _SupplierList extends StatelessWidget {
                 ],
               ),
             ),
-            
             const SizedBox(width: 16),
-            
-            // Monto Total
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
