@@ -38,14 +38,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // --- LÓGICA DE NEGOCIO ---
 
   Future<void> _submit() async {
-    final userPermissions = ref.watch(currentUserPermissionsProvider);
-    final hasAccessSales = userPermissions.can(AppPermissions.createSale);
-    final hasAccessPurchases = userPermissions.can(
-      AppPermissions.createPurchase,
-    );
-    final hasAccessProducts = userPermissions.can(AppPermissions.readProducts);
-    final hasAccessReports = userPermissions.can(AppPermissions.readReports);
-
     // 1. Validar formulario
     if (!_formKey.currentState!.validate()) return;
 
@@ -61,6 +53,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final success = await ref
           .read(authProvider.notifier)
           .login(_userCtrl.text.trim(), _passCtrl.text);
+
+      final userPermissions = ref.watch(currentUserPermissionsProvider);
+      final hasAccessSales = userPermissions.can(AppPermissions.createSale);
+      final hasAccessPurchases = userPermissions.can(
+        AppPermissions.createPurchase,
+      );
+      final hasAccessProducts = userPermissions.can(AppPermissions.readProducts);
+      final hasAccessReports = userPermissions.can(AppPermissions.readReports);
 
       // 5. Verificar si el widget sigue montado antes de usar 'context'
       if (!mounted) return;
