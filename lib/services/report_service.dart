@@ -320,13 +320,27 @@ class ReportService {
       throw Exception('Error de conexión al obtener datos de empleados.');
     }
   }
+
   Future<List<ClientCorrelationPoint>> fetchClientCorrelationFM({
     String period = 'year',
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
-    // Asumo que _baseUrl es accesible aquí
-    final uri = Uri.parse(
-      '$_baseUrl/report/client_correlation_fm?period=$period',
-    );
+    
+    // 1. Construcción de Query Params
+    final Map<String, String> queryParams = {
+      'period': period,
+    };
+
+    // Si es personalizado, agregamos las fechas formateadas
+    if (period == 'custom' && startDate != null && endDate != null) {
+      final dateFormat = DateFormat('yyyy-MM-dd');
+      queryParams['startDate'] = dateFormat.format(startDate);
+      queryParams['endDate'] = dateFormat.format(endDate);
+    }
+
+    final uri = Uri.parse('$_baseUrl/report/client_correlation_fm')
+        .replace(queryParameters: queryParams);
 
     try {
       final response = await _client.get(
@@ -336,11 +350,8 @@ class ReportService {
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-
-        // El backend devuelve: { "data": [...] }
         final List<dynamic> dataList = jsonResponse['data'] ?? [];
 
-        // Mapea la lista de JSON a la lista de modelos de Dart
         return dataList
             .map((json) => ClientCorrelationPoint.fromJson(json))
             .toList();

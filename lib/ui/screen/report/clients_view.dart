@@ -4,8 +4,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 
-// Importa los modelos y el provider de tu proyecto
+// 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
+
+// 2. IMPORTA EL WIDGET DE FILTRO (Ajusta la ruta si corregiste "rerport" a "report")
+import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart';
 
 // --- WIDGET PRINCIPAL ---
 
@@ -14,9 +17,11 @@ class ClientReportView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado asíncrono real del provider
+    // Escuchamos el estado de datos
     final clientStateAsync = ref.watch(clientReportProvider);
-    final currentFilter = ref.watch(clientFilterProvider);
+    
+    // Escuchamos el estado del FILTRO (FilterState)
+    final filterState = ref.watch(clientFilterProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -51,8 +56,10 @@ class ClientReportView extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context, ref, currentFilter),
+              // Header actualizado con el Selector de Fechas
+              _buildHeader(context, ref, filterState),
               const SizedBox(height: 32),
+              
               // Grid de KPIs
               _buildKpiGrid(context, data),
               const SizedBox(height: 24),
@@ -74,11 +81,11 @@ class ClientReportView extends ConsumerWidget {
     );
   }
 
-  // --- Header y Filtros ---
+  // --- Header Actualizado ---
   Widget _buildHeader(
     BuildContext context,
     WidgetRef ref,
-    String currentFilter,
+    FilterState filterState,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,38 +107,23 @@ class ClientReportView extends ConsumerWidget {
             ),
           ],
         ),
-        // Dropdown de Filtro de Tiempo
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: currentFilter,
-              icon: const Icon(
-                Icons.calendar_today,
-                size: 16,
-                color: Colors.grey,
-              ),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-              items: const [
-                DropdownMenuItem(value: 'week', child: Text("Última Semana")),
-                DropdownMenuItem(value: 'month', child: Text("Último Mes")),
-                DropdownMenuItem(value: 'year', child: Text("Último Año")),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  ref.read(clientFilterProvider.notifier).state = val;
-                }
-              },
-            ),
-          ),
+        
+        // USO DEL WIDGET DateFilterSelector
+        DateFilterSelector(
+          selectedFilter: filterState.period,
+          selectedDateRange: filterState.customRange,
+          
+          // Caso 1: Cambio de filtro rápido (week, month, year)
+          onFilterChanged: (newFilter) {
+            ref.read(clientFilterProvider.notifier).state =
+                filterState.copyWith(period: newFilter);
+          },
+          
+          // Caso 2: Selección de rango personalizado
+          onDateRangeChanged: (newRange) {
+            ref.read(clientFilterProvider.notifier).state =
+                filterState.copyWith(period: 'custom', customRange: newRange);
+          },
         ),
       ],
     );
@@ -142,7 +134,7 @@ class ClientReportView extends ConsumerWidget {
     final kpis = [
       _KpiInfo(
         "Total Clientes",
-        "${data.totalClients}",
+        data.totalClients,
         Icons.groups_outlined,
         Colors.blue,
       ),
@@ -329,28 +321,21 @@ class ClientReportView extends ConsumerWidget {
                   spacing: 12,
                   runSpacing: 8,
                   children: [
-                    // Morado: Compran mucho y seguido
                     _buildSegmentItem(
                       Colors.purple,
                       "VIP",
                       "Alto Valor / Frecuentes",
                     ),
-
-                    // Teal: Compran caro pero rara vez
                     _buildSegmentItem(
                       Colors.teal,
                       "Potenciales",
                       "Alto Valor / Ocasionales",
                     ),
-
-                    // Naranja: Compran barato pero seguido
                     _buildSegmentItem(
                       Colors.orange,
                       "Recurrentes",
                       "Bajo Valor / Frecuentes",
                     ),
-
-                    // Rojo: Compran poco y barato
                     _buildSegmentItem(
                       Colors.red,
                       "Esporádicos",
@@ -397,7 +382,7 @@ class ClientReportView extends ConsumerWidget {
 }
 
 // ==========================================
-// 4. WIDGETS AUXILIARES (Los definidos previamente)
+// 4. WIDGETS AUXILIARES
 // ==========================================
 
 class _ChartContainer extends StatelessWidget {
@@ -514,19 +499,13 @@ class _TopClientsChart extends StatelessWidget {
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
         maxY: maxY,
-
-        // 🚀 MODIFICACIÓN CLAVE: Habilitar y Configurar TouchData
         barTouchData: BarTouchData(
-          enabled: true, // Habilitar toque
+          enabled: true,
           touchTooltipData: BarTouchTooltipData(
-            // Estilo del tooltip
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final client =
-                  data[groupIndex]; // Obtener el objeto de datos del cliente
-
-              // Formato para mostrar el Nombre y el Valor Gastado
+              final client = data[groupIndex];
               return BarTooltipItem(
-                '${client.name}\n\$${client.value.toStringAsFixed(2)}', // Contenido del tooltip
+                '${client.name}\n\$${client.value.toStringAsFixed(2)}',
                 const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -534,14 +513,10 @@ class _TopClientsChart extends StatelessWidget {
                 ),
               );
             },
-            // Estilo de la burbuja (opcional)
             getTooltipColor: (group) => Colors.blueGrey,
           ),
         ),
-
-        // -------------------------------------------------------------
         titlesData: FlTitlesData(
-          // ... (resto de titlesData sin cambios)
           show: true,
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -560,9 +535,9 @@ class _TopClientsChart extends StatelessWidget {
               },
             ),
           ),
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(show: false),
         gridData: FlGridData(show: false),
@@ -579,7 +554,7 @@ class _TopClientsChart extends StatelessWidget {
                 ),
                 backDrawRodData: BackgroundBarChartRodData(
                   show: true,
-                  toY: maxY, // Ya corregido en el paso anterior
+                  toY: maxY,
                   color: Colors.grey[100],
                 ),
               ),
@@ -633,7 +608,7 @@ class _ClientList extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "${client.type} • Status: ${client.status}", // Usamos Status del provider
+                    "${client.type} • Status: ${client.status}",
                     style: TextStyle(color: Colors.grey[500], fontSize: 11),
                   ),
                 ],
@@ -705,7 +680,6 @@ class _FrequencyValueScatterChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Generador de números aleatorios para el "Jitter"
     final random = Random();
 
     double maxX = 0;
@@ -715,7 +689,6 @@ class _FrequencyValueScatterChart extends StatelessWidget {
       if (p.totalSpent > maxY) maxY = p.totalSpent;
     }
 
-    // Aseguramos que no sea 0 para evitar errores
     maxX = (maxX == 0 ? 30 : maxX) * 1.2;
     maxY = (maxY == 0 ? 10000 : maxY) * 1.2;
 
@@ -735,9 +708,7 @@ class _FrequencyValueScatterChart extends StatelessWidget {
           getDrawingHorizontalLine: (val) => FlLine(
             color: val == highValueThreshold
                 ? Colors.green.shade200
-                : Colors.grey.withOpacity(
-                    0.1,
-                  ), // Usamos withOpacity por compatibilidad
+                : Colors.grey.withOpacity(0.1),
             strokeWidth: 2,
           ),
           getDrawingVerticalLine: (val) => FlLine(
@@ -796,28 +767,23 @@ class _FrequencyValueScatterChart extends StatelessWidget {
           double radius = 6;
 
           if (highFreq && highValue) {
-            color = Colors.purple; // VIP
+            color = Colors.purple;
             radius = 10;
           } else if (highFreq && !highValue) {
-            color = Colors.orange; // Recurrentes
+            color = Colors.orange;
           } else if (!highFreq && highValue) {
-            color = Colors.teal; // Potenciales
+            color = Colors.teal;
           } else {
-            color = Colors.red; // Esporádicos
+            color = Colors.red;
           }
 
-          // --- TRUCO VISUAL: JITTER ---
-          // Desplazamos un poquito el punto a la izquierda o derecha (-0.3 a +0.3)
-          // para que no se vean como una columna perfecta y aburrida.
           double jitterX = (random.nextDouble() * 0.6) - 0.3;
 
           return ScatterSpot(
-            point.ordersCount.toDouble() + jitterX, // <--- Aplicamos aquí
+            point.ordersCount.toDouble() + jitterX,
             point.totalSpent,
             dotPainter: FlDotCirclePainter(
-              color: color.withOpacity(
-                0.7,
-              ), // Transparencia para ver superposiciones
+              color: color.withOpacity(0.7),
               radius: radius,
               strokeWidth: 0,
             ),
@@ -829,10 +795,8 @@ class _FrequencyValueScatterChart extends StatelessWidget {
             getTooltipColor: (_) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
               try {
-                // Buscamos el punto original más cercano
                 final match = points.firstWhere(
                   (p) =>
-                      // Aumentamos la tolerancia a 0.5 porque movimos el punto con jitter
                       (p.ordersCount.toDouble() - spot.x).abs() < 0.5 &&
                       (p.totalSpent - spot.y).abs() < 0.1,
                 );
