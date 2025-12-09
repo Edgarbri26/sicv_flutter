@@ -7,6 +7,7 @@ class SearchTextFieldApp extends StatelessWidget {
   final String? hintText;
   final IconData prefixIcon;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
 
   const SearchTextFieldApp({
     super.key,
@@ -15,12 +16,14 @@ class SearchTextFieldApp extends StatelessWidget {
     this.hintText,
     this.prefixIcon = Icons.search, // Icono de búsqueda por defecto
     this.controller,
+    this.focusNode,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       style: TextStyle(fontSize: 15.0, color: AppColors.textPrimary),
       decoration: InputDecoration(
         filled: true,
