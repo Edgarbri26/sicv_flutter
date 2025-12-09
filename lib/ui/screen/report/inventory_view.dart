@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU MODELO DE EFICIENCIA
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
@@ -11,142 +10,97 @@ import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 import 'package:sicv_flutter/providers/report/inventory_provider.dart';
 import 'package:sicv_flutter/ui/widgets/kpi_card.dart';
 import 'package:sicv_flutter/ui/widgets/rerport/app_pie_chart.dart';
+import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart';
 
 class InventoryReportView extends ConsumerWidget {
   const InventoryReportView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado del provider
-    final inventoryStateAsync = ref.watch(inventoryReportProvider);
-    final currentFilter = ref.watch(inventoryFilterProvider);
+    // 1. ESCUCHAMOS EL ESTADO (Datos + Loading)
+    final state = ref.watch(inventoryReportProvider);
+    
+    // 2. LEEMOS EL NOTIFIER (Para ejecutar acciones de filtro)
+    final notifier = ref.read(inventoryReportProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: inventoryStateAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.blue)),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                'Error al cargar el reporte:\n$err',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () => ref.refresh(inventoryReportProvider),
-                icon: const Icon(Icons.refresh),
-                label: const Text("Reintentar"),
-              ),
-            ],
-          ),
-        ),
-        data: (data) => SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context, ref, currentFilter),
-              const SizedBox(height: 32),
+      backgroundColor: const Color(0xFFF3F4F6), // AppColors.background
+      body: state.isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.blue))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- HEADER CON EL NUEVO SELECTOR ---
+                  _buildHeader(context, notifier),
+                  
+                  const SizedBox(height: 32),
 
-              // Grid de KPIs (Valor Real, Items Reales)
-              _buildKpiGrid(context, data),
+                  // Grid de KPIs
+                  _buildKpiGrid(context, state),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // --- GRÁFICO DE EFICIENCIA (DATOS REALES) ---
-              ChartContainer(
-                title: "Matriz Rentabilidad vs Volumen",
-                // Dejamos el subtítulo vacío o con una breve descripción general
-                subtitle: "Distribución de productos según su desempeño",
-                child: Column(
-                  children: [
-                    // --- NUEVA LEYENDA VISUAL ---
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 8,
-                        children: [
-                          // Verde: Venden mucho y ganan mucho
-                          _buildLegendItem(
-                            Colors.green,
-                            "Líderes",
-                            "Alta Venta / Alta Ganancia",
+                  // --- GRÁFICO DE EFICIENCIA ---
+                  ChartContainer(
+                    title: "Matriz Rentabilidad vs Volumen",
+                    subtitle: "Distribución de productos según su desempeño",
+                    child: Column(
+                      children: [
+                        // Leyenda de colores
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20.0),
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 12,
+                            runSpacing: 8,
+                            children: [
+                              _buildLegendItem(Colors.green, "Líderes", "Alta Venta / Alta Ganancia"),
+                              _buildLegendItem(Colors.blue, "Alta Rotación", "Alta Venta / Baja Ganancia"),
+                              _buildLegendItem(Colors.orange, "Alto Margen", "Baja Venta / Alta Ganancia"),
+                              _buildLegendItem(Colors.red, "Bajo Desempeño", "Baja Venta / Baja Ganancia"),
+                            ],
                           ),
-
-                          // Azul: Venden mucho pero ganancia normal/baja (Mueven flujo de caja)
-                          _buildLegendItem(
-                            Colors.blue,
-                            "Alta Rotación",
-                            "Alta Venta / Baja Ganancia",
-                          ),
-
-                          // Naranja: Ganan mucho pero se venden poco (Productos de nicho)
-                          _buildLegendItem(
-                            Colors.orange,
-                            "Alta Margen",
-                            "Baja Venta / Alta Ganancia",
-                          ),
-
-                          // Rojo: No aportan ni volumen ni ganancia
-                          _buildLegendItem(
-                            Colors.red,
-                            "Bajo Desempeño",
-                            "Baja Venta / Baja Ganancia",
-                          ),
-                        ],
-                      ),
+                        ),
+                        
+                        // Scatter Chart
+                        SizedBox(
+                          height: 350,
+                          child: state.efficiencyData.isEmpty
+                              ? const Center(
+                                  child: Text(
+                                    "No hay datos de ventas en este periodo.",
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                )
+                              : _InventoryEfficiencyChart(
+                                  points: state.efficiencyData,
+                                ),
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 24),
 
-                    // -----------------------------
-                    SizedBox(
-                      height: 350,
-                      child: data.efficiencyData.isEmpty
-                          ? const Center(
-                              child: Text(
-                                "No hay datos de ventas en este periodo.",
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            )
-                          : _InventoryEfficiencyChart(
-                              points: data.efficiencyData,
-                            ),
-                    ),
-                  ],
-                ),
+                  // Layout Responsivo (Desktop/Mobile)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 900) {
+                        return _buildDesktopLayout(context, state);
+                      } else {
+                        return _buildMobileLayout(context, state);
+                      }
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
-
-              // Layout Responsivo
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth > 900) {
-                    return _buildDesktopLayout(context, data);
-                  } else {
-                    return _buildMobileLayout(context, data);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
   // --- Header ---
-  Widget _buildHeader(
-    BuildContext context,
-    WidgetRef ref,
-    String currentFilter,
-  ) {
+  Widget _buildHeader(BuildContext context, InventoryReportNotifier notifier) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -156,9 +110,9 @@ class InventoryReportView extends ConsumerWidget {
             Text(
               "Reporte de Inventario",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1F2937),
+                  ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -167,37 +121,13 @@ class InventoryReportView extends ConsumerWidget {
             ),
           ],
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: currentFilter,
-              icon: const Icon(
-                Icons.calendar_today,
-                size: 16,
-                color: Colors.grey,
-              ),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-              items: const [
-                DropdownMenuItem(value: 'week', child: Text("Última Semana")),
-                DropdownMenuItem(value: 'month', child: Text("Último Mes")),
-                DropdownMenuItem(value: 'year', child: Text("Último Año")),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  ref.read(inventoryFilterProvider.notifier).state = val;
-                }
-              },
-            ),
-          ),
+        
+        // --- AQUÍ USAMOS EL WIDGET REUTILIZABLE ---
+        DateFilterSelector(
+          selectedFilter: notifier.currentFilter,
+          selectedDateRange: notifier.currentDateRange,
+          onFilterChanged: (val) => notifier.setFilter(val),
+          onDateRangeChanged: (range) => notifier.setDateRange(range),
         ),
       ],
     );
@@ -212,7 +142,6 @@ class InventoryReportView extends ConsumerWidget {
         Icons.monetization_on_outlined,
         Colors.teal,
       ),
-
       KpiData(
         "Total Items",
         "${data.totalItems}",
@@ -243,7 +172,7 @@ class InventoryReportView extends ConsumerWidget {
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            mainAxisExtent: 130, // Fixed height for cards
+            mainAxisExtent: 130,
           ),
           itemCount: kpis.length,
           itemBuilder: (context, index) => KpiCard(data: kpis[index]),
@@ -265,18 +194,12 @@ class InventoryReportView extends ConsumerWidget {
                 height: 396,
                 title: "Distribución por Categoría",
                 child: data.categoryDistribution.isEmpty
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text("Sin datos de categorías"),
-                        ),
-                      )
+                    ? const Center(child: Text("Sin datos"))
                     : Row(
                         children: [
                           Expanded(
                             flex: 3,
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
+                            child: SizedBox(
                               height: 290,
                               child: AppPieChart(
                                 data: data.categoryDistribution,
@@ -305,9 +228,8 @@ class InventoryReportView extends ConsumerWidget {
         Expanded(
           flex: 5,
           child: ChartContainer(
-            height: 640,
+            height: 640, // Altura fija para alinear con la columna izquierda
             title: "Top Productos Vendidos",
-            // AQUÍ SE USA EL WIDGET ACTUALIZADO
             child: _TopProductsList(products: data.topProducts),
           ),
         ),
@@ -315,18 +237,14 @@ class InventoryReportView extends ConsumerWidget {
     );
   }
 
+  // --- Layout Mobile ---
   Widget _buildMobileLayout(BuildContext context, InventoryState data) {
     return Column(
       children: [
         ChartContainer(
           title: "Distribución por Categoría",
           child: data.categoryDistribution.isEmpty
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text("Sin datos de categorías"),
-                  ),
-                )
+              ? const Center(child: Text("Sin datos"))
               : Column(
                   children: [
                     AspectRatio(
@@ -341,7 +259,6 @@ class InventoryReportView extends ConsumerWidget {
         const SizedBox(height: 24),
         ChartContainer(
           title: "Top Productos Vendidos",
-          // AQUÍ SE USA EL WIDGET ACTUALIZADO
           child: _TopProductsList(products: data.topProducts),
         ),
         const SizedBox(height: 24),
@@ -364,20 +281,14 @@ class _TopProductsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Validación de lista vacía
     if (products.isEmpty) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text(
-            "Aún no hay productos vendidos en este periodo.",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey),
-          ),
+          child: Text("Sin ventas en este periodo.", style: TextStyle(color: Colors.grey)),
         ),
       );
     }
-
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -393,23 +304,9 @@ class _TopProductsList extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      prod.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: Text(prod.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "${prod.soldCount} Unds.",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
+                  Text("${prod.soldCount} Unds.", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -420,13 +317,7 @@ class _TopProductsList extends StatelessWidget {
                   minHeight: 8,
                   backgroundColor: Colors.grey[100],
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    index == 0
-                        ? const Color(0xFF6366F1)
-                        : Colors.blue.withValues(
-                            alpha:
-                                // FIX: Usamos clamp para asegurar que la opacidad nunca sea menor a 0.2 ni mayor a 1.0
-                                (0.8 - (index * 0.05)).clamp(0.2, 1.0),
-                          ),
+                    index == 0 ? const Color(0xFF6366F1) : Colors.blue.withOpacity((0.8 - (index * 0.05)).clamp(0.2, 1.0)),
                   ),
                 ),
               ),
@@ -837,3 +728,4 @@ class _LowStockList extends StatelessWidget {
     );
   }
 }
+

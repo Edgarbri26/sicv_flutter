@@ -1,11 +1,15 @@
+// inventory_report_provider.dart
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:intl/intl.dart';
-import 'package:sicv_flutter/services/report_service.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
+import 'package:sicv_flutter/services/report_service.dart';
 
 // --- CLASES DE DATOS ---
+// (Mantenemos tus clases AppPieChartData, ProductMetric, StockAlert, InventoryState iguales)
+// ... (Copia tus clases aquí tal cual las tenías en tu mensaje anterior) ...
+
 class AppPieChartData {
   final String name;
   final double value;
@@ -27,97 +31,161 @@ class StockAlert {
   StockAlert(this.name, this.quantity, this.level);
 }
 
-// --- ESTADO COMBINADO ---
 class InventoryState {
-  // Datos Reales
   final List<InventoryEfficiencyPoint> efficiencyData;
   final String totalInventoryValue;
   final int totalItems;
   final List<AppPieChartData> categoryDistribution;
-  final List<ProductMetric> topProducts; // <--- AHORA ES REAL
-
-  // Datos Mock (Pendientes de endpoint)
+  final List<ProductMetric> topProducts;
   final int lowStockAlerts;
   final String monthlyTurnover;
   final List<StockAlert> lowStockItems;
+  
+  // Añadimos isLoading para manejar la carga visualmente si quieres
+  final bool isLoading;
 
   InventoryState({
-    required this.efficiencyData,
-    required this.totalInventoryValue,
-    required this.totalItems,
-    required this.categoryDistribution,
-    required this.topProducts,
-    this.lowStockAlerts = 5,
-    this.monthlyTurnover = "18%",
+    this.efficiencyData = const [],
+    this.totalInventoryValue = "0.00",
+    this.totalItems = 0,
+    this.categoryDistribution = const [],
+    this.topProducts = const [],
+    this.lowStockAlerts = 0,
+    this.monthlyTurnover = "-",
     this.lowStockItems = const [],
+    this.isLoading = true,
   });
+  
+  // Método copyWith para actualizar estado fácil
+  InventoryState copyWith({
+    List<InventoryEfficiencyPoint>? efficiencyData,
+    String? totalInventoryValue,
+    int? totalItems,
+    List<AppPieChartData>? categoryDistribution,
+    List<ProductMetric>? topProducts,
+    bool? isLoading,
+  }) {
+    return InventoryState(
+      efficiencyData: efficiencyData ?? this.efficiencyData,
+      totalInventoryValue: totalInventoryValue ?? this.totalInventoryValue,
+      totalItems: totalItems ?? this.totalItems,
+      categoryDistribution: categoryDistribution ?? this.categoryDistribution,
+      topProducts: topProducts ?? this.topProducts,
+      isLoading: isLoading ?? this.isLoading,
+      // Mocks se mantienen
+      lowStockAlerts: this.lowStockAlerts,
+      monthlyTurnover: this.monthlyTurnover,
+      lowStockItems: this.lowStockItems,
+    );
+  }
 }
 
-// --- PROVIDER ---
+// --- CONTROLLER / NOTIFIER ---
 
-final inventoryFilterProvider = StateProvider<String>((ref) => 'month');
+class InventoryReportNotifier extends StateNotifier<InventoryState> {
+  final ReportService _service = ReportService();
+  
+  // Estado del Filtro Interno
+  String _currentFilter = 'month';
+  DateTimeRange? _currentDateRange;
 
-final inventoryReportProvider = FutureProvider.autoDispose<InventoryState>((
-  ref,
-) async {
-  final filter = ref.watch(inventoryFilterProvider);
-  final service = ReportService();
+  // Getters para que la UI sepa qué mostrar en el DateFilterSelector
+  String get currentFilter => _currentFilter;
+  DateTimeRange? get currentDateRange => _currentDateRange;
 
-  // EJECUTAMOS 5 PETICIONES EN PARALELO
-  final results = await Future.wait([
-    service.getInventoryEfficiency(filter), // [0] Scatter Chart
-    service.getInventoryValue(), // [1] Valor USD
-    service.getTotalItems(), // [2] Total Items
-    service.getInventoryByCategory(), // [3] Pie Chart
-    service.getTopSellingProducts(filter), // [4] NUEVO: Top List
-  ]);
-
-  // 1. Extraemos resultados
-  final efficiencyData = results[0] as List<InventoryEfficiencyPoint>;
-  final inventoryValue = results[1] as double;
-  final totalItems = results[2] as int;
-  final categoryRawData = results[3] as List<Map<String, dynamic>>;
-  final topProductsRawData =
-      results[4] as List<Map<String, dynamic>>; // <--- NUEVO
-
-  // 2. Procesamiento de Colores para Categorías
-  Color parseColor(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
+  InventoryReportNotifier() : super(InventoryState()) {
+    loadData(); // Cargar al inicio
   }
 
-  final categoryDistribution = categoryRawData.map((item) {
-    return AppPieChartData(
-      item['name'] as String,
-      (item['percentage'] as num).toDouble(),
-      parseColor(item['color'] as String),
-    );
-  }).toList();
+  // 1. Cambiar Filtro Rápido (Hoy, Semana...)
+  void setFilter(String filter) {
+    _currentFilter = filter;
+    _currentDateRange = null; // Limpiar rango custom
+    loadData();
+  }
 
-  // 3. Procesamiento de Top Productos (NUEVO)
-  final topProducts = topProductsRawData.map((item) {
-    return ProductMetric(
-      item['name'] as String,
-      item['soldCount'] as int,
-      (item['percentage'] as num)
-          .toDouble(), // Aseguramos que sea double (0.0 - 1.0)
-    );
-  }).toList();
+  // 2. Cambiar Rango Personalizado
+  void setDateRange(DateTimeRange range) {
+    _currentFilter = 'custom';
+    _currentDateRange = range;
+    loadData();
+  }
 
-  final currencyFormat = NumberFormat("#,##0.00", "en_US");
+  Future<void> loadData() async {
+    // 1. Marcamos cargando
+    state = state.copyWith(isLoading: true);
 
-  return InventoryState(
-    efficiencyData: efficiencyData,
-    totalInventoryValue: currencyFormat.format(inventoryValue),
-    totalItems: totalItems,
-    categoryDistribution: categoryDistribution,
-    topProducts: topProducts, // <--- Inyectamos datos reales
-    // Mocks restantes (Solo falta el de Alertas de Stock)
-    lowStockItems: [
-      StockAlert("Adaptador HDMI", 2, "Crítico"),
-      StockAlert("Funda iPhone 13", 4, "Bajo"),
-    ],
-  );
+    try {
+      // 2. Ejecutamos peticiones en paralelo pasando las fechas
+      final results = await Future.wait([
+        _service.getInventoryEfficiency(_currentFilter, start: _currentDateRange?.start, end: _currentDateRange?.end),
+        _service.getInventoryValue(), // Asumo snapshot global
+        _service.getTotalItems(),     // Asumo snapshot global
+        _service.getInventoryByCategory(), // Asumo snapshot global
+        _service.getTopSellingProducts(_currentFilter, start: _currentDateRange?.start, end: _currentDateRange?.end),
+      ]);
+
+      // 3. Procesamos resultados
+      final efficiencyData = results[0] as List<InventoryEfficiencyPoint>;
+      final inventoryValue = results[1] as double;
+      final totalItems = results[2] as int;
+      final categoryRawData = results[3] as List<Map<String, dynamic>>;
+      final topProductsRawData = results[4] as List<Map<String, dynamic>>;
+
+      // 4. Mapeo de Categorías
+      Color parseColor(String hexString) {
+        final buffer = StringBuffer();
+        if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+        buffer.write(hexString.replaceFirst('#', ''));
+        return Color(int.parse(buffer.toString(), radix: 16));
+      }
+
+      final categoryDistribution = categoryRawData.map((item) {
+        return AppPieChartData(
+          item['name'] as String,
+          (item['percentage'] as num).toDouble(),
+          parseColor(item['color'] as String),
+        );
+      }).toList();
+
+      // 5. Mapeo de Top Productos
+      final topProducts = topProductsRawData.map((item) {
+        return ProductMetric(
+          item['name'] as String,
+          item['soldCount'] as int,
+          (item['percentage'] as num).toDouble(),
+        );
+      }).toList();
+
+      final currencyFormat = NumberFormat("#,##0.00", "en_US");
+
+      // 6. Actualizamos el estado
+      state = InventoryState(
+        isLoading: false,
+        efficiencyData: efficiencyData,
+        totalInventoryValue: currencyFormat.format(inventoryValue),
+        totalItems: totalItems,
+        categoryDistribution: categoryDistribution,
+        topProducts: topProducts,
+        // Mocks
+        lowStockAlerts: 5,
+        monthlyTurnover: "18%",
+        lowStockItems: [
+          StockAlert("Adaptador HDMI", 2, "Crítico"),
+          StockAlert("Funda iPhone 13", 4, "Bajo"),
+        ],
+      );
+
+    } catch (e) {
+      debugPrint("Error loading inventory report: $e");
+      // Podrías manejar un estado de error aquí
+      state = state.copyWith(isLoading: false);
+    }
+  }
+}
+
+// --- PROVIDER FINAL ---
+
+final inventoryReportProvider = StateNotifierProvider<InventoryReportNotifier, InventoryState>((ref) {
+  return InventoryReportNotifier();
 });

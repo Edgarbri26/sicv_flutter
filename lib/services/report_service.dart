@@ -12,9 +12,28 @@ class ReportService {
 
   ReportService({http.Client? client}) : _client = client ?? http.Client();
 
-  Future<ReportSpots> getSalesDatesStats(String filter) async {
-    final uri = Uri.parse('$_baseUrl/report/sales_dates_stats?filter=$filter');
+  Future<ReportSpots> getSalesDatesStats(
+    String filter, {
+    DateTime? start,
+    DateTime? end,
+  }) async {
     try {
+      // 2. Construimos los Query Parameters dinámicamente
+      final Map<String, String> queryParams = {
+        'filter': filter,
+      };
+
+      // Si es 'custom', añadimos las fechas en formato ISO
+      if (filter == 'custom' && start != null && end != null) {
+        queryParams['customStart'] = start.toIso8601String();
+        queryParams['customEnd'] = end.toIso8601String();
+      }
+
+      // 3. Creamos la URI base y reemplazamos los parámetros
+      // Esto maneja automáticamente los ? y & de la URL
+      final uri = Uri.parse('$_baseUrl/report/sales_dates_stats')
+          .replace(queryParameters: queryParams);
+
       final response = await _client.get(
         uri,
         headers: {
@@ -24,7 +43,6 @@ class ReportService {
       );
 
       if (response.statusCode == 200) {
-        // ACTUALIZACIÓN: Parseamos el Mapa y buscamos la llave 'data'
         final Map<String, dynamic> responseData =
             json.decode(response.body) as Map<String, dynamic>;
 
@@ -39,7 +57,7 @@ class ReportService {
       }
     } catch (e) {
       debugPrint(e.toString());
-      throw Exception('Error de conexión al obtener las ventas.');
+      throw Exception('Error de conexión al obtener las ventas: $e');
     }
   }
 
@@ -106,37 +124,40 @@ class ReportService {
   }
 
   Future<List<InventoryEfficiencyPoint>> getInventoryEfficiency(
-    String filter,
-  ) async {
-    final uri = Uri.parse(
-      '$_baseUrl/report/inventory_efficiency?period=$filter',
-    ); // Ojo: tu backend espera query param 'period', no 'filter' según tu código de backend anterior, si es 'filter' cámbialo aquí.
+    String filter, {
+    DateTime? start,
+    DateTime? end,
+  }) async {
     try {
+      final Map<String, dynamic> params = {'period': filter};
+
+      if (filter == 'custom' && start != null && end != null) {
+        params['customStart'] = start.toIso8601String();
+        params['customEnd'] = end.toIso8601String();
+      }
+
+      final uri = Uri.parse('$_baseUrl/report/inventory_efficiency')
+          .replace(queryParameters: params);
+
       final response = await _client.get(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer TU_TOKEN_JWT',
-        },
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData =
             json.decode(response.body) as Map<String, dynamic>;
-
         final List<dynamic> dataList = responseData['data'] as List<dynamic>;
 
         return dataList
             .map((item) => InventoryEfficiencyPoint.fromJson(item))
             .toList();
       } else {
-        throw Exception(
-          'Error al cargar eficiencia de inventario (Código: ${response.statusCode})',
-        );
+        throw Exception('Error loading inventory efficiency (Code: ${response.statusCode})');
       }
     } catch (e) {
       debugPrint(e.toString());
-      throw Exception('Error de conexión al obtener eficiencia.');
+      throw Exception('Error connecting to efficiency service: $e');
     }
   }
 
@@ -215,14 +236,23 @@ class ReportService {
   }
 
   Future<List<Map<String, dynamic>>> getTopSellingProducts(
-    String filter,
-  ) async {
-    // El backend espera ?period=month (o week, year, all)
-    final uri = Uri.parse(
-      '$_baseUrl/report/top_selling_products?period=$filter',
-    );
-
+    String filter, {
+    DateTime? start,
+    DateTime? end,
+  }) async {
     try {
+      // Construimos los params
+      final Map<String, dynamic> params = {'period': filter};
+
+      if (filter == 'custom' && start != null && end != null) {
+        params['customStart'] = start.toIso8601String();
+        params['customEnd'] = end.toIso8601String();
+      }
+
+      // Uri seguro
+      final uri = Uri.parse('$_baseUrl/report/top_selling_products')
+          .replace(queryParameters: params);
+
       final response = await _client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -231,19 +261,15 @@ class ReportService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData =
             json.decode(response.body) as Map<String, dynamic>;
-        // El backend devuelve: data: [{ name: "...", soldCount: 10, percentage: 0.5 }, ...]
+        
         final List<dynamic> data = responseData['data'] as List<dynamic>;
-
-        // Retornamos como lista de mapas para que el Provider lo convierta a objetos
         return data.map((e) => e as Map<String, dynamic>).toList();
       } else {
-        throw Exception(
-          'Error al cargar top productos (Code: ${response.statusCode})',
-        );
+        throw Exception('Error loading top products (Code: ${response.statusCode})');
       }
     } catch (e) {
       debugPrint(e.toString());
-      throw Exception('Error de conexión al obtener top productos.');
+      throw Exception('Error connecting to top products service: $e');
     }
   }
 

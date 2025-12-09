@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
-import 'dart:typed_data';
 
 class ProductService {
   final String _baseUrl = ApiUrl().url;
