@@ -3,8 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/config/api_url.dart';
+import 'package:sicv_flutter/models/purchase/purchase_summary_model.dart';
 import 'package:sicv_flutter/models/report/report_spots.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
+import 'package:sicv_flutter/models/sale/sale_summary_model.dart';
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
 
 class ReportService {
@@ -363,6 +365,82 @@ class ReportService {
     } catch (e) {
       debugPrint('Error en ReportService.fetchClientCorrelationFM: $e');
       throw Exception('Fallo la conexión o el procesamiento de datos.');
+    }
+  }
+
+  // --- HISTORIAL DE VENTAS ---
+  Future<List<SaleSummaryModel>> getSalesByRange(
+    String period, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    // 1. Agregamos el periodo al mapa de parámetros
+    final Map<String, String> queryParams = {
+      'period': period,
+    };
+
+    // 2. Si hay fechas específicas (para 'custom'), las formateamos
+    if (startDate != null && endDate != null) {
+      final formatter = DateFormat('yyyy-MM-dd');
+      queryParams['startDate'] = formatter.format(startDate);
+      queryParams['endDate'] = formatter.format(endDate);
+    }
+
+    final uri = Uri.parse('$_baseUrl/report/sales_report_range')
+        .replace(queryParameters: queryParams);
+
+    try {
+      final response = await _client.get(uri);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((e) => SaleSummaryModel.fromJson(e)).toList();
+      } else if (response.statusCode == 404) {
+        return []; 
+      } else {
+        throw Exception('Error ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener historial de ventas: $e');
+    }
+  }
+
+  // --- HISTORIAL DE COMPRAS ---
+  Future<List<PurchaseSummaryModel>> getPurchasesByRange(
+    String period, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    // 1. Agregamos el periodo
+    final Map<String, String> queryParams = {
+      'period': period,
+    };
+
+    // 2. Agregamos fechas si existen
+    if (startDate != null && endDate != null) {
+      final formatter = DateFormat('yyyy-MM-dd');
+      queryParams['startDate'] = formatter.format(startDate);
+      queryParams['endDate'] = formatter.format(endDate);
+    }
+
+    final uri = Uri.parse('$_baseUrl/report/purchases_report_range')
+        .replace(queryParameters: queryParams);
+
+    try {
+      final response = await _client.get(uri);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((e) => PurchaseSummaryModel.fromJson(e)).toList();
+      } else if (response.statusCode == 404) {
+        return [];
+      } else {
+        throw Exception('Error ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener historial de compras: $e');
     }
   }
 }

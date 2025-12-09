@@ -6,7 +6,6 @@ import 'package:sicv_flutter/firebase_options.dart';
 import 'package:sicv_flutter/services/remote_config_service.dart';
 
 // ⬇️ IMPORTANTE: Importa el servicio de notificaciones que creamos
-// Asegúrate de que la ruta sea correcta según tu estructura de carpetas
 import 'package:sicv_flutter/services/slow_stock_notifier_service.dart';
 
 Future<void> main() async {
