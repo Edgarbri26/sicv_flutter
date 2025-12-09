@@ -4,19 +4,33 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/services/report_service.dart';
 
-// --- MODELOS DE UI ---
+// --- CLASE DE ESTADO PARA EL FILTRO ---
+class FilterState {
+  final String period; // 'week', 'month', 'year', 'custom'
+  final DateTimeRange? customRange;
 
+  FilterState({this.period = 'month', this.customRange});
+
+  FilterState copyWith({String? period, DateTimeRange? customRange}) {
+    return FilterState(
+      period: period ?? this.period,
+      customRange: customRange ?? this.customRange,
+    );
+  }
+}
+
+// --- MODELOS DE UI (Sin cambios) ---
 class EmployeePerformancePoint {
   final String name;
-  final double salesCount;  // Eje X
-  final double totalProfit; // Eje Y
+  final double salesCount;
+  final double totalProfit;
   final Color color;
   EmployeePerformancePoint(this.name, this.salesCount, this.totalProfit, this.color);
 }
 
 class EmployeeChartData {
   final String name;
-  final double value; // Ventas para las barras
+  final double value;
   final Color color;
   EmployeeChartData(this.name, this.value, this.color);
 }
@@ -24,22 +38,20 @@ class EmployeeChartData {
 class EmployeeRow {
   final String name;
   final String role;
-  final double profitGenerated; // Ganancia generada
+  final double profitGenerated;
   final String status;
   final String avatarUrl;
   EmployeeRow(this.name, this.role, this.profitGenerated, this.status, this.avatarUrl);
 }
 
-// --- ESTADO ---
 class EmployeeReportState {
-  final String totalProfit;      // KPI: Ganancia Total
-  final int activeEmployees;     // KPI: Cantidad Empleados
-  final String topPerformer;     // KPI: Mejor Empleado
-  final String avgProfit;        // KPI: Promedio Ganancia
-  
-  final List<EmployeePerformancePoint> correlationData; // Gráfico Dispersión
-  final List<EmployeeChartData> chartData;              // Gráfico Barras
-  final List<EmployeeRow> employees;                    // Lista Detallada
+  final String totalProfit;
+  final int activeEmployees;
+  final String topPerformer;
+  final String avgProfit;
+  final List<EmployeePerformancePoint> correlationData;
+  final List<EmployeeChartData> chartData;
+  final List<EmployeeRow> employees;
 
   EmployeeReportState({
     required this.totalProfit,
@@ -52,20 +64,25 @@ class EmployeeReportState {
   });
 }
 
-// --- PROVIDERS ---
+// --- PROVIDERS ACTUALIZADOS ---
 
-// 1. Filtro de Tiempo (week, month, year)
-final employeeFilterProvider = StateProvider<String>((ref) => 'month');
+// 1. Provider del Filtro (Ahora usa la clase FilterState)
+final employeeFilterProvider = StateProvider<FilterState>((ref) => FilterState());
 
 // 2. Provider Principal (Lógica de Negocio)
 final employeeReportProvider = FutureProvider.autoDispose<EmployeeReportState>((ref) async {
-  final filter = ref.watch(employeeFilterProvider);
+  // Obtenemos el estado complejo del filtro
+  final filterState = ref.watch(employeeFilterProvider);
   final service = ReportService();
 
-  // 1. Llamada al Backend
-  final rawData = await service.getEmployeePerformance(filter);
+  // 1. Llamada al Backend con los parámetros opcionales
+  final rawData = await service.getEmployeePerformance(
+    filterState.period,
+    startDate: filterState.customRange?.start,
+    endDate: filterState.customRange?.end,
+  );
 
-  // 2. Helper para colores Hex (#RRGGBB -> Color)
+  // 2. Helper para colores
   Color parseColor(String hexString) {
     try {
       final buffer = StringBuffer();
@@ -73,7 +90,7 @@ final employeeReportProvider = FutureProvider.autoDispose<EmployeeReportState>((
       buffer.write(hexString.replaceFirst('#', ''));
       return Color(int.parse(buffer.toString(), radix: 16));
     } catch (e) {
-      return Colors.grey; // Fallback por seguridad
+      return Colors.grey;
     }
   }
   
@@ -84,7 +101,6 @@ final employeeReportProvider = FutureProvider.autoDispose<EmployeeReportState>((
   String bestEmployeeName = "N/A";
   double maxProfitFound = -1;
 
-  // 4. Procesamiento de Listas
   List<EmployeePerformancePoint> correlationList = [];
   List<EmployeeChartData> chartList = [];
   List<EmployeeRow> employeeList = [];
@@ -95,30 +111,23 @@ final employeeReportProvider = FutureProvider.autoDispose<EmployeeReportState>((
     final profit = (item['total_profit'] as num).toDouble();
     final color = parseColor(item['color'] as String);
 
-    // Acumular KPIs
     sumProfit += profit;
     if (profit > maxProfitFound) {
       maxProfitFound = profit;
       bestEmployeeName = name;
     }
 
-    // A) Datos para Gráfico de Dispersión
     correlationList.add(EmployeePerformancePoint(name, sales, profit, color));
-
-    // B) Datos para Gráfico de Barras (Usamos solo el primer nombre para que quepa)
     chartList.add(EmployeeChartData(name.split(' ')[0], sales, color));
-
-    // C) Datos para Lista de Empleados
     employeeList.add(EmployeeRow(
       name,
-      "Vendedor", // Placeholder (podrías traer el role del backend si quisieras)
+      "Vendedor",
       profit,
       profit > 0 ? "Activo" : "Sin Ventas", 
       "assets/avatar_placeholder.png", 
     ));
   }
 
-  // Calcular promedio
   double average = rawData.isNotEmpty ? sumProfit / rawData.length : 0;
 
   return EmployeeReportState(

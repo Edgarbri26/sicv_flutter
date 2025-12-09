@@ -3,19 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 
-// 1. IMPORTA TU PROVIDER (Donde están definidos los modelos y el estado)
-// Ajusta la ruta si tu archivo se llama diferente
+// 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/employee_provider.dart';
+
+// 2. EL BENDITO IMPORT SOLICITADO (Asegúrate de que la carpeta sea 'rerport' o corrige a 'report')
+import 'package:sicv_flutter/ui/widgets/rerport/date_filter_selector.dart'; 
 
 class EmployeeReportView extends ConsumerWidget {
   const EmployeeReportView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchamos el estado del provider asíncrono
+    // Escuchamos el estado del provider de datos
     final employeeStateAsync = ref.watch(employeeReportProvider);
-    // Si usas el filtro en el header, descomenta esto:
-    final currentFilter = ref.watch(employeeFilterProvider);
+    
+    // Escuchamos el estado del FILTRO (Ahora es FilterState, no String)
+    final filterState = ref.watch(employeeFilterProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -50,8 +53,8 @@ class EmployeeReportView extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header con filtro
-              _buildHeader(context, ref, currentFilter),
+              // Header con el Widget de Filtro Importado
+              _buildHeader(context, ref, filterState),
               const SizedBox(height: 32),
 
               // Grid de KPIs
@@ -76,11 +79,11 @@ class EmployeeReportView extends ConsumerWidget {
     );
   }
 
-  // --- Header y Filtros ---
+  // --- Header Actualizado con el Widget Importado ---
   Widget _buildHeader(
     BuildContext context,
     WidgetRef ref,
-    String currentFilter,
+    FilterState filterState,
   ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -102,38 +105,26 @@ class EmployeeReportView extends ConsumerWidget {
             ),
           ],
         ),
-        // Filtro Dropdown
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: currentFilter,
-              icon: const Icon(
-                Icons.calendar_today,
-                size: 16,
-                color: Colors.grey,
-              ),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-              items: const [
-                DropdownMenuItem(value: 'week', child: Text("Última Semana")),
-                DropdownMenuItem(value: 'month', child: Text("Último Mes")),
-                DropdownMenuItem(value: 'year', child: Text("Último Año")),
-              ],
-              onChanged: (val) {
-                if (val != null) {
-                  ref.read(employeeFilterProvider.notifier).state = val;
-                }
-              },
-            ),
-          ),
+
+        // WIDGET CORREGIDO
+        DateFilterSelector(
+          // 1. Pasamos los valores actuales del estado (FilterState)
+          selectedFilter: filterState.period,
+          selectedDateRange: filterState.customRange,
+
+          // 2. Caso: Usuario cambia el filtro (week, month, year, custom)
+          onFilterChanged: (newFilter) {
+            // Actualizamos el estado copiando el anterior y cambiando el periodo
+            ref.read(employeeFilterProvider.notifier).state =
+                filterState.copyWith(period: newFilter);
+          },
+
+          // 3. Caso: Usuario selecciona fechas en el calendario
+          onDateRangeChanged: (newRange) {
+            // Forzamos periodo 'custom' y guardamos el rango
+            ref.read(employeeFilterProvider.notifier).state =
+                filterState.copyWith(period: 'custom', customRange: newRange);
+          },
         ),
       ],
     );
@@ -221,43 +212,21 @@ class EmployeeReportView extends ConsumerWidget {
               flex: 1,
               child: _ChartContainer(
                 title: "Análisis de Desempeño: Cantidad vs Ganancia",
-                // Subtítulo más limpio o vacío, ya que usaremos la guía visual
-                subtitle:
-                    "Relación entre el esfuerzo de venta y el retorno financiero",
+                subtitle: "Relación entre el esfuerzo de venta y el retorno financiero",
                 child: Column(
                   children: [
-                    // --- GUÍA DE INTERPRETACIÓN (NUEVA LEYENDA) ---
+                    // --- GUÍA DE INTERPRETACIÓN ---
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Explicación Eje Vertical
-                          _buildGuideItem(
-                            Icons.attach_money,
-                            Colors.green,
-                            "Eje Vertical",
-                            "Rentabilidad Total",
-                          ),
-                          // Explicación Eje Horizontal
-                          _buildGuideItem(
-                            Icons.shopping_cart,
-                            Colors.blue,
-                            "Eje Horizontal",
-                            "Volumen de Ventas",
-                          ),
-                          // Explicación de la Meta (Dónde mirar)
-                          _buildGuideItem(
-                            Icons.trending_up,
-                            Colors.orange,
-                            "Objetivo",
-                            "Zona Superior Derecha",
-                          ),
+                          _buildGuideItem(Icons.attach_money, Colors.green, "Eje Vertical", "Rentabilidad"),
+                          _buildGuideItem(Icons.shopping_cart, Colors.blue, "Eje Horizontal", "Volumen"),
+                          _buildGuideItem(Icons.trending_up, Colors.orange, "Objetivo", "Sup. Derecha"),
                         ],
                       ),
                     ),
-
-                    // ----------------------------------------------
                     AspectRatio(
                       aspectRatio: 1.6,
                       child: data.correlationData.isEmpty
@@ -351,7 +320,7 @@ class EmployeeReportView extends ConsumerWidget {
   }
 }
 
-// --- 4. WIDGETS AUXILIARES ---
+// --- 4. WIDGETS AUXILIARES (Mantenidos tal cual) ---
 
 class _ChartContainer extends StatelessWidget {
   final String title;
@@ -459,7 +428,6 @@ class _EmployeeBarChart extends StatelessWidget {
   const _EmployeeBarChart({required this.data});
   @override
   Widget build(BuildContext context) {
-    // Calculamos el máximo dinámico para el eje Y
     double maxY = 0;
     for (var item in data) {
       if (item.value > maxY) maxY = item.value;
@@ -507,9 +475,9 @@ class _EmployeeBarChart extends StatelessWidget {
               },
             ),
           ),
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         gridData: FlGridData(
           show: true,
@@ -649,7 +617,6 @@ class _CorrelationChart extends StatelessWidget {
             getTooltipColor: (spot) => Colors.blueGrey,
             getTooltipItems: (ScatterSpot spot) {
               try {
-                // Buscamos el punto más cercano para mostrar el tooltip
                 final employee = data.firstWhere(
                   (e) =>
                       (e.salesCount - spot.x).abs() < 0.1 &&
@@ -707,7 +674,7 @@ class _EmployeeList extends StatelessWidget {
                 backgroundColor: Colors.blue.shade50,
                 radius: 20,
                 child: Text(
-                  emp.name.length > 0 ? emp.name.substring(0, 1) : "?",
+                  emp.name.isNotEmpty ? emp.name.substring(0, 1) : "?",
                   style: const TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.bold,
@@ -736,7 +703,6 @@ class _EmployeeList extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // FIX: Usamos profitGenerated, que es el valor real que viene del backend
                   Text(
                     "\$${emp.profitGenerated.toStringAsFixed(0)}",
                     style: const TextStyle(fontWeight: FontWeight.bold),

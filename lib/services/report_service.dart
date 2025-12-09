@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/report/report_spots.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
@@ -274,19 +275,32 @@ class ReportService {
   }
 
   Future<List<Map<String, dynamic>>> getEmployeePerformance(
-    String filter,
-  ) async {
-    // El backend espera ?period=month (o week, year)
-    final uri = Uri.parse(
-      '$_baseUrl/report/employee_performance?period=$filter',
-    );
+    String period, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    
+    // Construimos los parámetros query
+    final Map<String, String> queryParams = {
+      'period': period,
+    };
+
+    // Si es custom y tenemos fechas, las formateamos YYYY-MM-DD
+    if (period == 'custom' && startDate != null && endDate != null) {
+      final dateFormat = DateFormat('yyyy-MM-dd');
+      queryParams['startDate'] = dateFormat.format(startDate);
+      queryParams['endDate'] = dateFormat.format(endDate);
+    }
+
+    final uri = Uri.parse('$_baseUrl/report/employee_performance')
+        .replace(queryParameters: queryParams);
 
     try {
       final response = await _client.get(
         uri,
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer ...', // Si usas token
+          // 'Authorization': 'Bearer ...', 
         },
       );
 
@@ -294,9 +308,7 @@ class ReportService {
         final Map<String, dynamic> responseData =
             json.decode(response.body) as Map<String, dynamic>;
 
-        // Estructura esperada: { data: [{ name, sales_count, total_profit, color }, ...] }
         final List<dynamic> data = responseData['data'] as List<dynamic>;
-
         return data.map((e) => e as Map<String, dynamic>).toList();
       } else {
         throw Exception(
@@ -308,7 +320,6 @@ class ReportService {
       throw Exception('Error de conexión al obtener datos de empleados.');
     }
   }
-
   Future<List<ClientCorrelationPoint>> fetchClientCorrelationFM({
     String period = 'year',
   }) async {
