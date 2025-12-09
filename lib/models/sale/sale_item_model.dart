@@ -1,13 +1,30 @@
+/// Represents an individual item within a sale transaction.
 class SaleItemModel {
-  final int? id;       // sale_item_id (Nulo al crear)
-  final int? saleId;   // sale_id (Nulo al crear)
+  /// Unique identifier for the sale item (nullable if new).
+  final int? id; // sale_item_id (Nulo al crear)
+
+  /// The ID of the sale transaction this item belongs to.
+  final int? saleId; // sale_id (Nulo al crear)
+
+  /// The ID of the product sold.
   final int productId; // product_id
-  final int depotId;   // depot_id
+
+  /// The ID of the depot from which the product was taken.
+  final int depotId; // depot_id
+
+  /// The cost per unit of the item at the moment of sale.
   final double unitCost; // unit_cost
-  final int amount;    // amount
-  final bool status;   // status
+
+  /// The quantity of items sold.
+  final int amount; // amount
+
+  /// The active status of this item record.
+  final bool status; // status
+
+  /// The name of the product (for display purposes).
   final String? productName; // nombre del producto
 
+  /// Creates a new [SaleItemModel].
   SaleItemModel({
     this.id,
     this.saleId,
@@ -19,6 +36,7 @@ class SaleItemModel {
     this.productName,
   });
 
+  /// Factory constructor to create a [SaleItemModel] from a JSON map.
   factory SaleItemModel.fromJson(Map<String, dynamic> json) {
     return SaleItemModel(
       id: json['sale_item_id'],
@@ -33,7 +51,9 @@ class SaleItemModel {
     );
   }
 
-  // Este mapa se usa para enviar al Backend al CREAR la venta
+  /// Converts this [SaleItemModel] instance to a JSON map.
+  ///
+  /// Used when sending sale data to the backend. Note that IDs are omitted as they are generated server-side.
   Map<String, dynamic> toJson() {
     return {
       // Nota: No enviamos 'sale_item_id' ni 'sale_id' porque el backend los genera
