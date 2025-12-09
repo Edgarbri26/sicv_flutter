@@ -1028,6 +1028,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
             duration: Duration(seconds: 2),
           ),
         );
+        
+        ref.invalidate(productsProvider);
 
         setState(() {
           _itemsForSale.clear();
