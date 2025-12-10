@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:sicv_flutter/services/category_service.dart';
 import 'package:sicv_flutter/services/remote_config_service.dart';
+import 'package:sicv_flutter/services/test_service.dart';
 import 'package:sicv_flutter/ui/pages/config/api_config_page.dart';
 import 'package:sicv_flutter/ui/pages/login_page.dart';
 
@@ -19,16 +21,14 @@ class _ApiCheckPageState extends State<ApiCheckPage> {
   }
 
   Future<void> _checkConnection() async {
+    final TestService _service = TestService();
     final url = RemoteConfigService().apiUrl;
     debugPrint('🔍 Verificando conexión a: $url');
 
     try {
       // Intentamos un GET simple. Asumimos que /products o una ruta base existe.
       // Un timeout corto es clave para no hacer esperar al usuario.
-      final response = await http
-          .get(Uri.parse('$url/products'))
-          .timeout(const Duration(seconds: 5));
-
+      final response = await _service.test(url);
       if (response.statusCode == 200 || response.statusCode == 401) {
         // 200 OK o 401 Unauthorized significan que el servidor RESPONDE.
         debugPrint('✅ Conexión exitosa al backend.');

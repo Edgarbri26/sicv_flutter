@@ -6,4 +6,5 @@ class ApiUrl {
   //late String url = 'http://localhost:3000/api';
   //late String url = 'http://192.168.1.118:3000/api';
   //late String url = 'https://c33t4xs5-3000.use2.devtunnels.ms/api';
+  // late String url = 'https://backend-inventory-management-production.up.railway.app/api';
 }

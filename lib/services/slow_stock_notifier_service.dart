@@ -35,7 +35,7 @@ final slowStockNotifierProvider = Provider<SlowStockNotifierService>((ref) {
 
 class SlowStockNotifierService {
   final Ref ref; // Cambiado de ProviderContainer a Ref
-  final _firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _firebaseMessaging;
   final _localNotifications = fln.FlutterLocalNotificationsPlugin();
 
   SlowStockNotifierService(this.ref) {
@@ -58,19 +58,28 @@ class SlowStockNotifierService {
     // 1. Request de Permisos (iOS, Web y Android 13+)
     // ------------------------------------
 
-    // Permisos básicos (iOS/Web)
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: true,
-      provisional: false,
-      sound: true,
-    );
+    // Inicializar Firebase Messaging solo si es soportado (no Windows/Linux)
+    if (defaultTargetPlatform != TargetPlatform.windows &&
+        defaultTargetPlatform != TargetPlatform.linux) {
+      _firebaseMessaging = FirebaseMessaging.instance;
+    }
 
-    if (kDebugMode) {
-      print('Permiso usuario: ${settings.authorizationStatus}');
+    // Permisos básicos (iOS/Web)
+    if (_firebaseMessaging != null) {
+      NotificationSettings settings = await _firebaseMessaging!
+          .requestPermission(
+            alert: true,
+            announcement: false,
+            badge: true,
+            carPlay: false,
+            criticalAlert: true,
+            provisional: false,
+            sound: true,
+          );
+
+      if (kDebugMode) {
+        print('Permiso usuario: ${settings.authorizationStatus}');
+      }
     }
 
     // 🚨 Permisos específicos para Android 13+ (necesario para ver notificaciones)
@@ -88,7 +97,11 @@ class SlowStockNotifierService {
     // ------------------------------------
     // 2. Setup del Manejador de Background
     // ------------------------------------
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    if (_firebaseMessaging != null) {
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+    }
 
     // ------------------------------------
     // 3. Inicialización Local Multiplataforma
@@ -141,17 +154,25 @@ class SlowStockNotifierService {
     // 5. Suscripción a Tópico (CON TRY-CATCH MEJORADO)
     // ------------------------------------
     try {
-      // En Web, a veces suscribirse tarda mucho, le ponemos un timeout de 3 segundos
-      // para no bloquear nada si Firebase está lento.
-      await _firebaseMessaging.subscribeToTopic('low_stock').timeout(
-        const Duration(seconds: 3),
-        onTimeout: () {
-          if (kDebugMode) print("⚠️ Timeout al suscribirse al tópico (Web es lento a veces)");
-          return; // Retornamos void
-        },
-      );
-      if (kDebugMode) print("✅ Suscrito al tópico 'low_stock'");
-      
+      if (_firebaseMessaging != null) {
+        // En Web, a veces suscribirse tarda mucho, le ponemos un timeout de 3 segundos
+        // para no bloquear nada si Firebase está lento.
+        await _firebaseMessaging!
+            .subscribeToTopic('low_stock')
+            .timeout(
+              const Duration(seconds: 3),
+              onTimeout: () {
+                if (kDebugMode)
+                  print(
+                    "⚠️ Timeout al suscribirse al tópico (Web es lento a veces)",
+                  );
+                return; // Retornamos void
+              },
+            );
+        if (kDebugMode) print("✅ Suscrito al tópico 'low_stock'");
+      } else {
+        if (kDebugMode) print("⚠️ FCM no disponible en esta plataforma (Skip)");
+      }
     } catch (e) {
       // Es muy común que falle en Windows o Web Localhost, no pasa nada.
       debugPrint("⚠️ Aviso: No se pudo suscribir a FCM (Normal en Dev): $e");
@@ -161,7 +182,7 @@ class SlowStockNotifierService {
     // 6. Configurar el Listener y Polling
     // ------------------------------------
     _isReady = true;
-    
+
     // Iniciamos el polling aunque las notificaciones fallaran
     _startProviderPolling();
   }
@@ -234,6 +255,8 @@ class SlowStockNotifierService {
   }
 
   void _setupForegroundMessageHandling() {
+    if (_firebaseMessaging == null) return;
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (kDebugMode) {
         print('🔔 Mensaje en Foreground: ${message.data}');
@@ -270,15 +293,17 @@ class SlowStockNotifierService {
     );
 
     // 🔥 CONFIGURACIÓN IOS PARA BANNER
-    const darwinPlatformChannelSpecifics = fln.DarwinInitializationSettings(
-      defaultPresentAlert: true, // Mostrar banner
-      defaultPresentSound: true, // Sonido
-      defaultPresentBanner: true, // Banner (iOS 14+)
+    const darwinPlatformChannelSpecifics = fln.DarwinNotificationDetails(
+      presentAlert: true, // Mostrar banner
+      presentSound: true, // Sonido
+      presentBanner: true, // Banner (iOS 14+)
     );
 
     // Detalles generales
     const platformChannelSpecifics = fln.NotificationDetails(
       android: androidPlatformChannelSpecifics,
+      iOS: darwinPlatformChannelSpecifics,
+      macOS: darwinPlatformChannelSpecifics,
       windows:
           fln.WindowsNotificationDetails(), // Windows usa la config por defecto del sistema
     );
