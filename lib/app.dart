@@ -25,7 +25,9 @@ import 'ui/screen/config/attributes_screen.dart';
 import 'ui/screen/config/backup_screen.dart';
 import 'ui/screen/config/theme_screen.dart';
 import 'ui/screen/config/notifications_screen.dart';
+import 'ui/screen/config/notifications_screen.dart';
 // import 'ui/pages/settings_page.dart';
+import 'package:sicv_flutter/ui/pages/splash/api_check_page.dart';
 import 'core/theme/themes.dart';
 
 class InventoryApp extends ConsumerWidget {
@@ -40,9 +42,10 @@ class InventoryApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: 'Sistema de Inventario',
       theme: Themes.defaultTheme,
+
       // darkTheme: Themes.darkTheme,
       themeMode: ThemeMode.system,
-      home: LoginPage(),
+      home: const ApiCheckPage(),
 
       //HomePage(controller: _controller),
       onGenerateRoute: (settings) {
