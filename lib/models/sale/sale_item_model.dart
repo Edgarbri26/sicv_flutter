@@ -16,7 +16,7 @@ class SaleItemModel {
   final double unitCost; // unit_cost
 
   /// The quantity of items sold.
-  final int amount; // amount
+  int amount; // amount
 
   /// The active status of this item record.
   final bool status; // status

@@ -4,19 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/models/category_model.dart';
-import 'package:sicv_flutter/models/client_model.dart';
-import 'package:sicv_flutter/models/product/product_model.dart';
-import 'package:sicv_flutter/models/sale/sale_item_model.dart';
-import 'package:sicv_flutter/models/sale/sale_model.dart';
-import 'package:sicv_flutter/models/type_payment_model.dart';
+import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/cliente_provider.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
 import 'package:sicv_flutter/providers/type_payment_provider.dart';
-
 import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
@@ -44,11 +38,8 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
   Timer? _debounce;
 
-  final List<ProductModel> _itemsForSale = [];
+  final List<SaleItemModel> _itemsForSale = [];
   ClientModel? selectedClient;
-  // List<ClientModel> _allClients = [];
-
-  // late List<TypePaymentModel> _allTypePayments = [];
   TypePaymentModel? _selectedTypePayment;
 
   @override
@@ -65,19 +56,12 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     super.dispose();
   }
 
-  // void allClients() async {
-  //   _allClients = await ClientService().getAll();
-  //   debugPrint("Clientes cargados: ${_allClients.length}");
-  //   setState(() {});
-  // }
-
   void _onSearchChanged() {
     _debounce = Timer(const Duration(milliseconds: 300), () {
       ref.read(saleSearchTermProvider.notifier).state = _searchController.text;
     });
   }
 
-  // --- MEJORA DE LAYOUT ---
   @override
   Widget build(BuildContext context) {
     final productsState = ref.watch(productsProvider);
@@ -122,7 +106,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                         return ProductCard(
                           product: product,
                           isOutOfStock: isOutOfStock,
-                          onTap: () => _onProductAddedToSale(product),
+                          onTap: () => _onProductAddedToSale(
+                            context, 
+                            product
+                          ),
                           onLongPress: () =>
                               _mostrarDialogoDetalleProducto(context, product),
                         );
@@ -563,7 +550,6 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void showSaleDetail(BuildContext context) {
-    ref.read(authProvider); // Si no usas el valor, esto no hace falta aquí.
 
     showModalBottomSheet(
       context: context,
@@ -585,7 +571,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                 double total = _itemsForSale.fold(
                   0,
                   (previousValue, element) =>
-                      previousValue + (element.quantity * element.price),
+                      previousValue + (element.amount * element.unitCost),
                 );
 
                 return DraggableScrollableSheet(
@@ -824,7 +810,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
                                             (nuevaCantidad) {
                                               // Actualizamos el estado DEL MODAL
                                               modalSetState(() {
-                                                item.quantity = nuevaCantidad;
+                                                item.amount = nuevaCantidad;
                                               });
                                             },
                                           );
@@ -853,11 +839,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
 
   void _mostrarDialogoEditarCantidad(
     BuildContext context,
-    ProductModel item,
+    SaleItemModel item,
     Function(int) onConfirm,
   ) {
     final TextEditingController cantidadController = TextEditingController();
-    cantidadController.text = item.quantity.toString();
+    cantidadController.text = item.amount.toString();
 
     showDialog(
       context: context,
@@ -903,23 +889,82 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     ).whenComplete(() => cantidadController.clear());
   }
 
-  void _onProductAddedToSale(ProductModel product) {
-    setState(() {
-      final index = _itemsForSale.indexWhere((p) => p.id == product.id);
-      if (index != -1) {
-        _itemsForSale[index].quantity = _itemsForSale[index].quantity + 1;
-      } else {
-        product.quantity = 1;
-        _itemsForSale.add(product);
-      }
-    });
+  void _onProductAddedToSale(BuildContext context, ProductModel product) {
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${product.name} añadido a la venta.'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    final TextEditingController cantidadController = TextEditingController();
+    cantidadController.text = product.quantity.toString();
+    List<DepotModel> _depots = [];
+    //final List<DepotModel> _depots = ref.read(depotProvider).value ?? [];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text("Ingresa la cantidad para ${product.name} y selecciona un depósito"),
+          content: Column(
+            children: [
+              TextFieldApp(
+                controller: cantidadController,
+                keyboardType: TextInputType.number,
+                labelText: "Cantidad del producto",
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                ),
+                DropDownApp(
+                  initialValue: null,
+                  items: _depots, 
+                  onChanged: (newValue) {
+                    // Lógica para manejar el cambio de depósito
+                  }, 
+                  itemToString: (depot) => depot!.name, 
+                  labelText: 'Seleccionar Depósito',
+                  prefixIcon: Icons.store,
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text("Cancelar"),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text("Confirmar"),
+              onPressed: () {
+                final int? nuevaCantidad = int.tryParse(
+                  cantidadController.text,
+                );
+                
+                if (nuevaCantidad != null && nuevaCantidad >= 0) {
+                  print("product.id: ${product.id}");
+                  final saleItem = SaleItemModel(
+                    productId: product.id,
+                    depotId: 1, // Aquí deberías usar el ID del depósito seleccionado
+                    unitCost: product.price,
+                    amount: nuevaCantidad,
+                    productName: product.name,
+                  );
+
+                  _itemsForSale.add(saleItem);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${product.name} añadido a la venta.'),
+                      duration: Duration(milliseconds: 500),
+                    ),
+                  );
+                  Navigator.of(dialogContext).pop();
+                } else {
+                  // Opcional: Mostrar un error si el valor no es válido
+                  // (ej: usando un SnackBar o moviendo la lógica a un validador)
+                }
+              },
+            ),
+          ],
+        
+        );
+      }
+    ).whenComplete(() => cantidadController.clear());
   }
 
   void _saveSale() async {
@@ -972,10 +1017,10 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
     // 2. Preparar los datos
     List<SaleItemModel> saleItems = _itemsForSale.map((item) {
       return SaleItemModel(
-        productId: item.id,
-        amount: item.quantity,
-        unitCost: item.price,
-        depotId: 1, // ID del depósito
+        productId: item.productId,
+        amount: item.amount,
+        unitCost: item.unitCost,
+        depotId: item.depotId, // ID del depósito
       );
     }).toList();
 

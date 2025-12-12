@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
-import 'package:sicv_flutter/models/product/product_model.dart';
+import 'package:sicv_flutter/models/sale/sale_item_model.dart';
 import 'package:sicv_flutter/ui/widgets/info_chip.dart';
 
 class DetailProductCart extends StatelessWidget {
-  final ProductModel item;
+  final SaleItemModel item;
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final Widget? trailing;
@@ -51,15 +51,15 @@ class DetailProductCart extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.name, style: AppTextStyles.bodyMedium),
+                  Text(item.productName!, style: AppTextStyles.bodyMedium),
                   Row(
                     children: [
                       InfoChip(
-                        text: '${item.quantity}Uds',
+                        text: '${item.amount} Uds',
                         color: AppColors.info,
                       ),
                       InfoChip(
-                        text: '\$${item.price.toStringAsFixed(2)}',
+                        text: '\$${item.unitCost.toStringAsFixed(2)}',
                         color: AppColors.info,
                       ),
                     ],
@@ -70,7 +70,7 @@ class DetailProductCart extends StatelessWidget {
             Row(
               spacing: 0,
               children: [
-                Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
+                Text('\$${(item.unitCost * item.amount).toStringAsFixed(2)}'),
                 IconButton(
                   onPressed: onDelete,
                   icon: Icon(Icons.delete),
