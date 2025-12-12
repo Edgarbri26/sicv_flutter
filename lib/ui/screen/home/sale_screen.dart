@@ -551,296 +551,444 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void showSaleDetail(BuildContext context) {
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        const double sheetSize = 0.8;
-
-        return Consumer(
-          builder: (context, ref, child) {
-            final typePaymentsState = ref.watch(typePaymentProvider);
-            ref.watch(clientProvider);
-            _searchClientController.addListener(_onSearchChanged);
-
-            return StatefulBuilder(
-              builder: (BuildContext context, StateSetter modalSetState) {
-                double total = _itemsForSale.fold(
-                  0,
-                  (previousValue, element) =>
-                      previousValue + (element.amount * element.unitCost),
-                );
-
-                return DraggableScrollableSheet(
-                  expand: false,
-                  initialChildSize: sheetSize,
-                  minChildSize: 0.3,
-                  maxChildSize: sheetSize,
-                  builder: (context, scrollController) {
-                    return Container(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // Permite que ocupe casi toda la pantalla
+    backgroundColor: Colors.transparent, // Transparente para ver el borde redondeado
+    builder: (BuildContext modalContext) {
+      
+      // SOLUCIÓN SNACKBAR:
+      // Envolvemos todo en un Scaffold. Esto crea un contexto nuevo donde
+      // los SnackBars se dibujan ENCIMA del modal y no detrás.
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        // Usamos DraggableScrollableSheet para un efecto de deslizamiento profesional
+        body: DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  // Providers
+                  final typePaymentsState = ref.watch(typePaymentProvider);
+                  // Escuchar cambios de cliente si es necesario para refrescar la UI
+                  ref.watch(clientProvider); 
+                  
+                  // StatefulBuilder para manejar cambios dentro del modal (como la cantidad)
+                  return StatefulBuilder(
+                    builder: (BuildContext context, StateSetter modalSetState) {
+                      
+                      return Column(
                         children: [
+                          // --- 1. HANDLE BAR (Barra gris superior) ---
+                          const SizedBox(height: 12),
                           Center(
                             child: Container(
                               width: 40,
                               height: 5,
-                              margin: const EdgeInsets.only(bottom: 15),
                               decoration: BoxDecoration(
-                                color: AppColors.border,
+                                color: Colors.grey[300],
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                           ),
-                          Center(
+                          
+                          // --- 2. TÍTULO ---
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
                             child: Text(
                               "Detalles de la Venta",
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.headlineLarge,
-                            ),
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          // Selección de Cliente y Botón Nuevo
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Autocomplete<ClientModel>(
-                                  optionsBuilder:
-                                      (TextEditingValue textEditingValue) {
-                                        if (textEditingValue.text.isEmpty) {
-                                          return const Iterable<
-                                            ClientModel
-                                          >.empty();
-                                        }
-                                        final currentClients =
-                                            ref.read(clientProvider).value ??
-                                            [];
-                                        return currentClients.where((
-                                          ClientModel option,
-                                        ) {
-                                          final term = textEditingValue.text
-                                              .toLowerCase();
-                                          return option.name
-                                                  .toLowerCase()
-                                                  .contains(term) ||
-                                              option.clientCi
-                                                  .toLowerCase()
-                                                  .contains(term);
-                                        });
-                                      },
-                                  displayStringForOption:
-                                      (ClientModel option) =>
-                                          "${option.name} (${option.clientCi})",
-                                  onSelected: (ClientModel selection) {
-                                    modalSetState(() {
-                                      selectedClient = selection;
-                                    });
-                                  },
-                                  fieldViewBuilder:
-                                      (
-                                        context,
-                                        textEditingController,
-                                        focusNode,
-                                        onFieldSubmitted,
-                                      ) {
-                                        return SearchTextFieldApp(
-                                          controller: textEditingController,
-                                          focusNode: focusNode,
-                                          labelText:
-                                              'Buscar Cliente (Nombre o CI)',
-                                          prefixIcon: Icons.person_search,
-                                        );
-                                      },
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              PrimaryButtonApp(
-                                text: "Nuevo",
-                                onPressed: () async {
-                                  // 1. Abrimos el modal directamente AQUÍ
-                                  final bool?
-                                  clientWasAdded = await showModalBottomSheet<bool>(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: AppColors.primary,
-                                    builder: (ctx) => AddClientForm(
-                                      // <--- Asegúrate de importar este widget
-                                      clientService:
-                                          ClientService(), // O tu instancia de servicio
-                                    ),
-                                  );
-
-                                  // 2. Si se agregó, refrescamos la lista
-                                  if (clientWasAdded == true) {
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Cliente agregado correctamente',
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-
-                                    // Refrescamos el provider
-                                    await ref
-                                        .read(clientProvider.notifier)
-                                        .refresh();
-
-                                    if (!context.mounted) return;
-
-                                    modalSetState(() {
-                                      final newClients =
-                                          ref.read(clientProvider).value ?? [];
-                                      if (newClients.isNotEmpty) {
-                                        selectedClient = newClients.last;
-                                      }
-                                    });
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-
-                          if (selectedClient != null)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 8.0,
-                                bottom: 8.0,
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AppColors.primary),
-                                ),
-                                child: Text(
-                                  "Cliente: ${selectedClient!.name}",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold
                               ),
                             ),
-
-                          const SizedBox(height: 20),
-
-                          // Tipos de Pago (Riverpod)
-                          typePaymentsState.when(
-                            loading: () => const CategoryLoadingSkeleton(),
-                            error: (error, stack) =>
-                                Center(child: Text('Error: $error')),
-                            data: (typePayments) {
-                              return DropDownApp(
-                                items: typePayments,
-                                initialValue: _selectedTypePayment,
-                                onChanged: (newValue) {
-                                  modalSetState(() {
-                                    _selectedTypePayment = newValue;
-                                  });
-                                },
-                                itemToString: (tp) => tp.name,
-                                labelText: 'Seleccionar Tipo de Pago',
-                                prefixIcon: Icons.payment,
-                              );
-                            },
                           ),
+                          const Divider(height: 1),
 
-                          const SizedBox(height: 20),
-
-                          // Total y Botón Confirmar
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Total: \$${total.toStringAsFixed(2)}",
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              PrimaryButtonApp(
-                                text: "Confirmar",
-                                onPressed: () {
-                                  if (selectedClient == null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Por favor, seleccione un cliente.',
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  _saveSale();
-                                },
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 10),
-                          const Divider(),
-
-                          // Lista de Productos
+                          // --- 3. CONTENIDO CON SCROLL (Lista + Buscador) ---
                           Expanded(
-                            child: _itemsForSale.isEmpty
-                                ? const Center(
-                                    child: Text("No hay artículos agregados"),
-                                  )
-                                : ListView.builder(
-                                    controller:
-                                        scrollController, // Importante para DraggableScrollableSheet
-                                    itemCount: _itemsForSale.length,
-                                    itemBuilder: (context, index) {
-                                      final item = _itemsForSale[index];
-                                      return DetailProductCart(
-                                        item: item,
-                                        onTap: () {
-                                          _mostrarDialogoEditarCantidad(
-                                            context,
-                                            item,
-                                            (nuevaCantidad) {
-                                              // Actualizamos el estado DEL MODAL
-                                              modalSetState(() {
-                                                item.amount = nuevaCantidad;
-                                              });
-                                            },
-                                          );
-                                        },
-                                        onDelete: () {
-                                          modalSetState(() {
-                                            _itemsForSale.removeAt(index);
+                            child: ListView(
+                              controller: scrollController, // Vincula el scroll del sheet
+                              padding: const EdgeInsets.all(16),
+                              children: [
+                                
+                                // --- A. SECCIÓN CLIENTE ---
+                                const Text("Cliente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                                const SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Autocomplete<ClientModel>(
+                                        optionsBuilder: (TextEditingValue textEditingValue) {
+                                          if (textEditingValue.text.isEmpty) {
+                                            return const Iterable<ClientModel>.empty();
+                                          }
+                                          final currentClients = ref.read(clientProvider).value ?? [];
+                                          final term = textEditingValue.text.toLowerCase();
+                                          return currentClients.where((ClientModel option) {
+                                            return option.name.toLowerCase().contains(term) ||
+                                                   option.clientCi.toLowerCase().contains(term);
                                           });
                                         },
-                                      );
-                                    },
+                                        displayStringForOption: (ClientModel option) =>
+                                            "${option.name} (${option.clientCi})",
+                                        onSelected: (ClientModel selection) {
+                                          modalSetState(() {
+                                            selectedClient = selection;
+                                          });
+                                        },
+                                        fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                                          // Usamos tu widget personalizado o un TextField estándar
+                                          return TextField(
+                                            controller: textEditingController,
+                                            focusNode: focusNode,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Buscar Cliente',
+                                              prefixIcon: Icon(Icons.search),
+                                              border: OutlineInputBorder(),
+                                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0)
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    // Botón Nuevo Cliente
+                                    IconButton.filled(
+                                      icon: const Icon(Icons.person_add),
+                                      onPressed: () async {
+                                        // Tu lógica para agregar cliente
+                                        // (Copiada de tu código original)
+                                        final bool? clientWasAdded = await showModalBottomSheet<bool>(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          builder: (ctx) => AddClientForm(
+                                            clientService: ClientService(),
+                                          ),
+                                        );
+
+                                        if (clientWasAdded == true) {
+                                          if (!context.mounted) return;
+                                          ScaffoldMessenger.of(modalContext).showSnackBar(
+                                            const SnackBar(content: Text('Cliente agregado'), backgroundColor: Colors.green),
+                                          );
+                                          await ref.read(clientProvider.notifier).refresh();
+                                          if (!context.mounted) return;
+                                          modalSetState(() {
+                                            final newClients = ref.read(clientProvider).value ?? [];
+                                            if (newClients.isNotEmpty) selectedClient = newClients.last;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+
+                                // Tarjeta de Cliente Seleccionado
+                                if (selectedClient != null)
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.blue),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.check_circle, color: Colors.blue, size: 20),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            "Seleccionado: ${selectedClient!.name}",
+                                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+
+                                const SizedBox(height: 20),
+
+                                // --- B. TIPO DE PAGO ---
+                                const Text("Método de Pago", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                                typePaymentsState.when(
+                                  loading: () => const LinearProgressIndicator(),
+                                  error: (e, s) => Text('Error: $e'),
+                                  data: (typePayments) {
+                                    return DropdownButtonFormField<TypePaymentModel>( // Asumiendo tu modelo
+                                      value: _selectedTypePayment,
+                                      isExpanded: true,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                                      ),
+                                      items: typePayments.map((tp) {
+                                        return DropdownMenuItem(value: tp, child: Text(tp.name));
+                                      }).toList(),
+                                      onChanged: (newValue) {
+                                        modalSetState(() {
+                                          _selectedTypePayment = newValue;
+                                        });
+                                      },
+                                      hint: const Text("Seleccionar..."),
+                                    );
+                                  },
+                                ),
+
+                                const SizedBox(height: 20),
+                                const Divider(),
+
+                                // --- C. LISTA DE PRODUCTOS (UX MEJORADA) ---
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("Productos", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    Text("${_itemsForSale.length} Items", style: const TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+
+                                if (_itemsForSale.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.all(30.0),
+                                    child: Center(child: Text("El carrito está vacío", style: TextStyle(color: Colors.grey))),
+                                  )
+                                else
+                                  ..._itemsForSale.asMap().entries.map((entry) {
+                                    final index = entry.key;
+                                    final item = entry.value;
+                                    return Card(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      elevation: 0,
+                                      color: Colors.white, // Fondo blanco para destacar
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        side: BorderSide(color: Colors.grey.shade300) // Borde sutil
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0), // Un poco más de padding
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start, // Alinear arriba
+                                          children: [
+                                            
+                                            // --- COLUMNA DE INFORMACIÓN ---
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // 1. Nombre del Producto
+                                                  Text(
+                                                    item.productName!, 
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                                                  ),
+                                                  const SizedBox(height: 6),
+
+                                                  // 2. Información del Depósito (Icono + Texto)
+                                                  Row(
+                                                    children: [
+                                                      Icon(Icons.store, size: 14, color: Colors.grey[600]),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        item.depotName ?? "Depósito", 
+                                                        style: TextStyle(color: Colors.grey[700], fontSize: 13)
+                                                      ),
+                                                    ],
+                                                  ),
+
+                                                  // 3. Información de Vencimiento (Solo si existe)
+                                                  if (item.expirationInfo != null) ...[
+                                                    const SizedBox(height: 4),
+                                                    Row(
+                                                      children: [
+                                                        // Usamos un icono de alerta si es vencimiento, o calendario normal
+                                                        Icon(Icons.event, size: 14, color: Colors.orange[800]),
+                                                        const SizedBox(width: 4),
+                                                        Expanded(
+                                                          child: Text(
+                                                            item.expirationInfo!, // Ej: "Vence: 2025-10-10"
+                                                            style: TextStyle(
+                                                              color: Colors.orange[900], 
+                                                              fontSize: 12, 
+                                                              fontWeight: FontWeight.w500
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                  
+                                                  const SizedBox(height: 6),
+                                                  // 4. Precio Unitario
+                                                  Text(
+                                                    "\$${item.unitCost} c/u", 
+                                                    style: TextStyle(color: Colors.blue[800], fontSize: 13, fontWeight: FontWeight.bold)
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            
+                                            // --- COLUMNA DE CONTROLES (+ / -) ---
+                                            Column(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[100],
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      IconButton(
+                                                        icon: const Icon(Icons.remove, color: Colors.red, size: 20),
+                                                        constraints: const BoxConstraints(minWidth: 35, minHeight: 35),
+                                                        padding: EdgeInsets.zero,
+                                                        onPressed: () {
+                                                          modalSetState(() {
+                                                            if (item.amount > 1) {
+                                                              item.amount--;
+                                                            } else {
+                                                              _itemsForSale.removeAt(index);
+                                                            }
+                                                          });
+                                                        },
+                                                      ),
+                                                      InkWell(
+                                                        onTap: () => _mostrarDialogoEditarCantidad(context, item, (val) => modalSetState((){ item.amount = val; })),
+                                                        child: Container(
+                                                          constraints: const BoxConstraints(minWidth: 30),
+                                                          alignment: Alignment.center,
+                                                          child: Text(
+                                                            "${item.amount}", 
+                                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(Icons.add, color: Colors.green, size: 20),
+                                                        constraints: const BoxConstraints(minWidth: 35, minHeight: 35),
+                                                        padding: EdgeInsets.zero,
+                                                        onPressed: () {
+                                                          modalSetState(() {
+                                                            item.amount++;
+                                                          });
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                // Subtotal del item
+                                                Text(
+                                                  "\$${(item.unitCost * item.amount).toStringAsFixed(2)}",
+                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  
+                                  // Espacio extra al final para que el teclado o el footer no tapen el último item
+                                  const SizedBox(height: 80), 
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                    );
-                  },
-                );
-              },
+                      );
+                    },
+                  );
+                },
+              ),
             );
           },
-        );
-      },
-    );
-  }
+        ),
+        
+        // --- 4. FOOTER FIJO (Siempre visible) ---
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: const Offset(0, -4))],
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Cálculo del Total en tiempo real
+                Builder(builder: (ctx) {
+                   // Recalculamos aquí para que se actualice al cambiar cantidades
+                   double total = _itemsForSale.fold(0, (prev, el) => prev + (el.amount * el.unitCost));
+                   return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Total a Pagar:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        Text("\$${total.toStringAsFixed(2)}", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green)),
+                      ],
+                   );
+                }),
+                
+                const SizedBox(height: 15),
+                
+                // Botón Confirmar
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[800], // Tu AppColors.primary
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 2,
+                    ),
+                    onPressed: () {
+                      // Validaciones
+                      if (selectedClient == null) {
+                        // USAMOS modalContext para que el SnackBar salga ENCIMA del modal
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('⚠️ Por favor, seleccione un cliente.'),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                      if (_itemsForSale.isEmpty) {
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          const SnackBar(content: Text('⚠️ El carrito está vacío.'), backgroundColor: Colors.orange),
+                        );
+                        return;
+                      }
+                      
+                      // Ejecutar guardado
+                      _saveSale();
+                    },
+                    child: const Text("CONFIRMAR VENTA", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
 
-  void _mostrarDialogoEditarCantidad(
+// -----------------------------------------------------------------------------
+// HELPER PARA EDICIÓN MANUAL (Ya lo tenías, solo ajustado mínimamente)
+// -----------------------------------------------------------------------------
+void _mostrarDialogoEditarCantidad(
     BuildContext context,
-    SaleItemModel item,
+    SaleItemModel item, // Cambia SaleItemModel por el nombre real de tu clase si es diferente
     Function(int) onConfirm,
   ) {
     final TextEditingController cantidadController = TextEditingController();
@@ -850,11 +998,11 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text("Modificar Cantidad"),
+          title: const Text("Modificar Cantidad"),
           content: TextField(
             controller: cantidadController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: "Nueva cantidad",
               border: OutlineInputBorder(),
             ),
@@ -863,44 +1011,35 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
           ),
           actions: [
             TextButton(
-              child: Text("Cancelar"),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
+              child: const Text("Cancelar"),
+              onPressed: () => Navigator.of(dialogContext).pop(),
             ),
-            TextButton(
-              child: Text("Confirmar"),
+            ElevatedButton(
+              child: const Text("Aceptar"),
               onPressed: () {
-                final int? nuevaCantidad = int.tryParse(
-                  cantidadController.text,
-                );
-
-                if (nuevaCantidad != null && nuevaCantidad >= 0) {
+                final int? nuevaCantidad = int.tryParse(cantidadController.text);
+                if (nuevaCantidad != null && nuevaCantidad > 0) {
                   onConfirm(nuevaCantidad);
                   Navigator.of(dialogContext).pop();
-                } else {
-                  // Opcional: Mostrar un error si el valor no es válido
-                  // (ej: usando un SnackBar o moviendo la lógica a un validador)
                 }
               },
             ),
           ],
         );
       },
-    ).whenComplete(() => cantidadController.clear());
+    );
   }
 
-  void _onProductAddedToSale(BuildContext context, ProductModel product) {
-  // Usamos showModalBottomSheet en lugar de showDialog
-  showModalBottomSheet(
+Future<void> _onProductAddedToSale(BuildContext context, ProductModel product) async {
+  // 1. Esperamos a que el modal se cierre y nos devuelva un SaleItemModel (o null)
+  final SaleItemModel? newItem = await showModalBottomSheet<SaleItemModel>(
     context: context,
-    isScrollControlled: true, // Permite que el modal crezca con el teclado
+    isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (BuildContext modalContext) {
       return Padding(
-        // Ajuste para que el teclado no tape el contenido
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(modalContext).viewInsets.bottom,
         ),
@@ -908,6 +1047,22 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
       );
     },
   );
+
+  // 2. Si newItem no es null, significa que el usuario confirmó agregar
+  if (newItem != null && mounted) {
+    setState(() {
+      _itemsForSale.add(newItem);
+    });
+
+    // Opcional: Feedback visual
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Agregado: ${newItem.productName}"),
+        duration: const Duration(seconds: 1),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
 }
 
   void _saveSale() async {
@@ -1310,8 +1465,33 @@ class _AddProductSheetContentState extends State<_AddProductSheetContent> {
                                 setState(() => _errorMessage = "La cantidad excede el stock ($_maxStock)");
                                 return;
                               }
+  
+                              // --- NUEVA LÓGICA PARA OBTENER LOS NOMBRES ---
+                              String tempDepotName = "Depósito Desconocido";
+                              String? tempExpirationInfo;
 
-                              // ÉXITO: Crear objeto y cerrar
+                              // 1. Buscamos el objeto del depósito seleccionado
+                              if (_selectedDepotId != null) {
+                                // stockList está disponible porque estamos dentro del .when(data: stockList)
+                                final depotItem = stockList.firstWhere(
+                                    (e) => e.depotId == _selectedDepotId, 
+                                    orElse: () => StockOptionModel(depotId: 0, depotName: '?', amount: 0, isLot: false)
+                                );
+                                tempDepotName = depotItem.depotName;
+                              }
+
+                              // 2. Buscamos la info del lote/vencimiento seleccionado
+                              if (_selectedLotId != null) {
+                                final lotItem = stockList.firstWhere(
+                                    (e) => e.lotId == _selectedLotId,
+                                    orElse: () => StockOptionModel(depotId: 0, depotName: '', amount: 0, isLot: false)
+                                );
+                                // Aquí usamos tu getter displayLabel o formateamos la fecha
+                                tempExpirationInfo = lotItem.displayLabel; 
+                                // O si prefieres solo la fecha: item.expiration
+                              }
+                              // ---------------------------------------------
+
                               final newItem = SaleItemModel(
                                 productId: widget.product.id,
                                 depotId: _selectedDepotId!,
@@ -1319,14 +1499,13 @@ class _AddProductSheetContentState extends State<_AddProductSheetContent> {
                                 unitCost: widget.product.price,
                                 amount: amount,
                                 productName: widget.product.name,
+                                
+                                // GUARDAMOS LA INFO VISUAL:
+                                depotName: tempDepotName,
+                                expirationInfo: tempExpirationInfo,
                               );
 
-                              // AQUÍ LLAMAS A TU PROVIDER PARA AGREGAR
-                              // ref.read(saleProvider.notifier).add(newItem);
-                              
-                              // setState(() { ... }) // Si es local en el padre, tendrás que pasar un callback
-
-                              Navigator.pop(context, newItem); // Puedes devolver el objeto al padre
+                              Navigator.pop(context, newItem);
                             },
                             child: const Text("AGREGAR AL CARRITO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                           ),

@@ -27,6 +27,12 @@ class SaleItemModel {
   /// Optional batch information (if applicable).
   final int? stockLotId; // stock_lot_id
 
+  /// Additional fields for extended functionality
+  final String? depotName;
+
+  /// Information about expiration, if applicable.
+  final String? expirationInfo;
+
   /// Creates a new [SaleItemModel].
   SaleItemModel({
     this.id,
@@ -38,6 +44,8 @@ class SaleItemModel {
     this.status = true, // Por defecto activo al crear
     this.productName,
     this.stockLotId,
+    this.depotName,
+    this.expirationInfo,
   });
 
   /// Factory constructor to create a [SaleItemModel] from a JSON map.
