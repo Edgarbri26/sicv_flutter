@@ -24,6 +24,9 @@ class SaleItemModel {
   /// The name of the product (for display purposes).
   final String? productName; // nombre del producto
 
+  /// Optional batch information (if applicable).
+  final int? stockLotId; // stock_lot_id
+
   /// Creates a new [SaleItemModel].
   SaleItemModel({
     this.id,
@@ -34,6 +37,7 @@ class SaleItemModel {
     required this.amount,
     this.status = true, // Por defecto activo al crear
     this.productName,
+    this.stockLotId,
   });
 
   /// Factory constructor to create a [SaleItemModel] from a JSON map.
@@ -48,6 +52,7 @@ class SaleItemModel {
       amount: json['amount'],
       status: json['status'] ?? true,
       productName: json['product'], // Asumiendo que el backend envía este campo
+      stockLotId: json['stock_lot_id'],
     );
   }
 
@@ -61,6 +66,8 @@ class SaleItemModel {
       'depot_id': depotId,
       'unit_cost': unitCost,
       'amount': amount,
+      'status': status,
+      'stock_lot_id': stockLotId,
     };
   }
 }

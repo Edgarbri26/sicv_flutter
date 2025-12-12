@@ -54,6 +54,7 @@ dependencies:
   flutter_local_notifications: ^19.5.0
   calendar_date_picker2: ^2.0.1
   local_auth: ^2.3.0
+  dio: ^5.9.0
   # Core de Firebase y Mensajería Cloud
   
   # firebase_messaging: ^14.7.13 # Asegúrate de usar la versión más reciente

@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:sicv_flutter/config/api_url.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
+import 'package:sicv_flutter/models/product/stock_option_model.dart';
+import 'package:dio/dio.dart';
+final Dio _dio = Dio();
 
 class ProductService {
   final String _baseUrl = ApiUrl().url;
@@ -187,6 +190,30 @@ class ProductService {
       }
     } catch (e) {
       throw Exception('Error de conexión: $e');
+    }
+  }
+
+  Future<List<StockOptionModel>> getStockDetails(int productId) async {
+    try {
+      final response = await _dio.get(
+        '$_baseUrl/product/$productId/stock_availability', 
+        // options: Options(headers: { 'Authorization': 'Bearer $token' }),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        // Asumiendo que la respuesta es { status: 200, data: options[] }
+        final List<dynamic> rawList = response.data['data'] as List<dynamic>;
+        
+        return rawList.map((json) => StockOptionModel.fromJson(json)).toList();
+      } else {
+        // Manejo de errores de negocio o status code no 200
+        throw Exception(response.data['message'] ?? 'Error al obtener detalles de stock');
+      }
+    } on DioException catch (e) {
+      debugPrint("Dio Error fetching stock: ${e.message}");
+      throw Exception('Fallo la conexión con el servidor.');
+    } catch (e) {
+      rethrow;
     }
   }
 }

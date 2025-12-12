@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/index.dart';
+import 'package:sicv_flutter/models/product/stock_option_model.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/cliente_provider.dart';
@@ -563,7 +564,7 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         return Consumer(
           builder: (context, ref, child) {
             final typePaymentsState = ref.watch(typePaymentProvider);
-            final clientsState = ref.watch(clientProvider);
+            ref.watch(clientProvider);
             _searchClientController.addListener(_onSearchChanged);
 
             return StatefulBuilder(
@@ -890,82 +891,24 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
   }
 
   void _onProductAddedToSale(BuildContext context, ProductModel product) {
-
-    final TextEditingController cantidadController = TextEditingController();
-    cantidadController.text = product.quantity.toString();
-    List<DepotModel> _depots = [];
-    //final List<DepotModel> _depots = ref.read(depotProvider).value ?? [];
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text("Ingresa la cantidad para ${product.name} y selecciona un depósito"),
-          content: Column(
-            children: [
-              TextFieldApp(
-                controller: cantidadController,
-                keyboardType: TextInputType.number,
-                labelText: "Cantidad del producto",
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                DropDownApp(
-                  initialValue: null,
-                  items: _depots, 
-                  onChanged: (newValue) {
-                    // Lógica para manejar el cambio de depósito
-                  }, 
-                  itemToString: (depot) => depot!.name, 
-                  labelText: 'Seleccionar Depósito',
-                  prefixIcon: Icons.store,
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: Text("Cancelar"),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            TextButton(
-              child: Text("Confirmar"),
-              onPressed: () {
-                final int? nuevaCantidad = int.tryParse(
-                  cantidadController.text,
-                );
-                
-                if (nuevaCantidad != null && nuevaCantidad >= 0) {
-                  print("product.id: ${product.id}");
-                  final saleItem = SaleItemModel(
-                    productId: product.id,
-                    depotId: 1, // Aquí deberías usar el ID del depósito seleccionado
-                    unitCost: product.price,
-                    amount: nuevaCantidad,
-                    productName: product.name,
-                  );
-
-                  _itemsForSale.add(saleItem);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${product.name} añadido a la venta.'),
-                      duration: Duration(milliseconds: 500),
-                    ),
-                  );
-                  Navigator.of(dialogContext).pop();
-                } else {
-                  // Opcional: Mostrar un error si el valor no es válido
-                  // (ej: usando un SnackBar o moviendo la lógica a un validador)
-                }
-              },
-            ),
-          ],
-        
-        );
-      }
-    ).whenComplete(() => cantidadController.clear());
-  }
+  // Usamos showModalBottomSheet en lugar de showDialog
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // Permite que el modal crezca con el teclado
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (BuildContext modalContext) {
+      return Padding(
+        // Ajuste para que el teclado no tape el contenido
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(modalContext).viewInsets.bottom,
+        ),
+        child: _AddProductSheetContent(product: product),
+      );
+    },
+  );
+}
 
   void _saveSale() async {
     // 1. Validaciones PRIMERO
@@ -1091,5 +1034,312 @@ class SaleScreenState extends ConsumerState<SaleScreen> {
         ),
       );
     }
+  }
+}
+
+class _AddProductSheetContent extends StatefulWidget {
+  final ProductModel product;
+  const _AddProductSheetContent({required this.product});
+
+  @override
+  State<_AddProductSheetContent> createState() => _AddProductSheetContentState();
+}
+
+class _AddProductSheetContentState extends State<_AddProductSheetContent> {
+  final TextEditingController _qtyController = TextEditingController(text: "1");
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  int? _selectedDepotId;
+  int? _selectedLotId;
+  int _maxStock = 0;
+  String? _errorMessage; // Para mostrar errores generales sin usar SnackBar
+
+  @override
+  void dispose() {
+    _qtyController.dispose();
+    super.dispose();
+  }
+
+  void _updateMaxStock(List<StockOptionModel> allStock) {
+    if (_selectedDepotId == null) {
+      _maxStock = 0;
+      return;
+    }
+
+    // Filtrar lotes del depósito seleccionado
+    final depotItems = allStock.where((i) => i.depotId == _selectedDepotId).toList();
+
+    if (widget.product.perishable) {
+      // Si es perecedero, el stock depende del LOTE específico
+      if (_selectedLotId != null) {
+        final lot = depotItems.firstWhere(
+          (i) => i.lotId == _selectedLotId, 
+          orElse: () => StockOptionModel(depotId: 0, depotName: '', amount: 0, isLot: false),
+        );
+        _maxStock = lot.amount;
+      } else {
+        _maxStock = 0;
+      }
+    } else {
+      // Si NO es perecedero, sumamos todo lo del depósito
+      _maxStock = depotItems.fold(0, (sum, item) => sum + item.amount);
+    }
+    setState(() {});
+  }
+
+  void _incrementQty() {
+    int current = int.tryParse(_qtyController.text) ?? 0;
+    if (current < _maxStock) {
+      _qtyController.text = (current + 1).toString();
+    }
+  }
+
+  void _decrementQty() {
+    int current = int.tryParse(_qtyController.text) ?? 0;
+    if (current > 1) {
+      _qtyController.text = (current - 1).toString();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // NOTA: Asumo que usas Riverpod (Consumer). Si no, usa tu lógica de provider normal.
+    // Aquí uso un Consumer local para el ejemplo.
+    return Consumer(
+      builder: (context, ref, _) {
+        final stockAsync = ref.watch(productStockDetailProvider(widget.product.id));
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // --- ENCABEZADO ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.product.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text("Precio: \$${widget.product.price}", style: TextStyle(color: Colors.grey[600])),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    )
+                  ],
+                ),
+                const Divider(),
+
+                // --- CARGA DE DATOS ---
+                stockAsync.when(
+                  loading: () => const Center(child: LinearProgressIndicator()),
+                  error: (e, _) => Text("Error: $e", style: const TextStyle(color: Colors.red)),
+                  data: (stockList) {
+                    if (stockList.isEmpty) return const Text("Sin stock disponible", style: TextStyle(color: Colors.red));
+
+                    // Mapa de depósitos únicos
+                    final uniqueDepots = { for (var e in stockList) e.depotId : e.depotName };
+                    
+                    // Lista de lotes filtrada (si aplica)
+                    final availableLots = _selectedDepotId == null 
+                        ? <StockOptionModel>[] 
+                        : stockList.where((e) => e.depotId == _selectedDepotId).toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        
+                        // --- 1. SELECCIÓN DE DEPÓSITO (Estilo CHIPS) ---
+                        const Text("Selecciona Depósito:", style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8.0,
+                          children: uniqueDepots.entries.map((entry) {
+                            final isSelected = _selectedDepotId == entry.key;
+                            return ChoiceChip(
+                              label: Text(entry.value),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    _selectedDepotId = entry.key;
+                                    _selectedLotId = null; // Reset lote
+                                    _errorMessage = null;
+                                    _updateMaxStock(stockList);
+                                  });
+                                }
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        if (_selectedDepotId == null && _errorMessage != null)
+                           const Text("Debes seleccionar un depósito", style: TextStyle(color: Colors.red, fontSize: 12)),
+
+                        const SizedBox(height: 20),
+
+                        // --- 2. SELECCIÓN DE LOTE (Solo si es perecedero) ---
+                        if (widget.product.perishable) ...[
+                          DropdownButtonFormField<int>(
+                            value: _selectedLotId,
+                            decoration: const InputDecoration(
+                              labelText: "Fecha de Vencimiento / Lote",
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                            ),
+                            items: availableLots.map((item) {
+                              return DropdownMenuItem(
+                                value: item.lotId,
+                                child: Text(item.displayLabel, style: const TextStyle(fontSize: 14)),
+                              );
+                            }).toList(),
+                            onChanged: _selectedDepotId == null ? null : (val) {
+                              setState(() {
+                                _selectedLotId = val;
+                                _errorMessage = null;
+                                _updateMaxStock(stockList);
+                              });
+                            },
+                            validator: (val) => val == null ? 'Requerido' : null,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // --- 3. CANTIDAD (Estilo STEPPER) ---
+                        Row(
+                          children: [
+                            const Text("Cantidad:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            const Spacer(),
+                            // Botón Menos
+                            Container(
+                              decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)),
+                              child: IconButton(
+                                icon: const Icon(Icons.remove),
+                                onPressed: _selectedDepotId == null ? null : _decrementQty,
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            // Campo de Texto
+                            SizedBox(
+                              width: 60,
+                              child: TextFormField(
+                                controller: _qtyController,
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                decoration: const InputDecoration(border: InputBorder.none),
+                                validator: (val) {
+                                  final num = int.tryParse(val ?? '');
+                                  if (num == null || num <= 0) return '!';
+                                  if (num > _maxStock) return '!'; // Validación visual simple
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            // Botón Más
+                            Container(
+                              decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)),
+                              child: IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: _selectedDepotId == null ? null : _incrementQty,
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        // Texto informativo de Stock
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(
+                            _selectedDepotId == null 
+                                ? "Selecciona un depósito primero" 
+                                : "Stock disponible: $_maxStock",
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              color: (int.tryParse(_qtyController.text) ?? 0) > _maxStock 
+                                  ? Colors.red 
+                                  : Colors.grey[600],
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ),
+
+                        // Error general en texto rojo (Sustituto del SnackBar)
+                        if (_errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(5)),
+                              child: Text(_errorMessage!, style: TextStyle(color: Colors.red[800]), textAlign: TextAlign.center),
+                            ),
+                          ),
+
+                        const SizedBox(height: 20),
+
+                        // --- 4. BOTÓN DE ACCIÓN ---
+                        SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[800], // Tu color primario
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: () {
+                              if (_selectedDepotId == null) {
+                                setState(() => _errorMessage = "Selecciona un depósito");
+                                return;
+                              }
+                              // Validación del Formulario
+                              if (!_formKey.currentState!.validate()) {
+                                setState(() => _errorMessage = "Verifica la cantidad y el lote");
+                                return;
+                              }
+
+                              final amount = int.tryParse(_qtyController.text) ?? 0;
+                              
+                              if (amount > _maxStock) {
+                                setState(() => _errorMessage = "La cantidad excede el stock ($_maxStock)");
+                                return;
+                              }
+
+                              // ÉXITO: Crear objeto y cerrar
+                              final newItem = SaleItemModel(
+                                productId: widget.product.id,
+                                depotId: _selectedDepotId!,
+                                stockLotId: _selectedLotId,
+                                unitCost: widget.product.price,
+                                amount: amount,
+                                productName: widget.product.name,
+                              );
+
+                              // AQUÍ LLAMAS A TU PROVIDER PARA AGREGAR
+                              // ref.read(saleProvider.notifier).add(newItem);
+                              
+                              // setState(() { ... }) // Si es local en el padre, tendrás que pasar un callback
+
+                              Navigator.pop(context, newItem); // Puedes devolver el objeto al padre
+                            },
+                            child: const Text("AGREGAR AL CARRITO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        )
+                      ],
+                    );
+                  }
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    );
   }
 }

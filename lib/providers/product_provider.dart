@@ -1,13 +1,24 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
+import 'package:sicv_flutter/models/product/stock_option_model.dart';
 import 'package:sicv_flutter/services/product_service.dart';
 
 // 1. Proveedor del Servicio
 final productServiceProvider = Provider<ProductService>((ref) {
   return ProductService();
+});
+
+// --- CORRECCIÓN: EL PROVIDER VA AQUÍ, AFUERA DE LA CLASE ---
+final productStockDetailProvider = 
+    FutureProvider.family<List<StockOptionModel>, int>((ref, productId) async {
+  
+  // Usamos 'watch' para obtener el servicio
+  final service = ref.watch(productServiceProvider);
+  
+  // Llama al método del servicio
+  return await service.getStockDetails(productId);
 });
 
 // 2. El Notifier
@@ -17,6 +28,8 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
   ProductsNotifier(this._service) : super(const AsyncValue.loading()) {
     loadProducts();
   }
+
+  // (YA NO PONGAS EL PROVIDER AQUÍ ADENTRO)
 
   // Cargar productos
   Future<void> loadProducts() async {
@@ -63,7 +76,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
     await refresh();
   }
 
-  // --- NUEVO MÉTODO: ACTUALIZAR PRODUCTO ---
+  // Actualizar producto
   Future<void> updateProduct({
     required int id,
     required String name,
@@ -72,11 +85,9 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
     required String description,
     required int minStock,
     required double price,
-    Uint8List? imageUrl, // Puede ser null si no se cambió la imagen
+    Uint8List? imageUrl,
   }) async {
     try {
-      // 1. Llamamos al servicio para que actualice en Backend
-      // Nota: Asegúrate de tener este método en tu ProductService
       await _service.update(
         id: id,
         name: name,
@@ -87,12 +98,8 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<ProductModel>>> {
         minStock: minStock,
         imageUrl: imageUrl,
       );
-
-      // 2. Refrescamos la lista para asegurar que tenemos los datos más recientes
-      // (especialmente útil si la imagen cambió de URL en el servidor)
       await refresh();
     } catch (e) {
-      // Re-lanzamos el error para que la UI (el SnackBar) lo pueda mostrar
       rethrow;
     }
   }
