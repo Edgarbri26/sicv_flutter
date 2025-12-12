@@ -45,10 +45,13 @@ class RemoteConfigService {
       debugPrint('Error cargando preferencias: $e');
     }
 
-    if (defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux) {
+    // Si es Web, permitimos continuar (Firebase SDK Web soporta Remote Config).
+    // Si es Nativo (Desktop Windows/Linux), lo bloqueamos porque no hay soporte oficial aún.
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux)) {
       debugPrint(
-        '⚠️ Remote Config no soportado en Desktop. Usando valores por defecto.',
+        '⚠️ Remote Config no soportado en Desktop (Windows/Linux). Usando valores por defecto.',
       );
       return;
     }

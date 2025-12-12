@@ -58,9 +58,10 @@ class SlowStockNotifierService {
     // 1. Request de Permisos (iOS, Web y Android 13+)
     // ------------------------------------
 
-    // Inicializar Firebase Messaging solo si es soportado (no Windows/Linux)
-    if (defaultTargetPlatform != TargetPlatform.windows &&
-        defaultTargetPlatform != TargetPlatform.linux) {
+    // Inicializar Firebase Messaging solo si es soportado (no Windows/Linux, excepto si es Web)
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.windows &&
+            defaultTargetPlatform != TargetPlatform.linux)) {
       _firebaseMessaging = FirebaseMessaging.instance;
     }
 
