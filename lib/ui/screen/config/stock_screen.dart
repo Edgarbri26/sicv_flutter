@@ -108,7 +108,7 @@ class _StockScreenState extends State<StockScreen> {
 
           const SizedBox(height: 18),
 
-          PrimaryButtonApp(
+          ButtonApp(
             text: 'Guardar configuración',
             icon: Icons.save,
             onPressed: () {

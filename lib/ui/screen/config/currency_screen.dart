@@ -111,7 +111,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                 ],
               ),
               const SizedBox(height: 50),
-              PrimaryButtonApp(
+              ButtonApp(
                 text: 'Guardar',
                 icon: Icons.save,
                 onPressed: _guardarConfiguracion,

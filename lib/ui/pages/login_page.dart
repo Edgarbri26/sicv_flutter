@@ -248,6 +248,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
           // 3. Inputs
           TextFieldApp(
+            autoFocus: true,
             textInputAction: TextInputAction.next,
             onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
             controller: _userCtrl,
@@ -310,7 +311,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           const SizedBox(height: 24),
 
           // 5. Botón de Acción
-          PrimaryButtonApp(
+          ButtonApp(
             text: 'INGRESAR',
             icon: Icons.login,
             isLoading: _isLoading,

@@ -320,7 +320,7 @@ class _AdminUserManagementPageState
                 ],
               ),
               const SizedBox(height: 32),
-              PrimaryButtonApp(
+              ButtonApp(
                 text: "GUARDAR USUARIO",
                 icon: Icons.save,
                 isLoading: isSaving,

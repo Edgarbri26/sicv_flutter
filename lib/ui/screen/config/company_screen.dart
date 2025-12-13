@@ -90,7 +90,7 @@ class _CompanyScreenState extends State<CompanyScreen> {
                   textCapitalization: TextCapitalization.characters,
                 ),
                 const SizedBox(height: 50),
-                PrimaryButtonApp(
+                ButtonApp(
                   text: 'Guardar Cambios',
                   icon: Icons.save,
                   onPressed: _guardarCambios,

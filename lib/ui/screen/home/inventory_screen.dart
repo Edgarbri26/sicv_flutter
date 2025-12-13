@@ -24,7 +24,8 @@ class InventoryDatatableScreen extends ConsumerStatefulWidget {
       InventoryDatatableScreenState();
 }
 
-class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScreen> {
+class InventoryDatatableScreenState
+    extends ConsumerState<InventoryDatatableScreen> {
   // Categorías (se mantienen locales como pediste, aunque podrían ir a un provider)
   late List<CategoryModel> _allCategories = [];
   late List<CategoryModel> categoriesFilter = [];
@@ -197,11 +198,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
       (sum, item) => sum + (item.price * item.totalStock),
     );
     int lowStockItems = products
-        .where(
-          (p) =>
-              p.totalStock > 0 &&
-              p.totalStock <= p.minStock,
-        )
+        .where((p) => p.totalStock > 0 && p.totalStock <= p.minStock)
         .length;
 
     return Padding(
@@ -331,6 +328,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                     Expanded(
                       flex: 2,
                       child: SearchTextFieldApp(
+                        autofocus: true,
                         onChanged: (value) {
                           // Solo actualizamos el estado local, el build filtra
                           setState(() {
@@ -363,6 +361,7 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                 return Column(
                   children: [
                     SearchTextFieldApp(
+                      autofocus: true,
                       onChanged: (value) {
                         setState(() {
                           _searchQuery = value;
@@ -547,20 +546,31 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
     final bool isEditing = productToEdit != null;
 
     // 2. Inicializamos los controladores. Si es edición, ponemos los valores del producto.
-    final nameController = TextEditingController(text: isEditing ? productToEdit.name : '');
-    final descriptionController = TextEditingController(text: isEditing ? productToEdit.description : '');
-    final priceController = TextEditingController(text: isEditing ? productToEdit.price.toString() : '');
-    final skuController = TextEditingController(text: isEditing ? productToEdit.sku : '');
-    final minStockController = TextEditingController(text: isEditing ? productToEdit.minStock.toString() : '');
+    final nameController = TextEditingController(
+      text: isEditing ? productToEdit.name : '',
+    );
+    final descriptionController = TextEditingController(
+      text: isEditing ? productToEdit.description : '',
+    );
+    final priceController = TextEditingController(
+      text: isEditing ? productToEdit.price.toString() : '',
+    );
+    final skuController = TextEditingController(
+      text: isEditing ? productToEdit.sku : '',
+    );
+    final minStockController = TextEditingController(
+      text: isEditing ? productToEdit.minStock.toString() : '',
+    );
     bool isPerishable = isEditing ? productToEdit.perishable : false;
-    
 
     // 3. Inicializamos la categoría
     CategoryModel? selectedCategory;
     if (isEditing) {
       // Buscamos la categoría actual en la lista de todas las categorías para que el Dropdown la reconozca
       try {
-        selectedCategory = _allCategories.firstWhere((c) => c.id == productToEdit.category.id);
+        selectedCategory = _allCategories.firstWhere(
+          (c) => c.id == productToEdit.category.id,
+        );
       } catch (e) {
         selectedCategory = null; // Si no se encuentra (raro), se deja nulo
       }
@@ -582,7 +592,9 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
             builder: (context, setStateModal) {
               Future<void> pickImage() async {
                 final ImagePicker picker = ImagePicker();
-                final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.gallery,
+                );
 
                 if (image != null) {
                   if (kIsWeb) {
@@ -606,7 +618,9 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                 imageToShow = MemoryImage(selectedImageBytes!);
               } else if (!kIsWeb && selectedImageFile != null) {
                 imageToShow = FileImage(selectedImageFile!);
-              } else if (isEditing && productToEdit.imageUrl != null && productToEdit.imageUrl!.isNotEmpty) {
+              } else if (isEditing &&
+                  productToEdit.imageUrl != null &&
+                  productToEdit.imageUrl!.isNotEmpty) {
                 imageToShow = NetworkImage(productToEdit.imageUrl!);
               }
 
@@ -619,8 +633,11 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      isEditing ? 'Editar Producto' : 'Registrar Nuevo Producto',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      isEditing
+                          ? 'Editar Producto'
+                          : 'Registrar Nuevo Producto',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const Divider(height: 24),
                     Expanded(
@@ -636,21 +653,40 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                     decoration: BoxDecoration(
                                       color: AppColors.secondary,
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppColors.border, width: 2),
-                                      image: imageToShow != null 
-                                        ? DecorationImage(image: imageToShow, fit: BoxFit.cover) 
-                                        : null,
+                                      border: Border.all(
+                                        color: AppColors.border,
+                                        width: 2,
+                                      ),
+                                      image: imageToShow != null
+                                          ? DecorationImage(
+                                              image: imageToShow,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
                                     ),
                                     child: imageToShow == null
                                         ? const Center(
-                                            child: Icon(Icons.add_a_photo_outlined, size: 40, color: AppColors.textSecondary),
+                                            child: Icon(
+                                              Icons.add_a_photo_outlined,
+                                              size: 40,
+                                              color: AppColors.textSecondary,
+                                            ),
                                           )
                                         : null,
                                   ),
                                   const SizedBox(height: 8),
                                   TextButton.icon(
-                                    icon: Icon(imageToShow == null ? Icons.add : Icons.edit, size: 18),
-                                    label: Text(imageToShow == null ? 'Añadir Imagen' : 'Cambiar Imagen'),
+                                    icon: Icon(
+                                      imageToShow == null
+                                          ? Icons.add
+                                          : Icons.edit,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      imageToShow == null
+                                          ? 'Añadir Imagen'
+                                          : 'Cambiar Imagen',
+                                    ),
                                     onPressed: pickImage,
                                   ),
                                 ],
@@ -677,7 +713,8 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                               prefixIcon: Icons.category,
                               initialValue: selectedCategory,
                               items: _allCategories,
-                              itemToString: (CategoryModel categoria) => categoria.name,
+                              itemToString: (CategoryModel categoria) =>
+                                  categoria.name,
                               onChanged: (newValue) {
                                 setStateModal(() {
                                   selectedCategory = newValue!;
@@ -694,12 +731,14 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                     labelText: 'Precio',
                                     prefixIcon: Icons.attach_money,
                                     keyboardType: TextInputType.number,
-                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
                                     onChanged: (_) => refresh(),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                // Solo mostramos Stock Inicial si estamos CREANDO. 
+                                // Solo mostramos Stock Inicial si estamos CREANDO.
                                 // Editar stock suele ser una operación aparte (entrada/salida de inventario).
                                 Expanded(
                                   child: TextFieldApp(
@@ -707,7 +746,9 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                     labelText: 'Stock mínimo',
                                     prefixIcon: Icons.store_mall_directory,
                                     keyboardType: TextInputType.number,
-                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
                                     onChanged: (_) => refresh(),
                                   ),
                                 ),
@@ -752,22 +793,39 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                               backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.primary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             // Validación básica
-                            onPressed: (nameController.text.isEmpty || skuController.text.isEmpty || selectedCategory == null || priceController.text.isEmpty || (!isEditing && minStockController.text.isEmpty) || descriptionController.text.isEmpty)
+                            onPressed:
+                                (nameController.text.isEmpty ||
+                                    skuController.text.isEmpty ||
+                                    selectedCategory == null ||
+                                    priceController.text.isEmpty ||
+                                    (!isEditing &&
+                                        minStockController.text.isEmpty) ||
+                                    descriptionController.text.isEmpty)
                                 ? null
                                 : () async {
                                     Uint8List? imageBytesToSend;
                                     if (kIsWeb) {
                                       imageBytesToSend = selectedImageBytes;
                                     } else if (selectedImageFile != null) {
-                                      imageBytesToSend = await selectedImageFile!.readAsBytes();
+                                      imageBytesToSend =
+                                          await selectedImageFile!
+                                              .readAsBytes();
                                     }
 
                                     if (selectedCategory == null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Selecciona una categoría')),
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Selecciona una categoría',
+                                          ),
+                                        ),
                                       );
                                       return;
                                     }
@@ -775,47 +833,84 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                                     try {
                                       if (isEditing) {
                                         // --- LÓGICA DE ACTUALIZACIÓN ---
-                                        await ref.read(productsProvider.notifier).updateProduct(
-                                          id: productToEdit.id, // Asumiendo que ProductModel tiene un ID
-                                          name: nameController.text,
-                                          sku: skuController.text,
-                                          categoryId: selectedCategory!.id,
-                                          description: descriptionController.text,
-                                          price: double.tryParse(priceController.text) ?? productToEdit.price,
-                                          minStock: int.tryParse(minStockController.text) ?? productToEdit.minStock,
-                                          // Solo enviamos imagen si el usuario seleccionó una nueva.
-                                          // Tu provider debe manejar que si es null, no la borre del backend.
-                                          imageUrl: imageBytesToSend, 
-                                        );
-                                        
+                                        await ref
+                                            .read(productsProvider.notifier)
+                                            .updateProduct(
+                                              id: productToEdit
+                                                  .id, // Asumiendo que ProductModel tiene un ID
+                                              name: nameController.text,
+                                              sku: skuController.text,
+                                              categoryId: selectedCategory!.id,
+                                              description:
+                                                  descriptionController.text,
+                                              price:
+                                                  double.tryParse(
+                                                    priceController.text,
+                                                  ) ??
+                                                  productToEdit.price,
+                                              minStock:
+                                                  int.tryParse(
+                                                    minStockController.text,
+                                                  ) ??
+                                                  productToEdit.minStock,
+                                              // Solo enviamos imagen si el usuario seleccionó una nueva.
+                                              // Tu provider debe manejar que si es null, no la borre del backend.
+                                              imageUrl: imageBytesToSend,
+                                            );
+
                                         if (mounted) {
                                           Navigator.of(modalContext).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Producto actualizado con éxito')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Producto actualizado con éxito',
+                                              ),
+                                            ),
                                           );
                                         }
                                       } else {
                                         // --- LÓGICA DE CREACIÓN (Tu código original) ---
-                                        await ref.read(productsProvider.notifier).createProduct(
-                                          name: nameController.text,
-                                          sku: skuController.text,
-                                          categoryId: selectedCategory!.id,
-                                          description: descriptionController.text,
-                                          price: double.tryParse(priceController.text) ?? 0.0,
-                                          minStock: int.tryParse(minStockController.text) ?? 0,
-                                          imageUrl: imageBytesToSend,
-                                          isPerishable: false,
-                                        );
-                                        
+                                        await ref
+                                            .read(productsProvider.notifier)
+                                            .createProduct(
+                                              name: nameController.text,
+                                              sku: skuController.text,
+                                              categoryId: selectedCategory!.id,
+                                              description:
+                                                  descriptionController.text,
+                                              price:
+                                                  double.tryParse(
+                                                    priceController.text,
+                                                  ) ??
+                                                  0.0,
+                                              minStock:
+                                                  int.tryParse(
+                                                    minStockController.text,
+                                                  ) ??
+                                                  0,
+                                              imageUrl: imageBytesToSend,
+                                              isPerishable: false,
+                                            );
+
                                         if (mounted) {
                                           Navigator.of(modalContext).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Producto creado con éxito')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Producto creado con éxito',
+                                              ),
+                                            ),
                                           );
                                         }
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(content: Text('Error: $e')),
                                       );
                                     }
@@ -823,11 +918,19 @@ class InventoryDatatableScreenState extends ConsumerState<InventoryDatatableScre
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(isEditing ? Icons.save_as : Icons.check, size: 20),
+                                Icon(
+                                  isEditing ? Icons.save_as : Icons.check,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  isEditing ? 'ACTUALIZAR PRODUCTO' : 'GUARDAR PRODUCTO',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                  isEditing
+                                      ? 'ACTUALIZAR PRODUCTO'
+                                      : 'GUARDAR PRODUCTO',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ],
                             ),

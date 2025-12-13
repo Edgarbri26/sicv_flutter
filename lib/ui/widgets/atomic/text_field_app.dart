@@ -20,6 +20,7 @@ class TextFieldApp extends StatelessWidget {
   final bool? readOnly;
   final ValueChanged<String>? onChanged;
   final FocusNode? focusNode;
+  final bool autoFocus;
 
   const TextFieldApp({
     this.onFieldSubmitted,
@@ -40,11 +41,13 @@ class TextFieldApp extends StatelessWidget {
     this.readOnly = false,
     this.onChanged,
     this.focusNode,
+    this.autoFocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      autofocus: autoFocus,
       enabled: enabled,
       controller: controller,
       textInputAction: textInputAction,

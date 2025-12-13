@@ -32,10 +32,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFE0E0E0), 
-                width: 1.0,
-              ),
+              border: Border.all(color: const Color(0xFFE0E0E0), width: 1.0),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -83,7 +80,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD), 
+                      color: const Color(0xFFE3F2FD),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -111,7 +108,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
 
           const SizedBox(height: 24),
 
-          PrimaryButtonApp(
+          ButtonApp(
             text: 'Guardar Preferencias',
             icon: Icons.save,
             maxWidth: 250,
@@ -129,10 +126,10 @@ class _ThemeScreenState extends State<ThemeScreen> {
             },
           ),
           const SizedBox(height: 20),
-          PrimaryButtonApp (
+          ButtonApp(
             text: 'Guardar Configuración',
             icon: Icons.save,
-            onPressed: (){},
+            onPressed: () {},
             isLoading: false,
             maxWidth: 400,
           ),

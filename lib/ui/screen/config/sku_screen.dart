@@ -124,7 +124,7 @@ class _SkuScreenState extends State<SkuScreen> {
 
           const SizedBox(height: 18),
 
-          PrimaryButtonApp(
+          ButtonApp(
             text: 'Guardar cambios',
             icon: Icons.save,
             onPressed: () {

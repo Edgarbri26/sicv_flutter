@@ -112,7 +112,7 @@ class _BackupScreenState extends State<BackupScreen> {
                 : null,
           ),
           const SizedBox(height: 24),
-          PrimaryButtonApp(
+          ButtonApp(
             text: 'Realizar Respaldo Ahora',
             icon: Icons.cloud_upload_outlined,
             onPressed: _iniciarBackup,

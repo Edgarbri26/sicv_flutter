@@ -25,7 +25,6 @@ import 'ui/screen/config/attributes_screen.dart';
 import 'ui/screen/config/backup_screen.dart';
 import 'ui/screen/config/theme_screen.dart';
 import 'ui/screen/config/notifications_screen.dart';
-import 'ui/screen/config/notifications_screen.dart';
 // import 'ui/pages/settings_page.dart';
 import 'package:sicv_flutter/ui/pages/splash/api_check_page.dart';
 import 'core/theme/themes.dart';

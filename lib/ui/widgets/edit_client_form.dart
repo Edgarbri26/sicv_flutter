@@ -8,7 +8,11 @@ import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
 class EditClientForm extends StatefulWidget {
   final ClientModel client; // Usa ClientModel
   final ClientService clientService;
-  const EditClientForm({required this.client, required this.clientService, super.key});
+  const EditClientForm({
+    required this.client,
+    required this.clientService,
+    super.key,
+  });
 
   @override
   EditClientFormState createState() => EditClientFormState();
@@ -176,7 +180,7 @@ class EditClientFormState extends State<EditClientForm> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: PrimaryButtonApp(
+                  child: ButtonApp(
                     text: 'Actualizar',
                     icon: Icons.save,
                     isLoading: _isLoading,

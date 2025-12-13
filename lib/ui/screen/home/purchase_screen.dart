@@ -27,7 +27,7 @@ import 'package:sidebarx/sidebarx.dart';
 
 class PurchaseScreen extends ConsumerStatefulWidget {
   // Si usas Sidebar, necesitas pasar el controller
-  final SidebarXController? controller; 
+  final SidebarXController? controller;
   const PurchaseScreen({super.key, this.controller});
 
   @override
@@ -78,7 +78,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     }
   }
 
-   /// Recalcula el costo total de la orden
+  /// Recalcula el costo total de la orden
   void _updateTotalCost() {
     double total = 0.0;
     for (var item in _purchaseItems) {
@@ -178,7 +178,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
     // Validar formulario interno
     // (Asumiendo que usas un Form widget global o controladores directos)
-    // if (!_formKey.currentState!.validate()) return; 
+    // if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isRegistering = true);
 
@@ -191,27 +191,33 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         final unitCost = double.tryParse(item.costController.text) ?? 0.0;
 
         // Validaciones por Item
-        if (amount <= 0) throw "La cantidad de ${item.product.name} debe ser mayor a 0";
-        if (item.selectedDepot == null) throw "Selecciona depósito para ${item.product.name}";
+        if (amount <= 0)
+          throw "La cantidad de ${item.product.name} debe ser mayor a 0";
+        if (item.selectedDepot == null)
+          throw "Selecciona depósito para ${item.product.name}";
 
         DateTime? expirationDate;
-        
+
         // Lógica Perecederos
         if (item.product.perishable) {
           final dateText = item.expirationDateController?.text ?? '';
-          if (dateText.isEmpty) throw "Falta fecha vencimiento para ${item.product.name}";
-          
+          if (dateText.isEmpty)
+            throw "Falta fecha vencimiento para ${item.product.name}";
+
           expirationDate = DateTime.tryParse(dateText);
-          if (expirationDate == null) throw "Fecha inválida para ${item.product.name}";
+          if (expirationDate == null)
+            throw "Fecha inválida para ${item.product.name}";
         }
 
-        itemsToSend.add(PurchaseItemModel(
-          productId: item.product.id,
-          depotId: item.selectedDepot!.depotId,
-          amount: amount,
-          unitCost: unitCost,
-          expirationDate: expirationDate,
-        ));
+        itemsToSend.add(
+          PurchaseItemModel(
+            productId: item.product.id,
+            depotId: item.selectedDepot!.depotId,
+            amount: amount,
+            unitCost: unitCost,
+            expirationDate: expirationDate,
+          ),
+        );
       }
 
       // 4. CREAR MODELO DE COMPRA
@@ -229,12 +235,15 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compra registrada exitosamente'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Compra registrada exitosamente'),
+          backgroundColor: Colors.green,
+        ),
       );
 
       // 7. LIMPIEZA
       ref.invalidate(productsProvider); // Refresca el stock global de productos
-      
+
       setState(() {
         _purchaseItems.clear();
         _selectedProvider = null;
@@ -242,7 +251,6 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         _totalCost = 0.0;
         _searchController.clear(); // Si tienes un controller de búsqueda
       });
-
     } catch (e) {
       // Captura tanto errores de validación (throw string) como de backend
       if (mounted) {
@@ -387,50 +395,50 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     // ... Tu método build original está bien, solo asegúrate de que
     // use MySideBar si es necesario o lo quite si solo es un modal.
     // Aquí te dejo la estructura base de tu build:
-    
+
     final typePaymentsState = ref.watch(typePaymentProvider);
     final providersState = ref.watch(providersProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
-        
+
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: isWide ? AppBarApp(
-            title: 'Registrar Compra',
-          ) : null,
-          drawer: isWide || widget.controller == null ? null : MySideBar(controller: widget.controller!),
+          appBar: isWide ? AppBarApp(title: 'Registrar Compra') : null,
+          drawer: isWide || widget.controller == null
+              ? null
+              : MySideBar(controller: widget.controller!),
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
               child: Column(
                 children: [
-                   Expanded(
-                     child: SingleChildScrollView(
-                       padding: const EdgeInsets.all(16),
-                       child: Column(
-                         children: [
-                           // Selectores
-                           _buildProviderSelector(providersState),
-                           const SizedBox(height: 16),
-                           _buildTypePaymentSelector(typePaymentsState),
-                           const Divider(height: 32),
-                           
-                           // Lista de Productos
-                           _buildProductList(),
-                         ],
-                       ),
-                     ),
-                   ),
-                   // Footer con total y botón guardar
-                   _buildSummaryAndSave(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // Selectores
+                          _buildProviderSelector(providersState),
+                          const SizedBox(height: 16),
+                          _buildTypePaymentSelector(typePaymentsState),
+                          const Divider(height: 32),
+
+                          // Lista de Productos
+                          _buildProductList(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Footer con total y botón guardar
+                  _buildSummaryAndSave(),
                 ],
               ),
             ),
           ),
         );
-      }
+      },
     );
   }
 
@@ -465,7 +473,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       ),
     );
   }
-  
+
   // Copia aquí tus métodos _buildProductList, _buildSummaryAndSave, etc.
   Widget _buildProductList() {
     if (_purchaseItems.isEmpty) {
@@ -495,7 +503,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     );
   }
 
-    Widget _buildPurchaseItemTile(
+  Widget _buildPurchaseItemTile(
     PurchaseDetail item,
     int index,
     VoidCallback onRemove,
@@ -634,60 +642,58 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
     );
   }
 
-
   Widget _buildSummaryAndSave() {
-      return Card(
-        color: AppColors.secondary,
-        elevation: 0.0,
-        // 2. Define el borde exterior usando 'shape'
-        shape: RoundedRectangleBorder(
-          // Define el radio de las esquinas
-          borderRadius: BorderRadius.circular(8.0),
+    return Card(
+      color: AppColors.secondary,
+      elevation: 0.0,
+      // 2. Define el borde exterior usando 'shape'
+      shape: RoundedRectangleBorder(
+        // Define el radio de las esquinas
+        borderRadius: BorderRadius.circular(8.0),
 
-          // Define el borde (grosor y color)
-          side: BorderSide(
-            color: AppColors.border, // El color del borde
-            width: 3.0, // El grosor del borde
-          ),
+        // Define el borde (grosor y color)
+        side: BorderSide(
+          color: AppColors.border, // El color del borde
+          width: 3.0, // El grosor del borde
         ),
+      ),
 
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TOTAL DE LA ORDEN:',
-                      style: Theme.of(context).textTheme.titleMedium,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'TOTAL DE LA ORDEN:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    '\$${_totalCost.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
                     ),
-                    Text(
-                      '\$${_totalCost.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              PrimaryButtonApp(
-                text: 'Registrar Compra',
-                icon: Icons.save,
-                isLoading: _isRegistering,
-                onPressed: _registerPurchase,
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            ButtonApp(
+              text: 'Registrar Compra',
+              icon: Icons.save,
+              isLoading: _isRegistering,
+              onPressed: _registerPurchase,
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
-      );
-    }
-
+      ),
+    );
+  }
 }

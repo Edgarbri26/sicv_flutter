@@ -153,7 +153,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: PrimaryButtonApp(
+                  child: ButtonApp(
                     text: 'Guardar',
                     icon: Icons.save,
                     onPressed: _guardarUnidad,

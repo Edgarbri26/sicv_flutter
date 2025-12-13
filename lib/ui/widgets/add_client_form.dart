@@ -1,21 +1,22 @@
-// =======================================================================
-// --- WIDGET PARA EL MODAL DE AGREGAR CLIENTE (Sin Email) ---
-// =======================================================================
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart' show AppColors;
 import 'package:sicv_flutter/services/client_service.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart' show PrimaryButtonApp;
-import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart' show TextFieldApp;
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart' show ButtonApp;
+import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'
+    show TextFieldApp;
 
 class AddClientForm extends StatefulWidget {
-  final ClientService clientService;
-  const AddClientForm({required this.clientService, super.key});
+  const AddClientForm({super.key});
 
   @override
   AddClientFormState createState() => AddClientFormState();
 }
 
 class AddClientFormState extends State<AddClientForm> {
+  final ClientService clientService = ClientService();
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Added GlobalKey
   late TextEditingController _ciController;
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
@@ -41,26 +42,19 @@ class AddClientFormState extends State<AddClientForm> {
   }
 
   Future<void> _submitForm() async {
-    if (_ciController.text.isEmpty ||
-        _nameController.text.isEmpty ||
-        _phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, llena todos los campos marcados con *'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    // Standard Type Form validation
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      await widget.clientService.create(
-        ci: _ciController.text,
-        name: _nameController.text,
-        phone: _phoneController.text,
-        address: _addressController.text,
+      await clientService.create(
+        ci: _ciController.text.trim(),
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        address: _addressController.text.trim(),
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -96,101 +90,135 @@ class AddClientFormState extends State<AddClientForm> {
         top: 16,
       ),
       child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+        child: Form(
+          key: _formKey, // Assigned key
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.person_add, color: AppColors.primary, size: 24),
-                SizedBox(width: 8),
-                Text(
-                  'Registrar Nuevo Cliente',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Completa los datos del nuevo cliente',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            TextFieldApp(
-              controller: _ciController,
-              labelText: 'CI / RUC *',
-              prefixIcon: Icons.badge,
-              keyboardType: TextInputType.text,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _nameController,
-              labelText: 'Nombre Completo o Razón Social *',
-              prefixIcon: Icons.person,
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _phoneController,
-              labelText: 'Teléfono *',
-              prefixIcon: Icons.phone,
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextFieldApp(
-              controller: _addressController,
-              labelText: 'Dirección (Opcional)',
-              prefixIcon: Icons.location_on,
-              maxLines: 2,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () => Navigator.of(context).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Icon(Icons.person_add, color: AppColors.primary, size: 24),
+                  SizedBox(width: 8),
+                  Text(
+                    'Registrar Nuevo Cliente',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Completa los datos del nuevo cliente',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              TextFieldApp(
+                autoFocus: true,
+                controller: _ciController,
+                labelText: 'CI *',
+                prefixIcon: Icons.badge,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    // Added trim()
+                    return 'Por favor, ingresa el CI';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFieldApp(
+                controller: _nameController,
+                labelText: 'Nombre Completo o Razón Social *',
+                prefixIcon: Icons.person,
+                textCapitalization: TextCapitalization.words,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    // Added trim()
+                    return 'Por favor, ingresa el nombre';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFieldApp(
+                controller: _phoneController,
+                labelText: 'Teléfono *',
+                prefixIcon: Icons.phone,
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    // Added trim()
+                    return 'Por favor, ingresa el teléfono';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFieldApp(
+                controller: _addressController,
+                labelText: 'Dirección (Opcional)',
+                prefixIcon: Icons.location_on,
+                maxLines: 2,
+                // Validation for address is generally optional or specific, leaving prompt's implementation
+                validator: (value) {
+                  // User had this validation, keeping it but adding trim
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Por favor, ingresa la dirección';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => Navigator.of(context).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        side: const BorderSide(color: AppColors.primary),
                       ),
-                      side: const BorderSide(color: AppColors.primary),
-                    ),
-                    child: const Text(
-                      'Cancelar',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PrimaryButtonApp(
-                    text: 'Guardar',
-                    icon: Icons.save,
-                    isLoading: _isLoading,
-                    onPressed: _submitForm,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ButtonApp(
+                      text: 'Guardar',
+                      icon: Icons.save,
+                      isLoading: _isLoading,
+                      onPressed: _submitForm,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

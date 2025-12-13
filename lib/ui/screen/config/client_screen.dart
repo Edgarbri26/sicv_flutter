@@ -618,7 +618,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext modalContext) {
-        return AddClientForm(clientService: _clientService);
+        return AddClientForm();
       },
     );
 
