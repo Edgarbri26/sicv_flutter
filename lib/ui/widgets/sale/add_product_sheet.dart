@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/models/product/stock_option_model.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
@@ -108,7 +109,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
                           ),
                           Text(
                             "Precio: \$${widget.product.price}",
-                            style: TextStyle(color: Colors.grey[600]),
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -126,13 +127,13 @@ class _AddProductSheetState extends State<AddProductSheet> {
                   loading: () => const Center(child: LinearProgressIndicator()),
                   error: (e, _) => Text(
                     "Error: $e",
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(color: AppColors.error),
                   ),
                   data: (stockList) {
                     if (stockList.isEmpty) {
                       return const Text(
                         "Sin stock disponible",
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(color: AppColors.error),
                       );
                     }
 
@@ -180,7 +181,10 @@ class _AddProductSheetState extends State<AddProductSheet> {
                         if (_selectedDepotId == null && _errorMessage != null)
                           const Text(
                             "Debes seleccionar un depósito",
-                            style: TextStyle(color: Colors.red, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.error,
+                              fontSize: 12,
+                            ),
                           ),
 
                         const SizedBox(height: 20),
@@ -235,7 +239,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
                             // Botón Menos
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: AppColors.border,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: IconButton(
@@ -274,7 +278,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
                             // Botón Más
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: AppColors.border,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: IconButton(
@@ -299,8 +303,8 @@ class _AddProductSheetState extends State<AddProductSheet> {
                               color:
                                   (int.tryParse(_qtyController.text) ?? 0) >
                                       _maxStock
-                                  ? Colors.red
-                                  : Colors.grey[600],
+                                  ? AppColors.error
+                                  : AppColors.textSecondary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -313,12 +317,12 @@ class _AddProductSheetState extends State<AddProductSheet> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.red[50],
+                                color: AppColors.error.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
                                 _errorMessage!,
-                                style: TextStyle(color: Colors.red[800]),
+                                style: TextStyle(color: AppColors.error),
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -332,7 +336,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  Colors.blue[800], // Tu color primario
+                                  AppColors.primary, // Tu color primario
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -405,7 +409,8 @@ class _AddProductSheetState extends State<AddProductSheet> {
                                 productId: widget.product.id,
                                 depotId: _selectedDepotId!,
                                 stockLotId: _selectedLotId,
-                                unitCost: widget.product.price,
+                                unitPriceUsd: widget.product.price,
+                                unitPriceBs: widget.product.priceBs,
                                 amount: amount,
                                 productName: widget.product.name,
 
@@ -419,7 +424,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
                             child: const Text(
                               "AGREGAR AL CARRITO",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.secondary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

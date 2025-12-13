@@ -4,15 +4,17 @@ import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
 
-class SaleDetailModal extends StatelessWidget {
+class BillDetailModal extends StatelessWidget {
   final SaleModel sale;
 
-  const SaleDetailModal({super.key, required this.sale});
+  const BillDetailModal({super.key, required this.sale});
 
   @override
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(symbol: '\$');
-    final date = DateFormatter.format(sale.soldAt); // Usa sale.createdAt si lo tienes
+    final date = DateFormatter.format(
+      sale.soldAt,
+    ); // Usa sale.createdAt si lo tienes
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -105,18 +107,29 @@ class SaleDetailModal extends StatelessWidget {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ), // Idealmente el nombre
-                              Text(
-                                currency.format(item.unitCost),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    currency.format(item.unitPriceUsd),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    currency.format(item.unitPriceBs),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
                         Text(
-                          currency.format(item.amount * item.unitCost),
+                          currency.format(item.amount * item.unitPriceUsd),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],

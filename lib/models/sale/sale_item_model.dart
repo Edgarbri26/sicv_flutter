@@ -12,8 +12,11 @@ class SaleItemModel {
   /// The ID of the depot from which the product was taken.
   final int depotId; // depot_id
 
-  /// The cost per unit of the item at the moment of sale.
-  final double unitCost; // unit_cost
+  /// The cost per unit of the item at the moment of sale $.
+  final double unitPriceUsd; // unit_cost
+
+  /// The cost per unit of the item at the moment of sale Bs.
+  final double unitPriceBs; // unit_cost
 
   /// The quantity of items sold.
   int amount; // amount
@@ -39,7 +42,8 @@ class SaleItemModel {
     this.saleId,
     required this.productId,
     required this.depotId,
-    required this.unitCost,
+    required this.unitPriceUsd,
+    required this.unitPriceBs,
     required this.amount,
     this.status = true, // Por defecto activo al crear
     this.productName,
@@ -56,7 +60,8 @@ class SaleItemModel {
       productId: json['product_id'],
       depotId: json['depot_id'],
       // El backend manda "999.99" (String), así que usamos tryParse para seguridad
-      unitCost: double.tryParse(json['unit_cost'].toString()) ?? 0.0,
+      unitPriceUsd: double.tryParse(json['unit_price_usd'].toString()) ?? 0.0,
+      unitPriceBs: double.tryParse(json['unit_price_bs'].toString()) ?? 0.0,
       amount: json['amount'],
       status: json['status'] ?? true,
       productName: json['product'], // Asumiendo que el backend envía este campo
@@ -72,7 +77,8 @@ class SaleItemModel {
       // Nota: No enviamos 'sale_item_id' ni 'sale_id' porque el backend los genera
       'product_id': productId,
       'depot_id': depotId,
-      'unit_cost': unitCost,
+      'unit_price_usd': unitPriceUsd,
+      'unit_price_bs': unitPriceBs,
       'amount': amount,
       'status': status,
       'stock_lot_id': stockLotId,

@@ -11,10 +11,10 @@ import 'package:sicv_flutter/providers/report/finance_provider.dart';
 import 'package:sicv_flutter/services/purchase_service.dart';
 import 'package:sicv_flutter/services/sale_service.dart';
 import 'package:sicv_flutter/ui/widgets/purchase_detail_modal.dart';
-import 'package:sicv_flutter/ui/widgets/sale_detail_modal.dart';
+import 'package:sicv_flutter/ui/widgets/bill_detail_modal.dart';
 
 // IMPORTAMOS LOS PROVIDERS Y EL WIDGET DE FILTRO
-import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart'; 
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
 
 class FinancesView extends ConsumerStatefulWidget {
   const FinancesView({super.key});
@@ -64,9 +64,9 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                       Text(
                         "Historial",
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1F2937),
-                            ),
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1F2937),
+                        ),
                       ),
                       Text(
                         "Movimientos",
@@ -74,7 +74,7 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                       ),
                     ],
                   ),
-                  
+
                   // WIDGET DE FILTRO DE FECHAS
                   DateFilterSelector(
                     selectedFilter: filterState.period,
@@ -85,8 +85,12 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                           filterState.copyWith(period: newFilter);
                     },
                     onDateRangeChanged: (newRange) {
-                      ref.read(historyFilterProvider.notifier).state =
-                          filterState.copyWith(period: 'custom', customRange: newRange);
+                      ref
+                          .read(historyFilterProvider.notifier)
+                          .state = filterState.copyWith(
+                        period: 'custom',
+                        customRange: newRange,
+                      );
                     },
                   ),
                 ],
@@ -157,15 +161,18 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                     // borderRadius: BorderRadius.circular(12), // <--- ELIMINA ESTA LÍNEA (Causa el conflicto)
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.grey.shade200),
-                        borderRadius: BorderRadius.circular(12)), // Ya estás definiendo el borde aquí
+                      side: BorderSide(color: Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(12),
+                    ), // Ya estás definiendo el borde aquí
                     child: InkWell(
                       onTap: () {
                         setState(() {
                           _isAscending = !_isAscending;
                         });
                       },
-                      borderRadius: BorderRadius.circular(12), // Esto está bien, es para la animación del click
+                      borderRadius: BorderRadius.circular(
+                        12,
+                      ), // Esto está bien, es para la animación del click
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         child: Icon(
@@ -190,10 +197,7 @@ class _FinancesViewState extends ConsumerState<FinancesView>
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: [
-              _buildSalesList(), 
-              _buildPurchasesList()
-            ],
+            children: [_buildSalesList(), _buildPurchasesList()],
           ),
         ),
       ],
@@ -214,8 +218,9 @@ class _FinancesViewState extends ConsumerState<FinancesView>
             const Icon(Icons.error_outline, color: Colors.red, size: 40),
             Text("Error: $err", textAlign: TextAlign.center),
             TextButton(
-                onPressed: () => ref.refresh(salesHistoryProvider),
-                child: const Text("Reintentar"))
+              onPressed: () => ref.refresh(salesHistoryProvider),
+              child: const Text("Reintentar"),
+            ),
           ],
         ),
       ),
@@ -239,7 +244,10 @@ class _FinancesViewState extends ConsumerState<FinancesView>
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
               return GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 400,
                   mainAxisExtent: 100,
@@ -266,7 +274,10 @@ class _FinancesViewState extends ConsumerState<FinancesView>
             } else {
               return ListView.separated(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 itemCount: sortedSales.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
@@ -319,7 +330,10 @@ class _FinancesViewState extends ConsumerState<FinancesView>
           builder: (context, constraints) {
             if (constraints.maxWidth > 600) {
               return GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 400,
                   mainAxisExtent: 100,
@@ -346,7 +360,10 @@ class _FinancesViewState extends ConsumerState<FinancesView>
             } else {
               return ListView.separated(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 itemCount: sortedPurchases.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
@@ -418,8 +435,9 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -428,8 +446,9 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     child: Center(child: Text("Error: ${snapshot.error}")),
                   );
@@ -465,8 +484,9 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -475,15 +495,17 @@ class _FinancesViewState extends ConsumerState<FinancesView>
                   return Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
-                    child:
-                        Center(child: Text("Error al cargar: ${snapshot.error}")),
+                    child: Center(
+                      child: Text("Error al cargar: ${snapshot.error}"),
+                    ),
                   );
                 }
                 if (snapshot.hasData) {
-                  return SaleDetailModal(sale: snapshot.data!);
+                  return BillDetailModal(sale: snapshot.data!);
                 }
                 return const SizedBox();
               },
@@ -593,7 +615,8 @@ class _TransactionCard extends StatelessWidget {
                       "${isIncome ? '+' : '-'}${currencyBs.format(amountBs)}",
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 13, // Ligeramente más pequeño para el secundario
+                        fontSize:
+                            13, // Ligeramente más pequeño para el secundario
                         color: color.withOpacity(0.8),
                       ),
                     ),

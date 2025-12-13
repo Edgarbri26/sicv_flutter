@@ -14,6 +14,7 @@ class DropDownApp<ItemType> extends StatelessWidget {
 
   final String labelText;
   final String? hintText;
+  final String? Function(ItemType? item)? validator;
   final IconData? prefixIcon;
 
   const DropDownApp({
@@ -26,6 +27,7 @@ class DropDownApp<ItemType> extends StatelessWidget {
     this.focusNode,
     this.prefixIcon,
     this.hintText,
+    this.validator,
   });
 
   @override
@@ -85,6 +87,7 @@ class DropDownApp<ItemType> extends StatelessWidget {
       }).toList(),
 
       onChanged: onChanged,
+      validator: validator,
     );
   }
 }

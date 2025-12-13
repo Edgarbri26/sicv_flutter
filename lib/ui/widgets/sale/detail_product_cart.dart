@@ -59,7 +59,7 @@ class DetailProductCart extends StatelessWidget {
                         color: AppColors.info,
                       ),
                       InfoChip(
-                        text: '\$${item.unitCost.toStringAsFixed(2)}',
+                        text: '\$${item.unitPriceUsd.toStringAsFixed(2)}',
                         color: AppColors.info,
                       ),
                     ],
@@ -70,7 +70,9 @@ class DetailProductCart extends StatelessWidget {
             Row(
               spacing: 0,
               children: [
-                Text('\$${(item.unitCost * item.amount).toStringAsFixed(2)}'),
+                Text(
+                  '\$${(item.unitPriceUsd * item.amount).toStringAsFixed(2)}',
+                ),
                 IconButton(
                   onPressed: onDelete,
                   icon: Icon(Icons.delete),

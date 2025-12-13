@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
 
@@ -11,11 +12,11 @@ class ProductDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     // Cálculos visuales para el stock
     final bool isLowStock = product.totalStock <= product.minStock;
-    final Color stockColor = isLowStock ? Colors.red : Colors.green;
+    final Color stockColor = isLowStock ? AppColors.danger : AppColors.success;
 
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.secondary,
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       // Limitamos la altura máxima al 85% de la pantalla para que no tape todo
@@ -37,7 +38,7 @@ class ProductDetailSheet extends StatelessWidget {
                 width: 50,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -71,7 +72,7 @@ class ProductDetailSheet extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade800,
+                        color: AppColors.edit,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: const [
                           BoxShadow(
@@ -86,14 +87,14 @@ class ProductDetailSheet extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.access_time_filled,
-                            color: Colors.white,
+                            color: AppColors.secondary,
                             size: 14,
                           ),
                           SizedBox(width: 4),
                           Text(
                             "Perecedero",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.secondary,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -122,10 +123,10 @@ class ProductDetailSheet extends StatelessWidget {
                         labelStyle: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF2563EB), // Un azul bonito
+                          color: AppColors.info, // Un azul bonito
                         ),
-                        backgroundColor: const Color(
-                          0xFFEFF6FF,
+                        backgroundColor: AppColors.info.withOpacity(
+                          0.1,
                         ), // Azul muy claro
                         side: BorderSide.none,
                         shape: const StadiumBorder(),
@@ -135,7 +136,7 @@ class ProductDetailSheet extends StatelessWidget {
                       Text(
                         "SKU: ${product.sku ?? 'N/A'}",
                         style: TextStyle(
-                          color: Colors.grey[400],
+                          color: AppColors.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -160,7 +161,7 @@ class ProductDetailSheet extends StatelessWidget {
                   Text(
                     product.description,
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                       fontSize: 15,
                       height: 1.4,
                     ),
@@ -173,9 +174,9 @@ class ProductDetailSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: AppColors.background,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -187,7 +188,7 @@ class ProductDetailSheet extends StatelessWidget {
                             Text(
                               "PRECIO UNITARIO",
                               style: TextStyle(
-                                color: Colors.grey[500],
+                                color: AppColors.textSecondary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -201,7 +202,7 @@ class ProductDetailSheet extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 26,
                                     fontWeight: FontWeight.w900,
-                                    color: Color(0xFF059669),
+                                    color: AppColors.success,
                                   ), // Verde esmeralda
                                 ),
                                 const Padding(
@@ -211,7 +212,7 @@ class ProductDetailSheet extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF059669),
+                                      color: AppColors.success,
                                     ),
                                   ),
                                 ),
@@ -222,7 +223,7 @@ class ProductDetailSheet extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[500],
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -232,7 +233,7 @@ class ProductDetailSheet extends StatelessWidget {
                         Container(
                           width: 1,
                           height: 50,
-                          color: Colors.grey[300],
+                          color: AppColors.border,
                         ),
 
                         // Stock
@@ -242,7 +243,7 @@ class ProductDetailSheet extends StatelessWidget {
                             Text(
                               "DISPONIBILIDAD",
                               style: TextStyle(
-                                color: Colors.grey[500],
+                                color: AppColors.textSecondary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -290,8 +291,8 @@ class ProductDetailSheet extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1F2937),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.secondary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
