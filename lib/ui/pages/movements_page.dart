@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart';
@@ -159,7 +158,6 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
 
   // Vista Tabla (Escritorio)
   Widget _buildDataTable(List<dynamic> movements) {
-    final dateFormat = DateFormat('dd/MM/yy HH:mm');
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Container(

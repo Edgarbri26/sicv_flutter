@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/core/theme/app_colors.dart'; // Tu tema
 import 'package:sicv_flutter/providers/notificacion_provider.dart';
-import 'package:intl/intl.dart'; // Sugerencia: Agrega intl a pubspec para fechas bonitas
 
 class NotificationPage extends ConsumerWidget {
   const NotificationPage({super.key});

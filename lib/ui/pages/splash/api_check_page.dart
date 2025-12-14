@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:sicv_flutter/services/category_service.dart';
 import 'package:sicv_flutter/services/remote_config_service.dart';
 import 'package:sicv_flutter/services/test_service.dart';
 import 'package:sicv_flutter/ui/pages/config/api_config_page.dart';
