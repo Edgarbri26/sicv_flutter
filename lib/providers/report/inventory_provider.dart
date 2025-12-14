@@ -27,8 +27,19 @@ class ProductMetric {
 class StockAlert {
   final String name;
   final int quantity;
-  final String level;
+  final String level; // "bajo", "crítico", "agotado"
+
   StockAlert(this.name, this.quantity, this.level);
+
+  // Fábrica para convertir el JSON del backend a este objeto
+  factory StockAlert.fromJson(Map<String, dynamic> json) {
+    return StockAlert(
+      json['name'] ?? 'Producto Desconocido',
+      // Convertimos a int de forma segura (a veces el backend manda strings numéricos)
+      int.tryParse(json['quantity'].toString()) ?? 0,
+      json['level'] ?? 'Normal',
+    );
+  }
 }
 
 class InventoryState {
@@ -85,26 +96,22 @@ class InventoryState {
 class InventoryReportNotifier extends StateNotifier<InventoryState> {
   final ReportService _service = ReportService();
   
-  // Estado del Filtro Interno
   String _currentFilter = 'month';
   DateTimeRange? _currentDateRange;
 
-  // Getters para que la UI sepa qué mostrar en el DateFilterSelector
   String get currentFilter => _currentFilter;
   DateTimeRange? get currentDateRange => _currentDateRange;
 
   InventoryReportNotifier() : super(InventoryState()) {
-    loadData(); // Cargar al inicio
-  }
-
-  // 1. Cambiar Filtro Rápido (Hoy, Semana...)
-  void setFilter(String filter) {
-    _currentFilter = filter;
-    _currentDateRange = null; // Limpiar rango custom
     loadData();
   }
 
-  // 2. Cambiar Rango Personalizado
+  void setFilter(String filter) {
+    _currentFilter = filter;
+    _currentDateRange = null;
+    loadData();
+  }
+
   void setDateRange(DateTimeRange range) {
     _currentFilter = 'custom';
     _currentDateRange = range;
@@ -112,27 +119,30 @@ class InventoryReportNotifier extends StateNotifier<InventoryState> {
   }
 
   Future<void> loadData() async {
-    // 1. Marcamos cargando
     state = state.copyWith(isLoading: true);
 
     try {
-      // 2. Ejecutamos peticiones en paralelo pasando las fechas
+      // Agregamos la llamada _service.getLowStockAlerts() al final de la lista
       final results = await Future.wait([
-        _service.getInventoryEfficiency(_currentFilter, start: _currentDateRange?.start, end: _currentDateRange?.end),
-        _service.getInventoryValue(), // Asumo snapshot global
-        _service.getTotalItems(),     // Asumo snapshot global
-        _service.getInventoryByCategory(), // Asumo snapshot global
-        _service.getTopSellingProducts(_currentFilter, start: _currentDateRange?.start, end: _currentDateRange?.end),
+        _service.getInventoryEfficiency(_currentFilter, start: _currentDateRange?.start, end: _currentDateRange?.end), // Index 0
+        _service.getInventoryValue(), // Index 1
+        _service.getTotalItems(),     // Index 2
+        _service.getInventoryByCategory(), // Index 3
+        _service.getTopSellingProducts(_currentFilter, start: _currentDateRange?.start, end: _currentDateRange?.end), // Index 4
+        _service.getLowStockAlerts(), // Index 5 <--- ¡NUEVO!
       ]);
 
-      // 3. Procesamos resultados
+      // --- Procesamiento de Resultados ---
       final efficiencyData = results[0] as List<InventoryEfficiencyPoint>;
       final inventoryValue = results[1] as double;
       final totalItems = results[2] as int;
       final categoryRawData = results[3] as List<Map<String, dynamic>>;
       final topProductsRawData = results[4] as List<Map<String, dynamic>>;
+      
+      // Obtenemos la lista real del backend
+      final lowStockList = results[5] as List<StockAlert>; 
 
-      // 4. Mapeo de Categorías
+      // Mapeo de Categorías (Tu lógica de colores)
       Color parseColor(String hexString) {
         final buffer = StringBuffer();
         if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
@@ -148,7 +158,7 @@ class InventoryReportNotifier extends StateNotifier<InventoryState> {
         );
       }).toList();
 
-      // 5. Mapeo de Top Productos
+      // Mapeo de Top Productos
       final topProducts = topProductsRawData.map((item) {
         return ProductMetric(
           item['name'] as String,
@@ -159,7 +169,7 @@ class InventoryReportNotifier extends StateNotifier<InventoryState> {
 
       final currencyFormat = NumberFormat("#,##0.00", "en_US");
 
-      // 6. Actualizamos el estado
+      // Actualizamos el estado con DATOS REALES
       state = InventoryState(
         isLoading: false,
         efficiencyData: efficiencyData,
@@ -167,18 +177,15 @@ class InventoryReportNotifier extends StateNotifier<InventoryState> {
         totalItems: totalItems,
         categoryDistribution: categoryDistribution,
         topProducts: topProducts,
-        // Mocks
-        lowStockAlerts: 5,
-        monthlyTurnover: "18%",
-        lowStockItems: [
-          StockAlert("Adaptador HDMI", 2, "Crítico"),
-          StockAlert("Funda iPhone 13", 4, "Bajo"),
-        ],
+        monthlyTurnover: "18%", // Este sigue mockeado por ahora
+        
+        // ¡Aquí conectamos las alertas reales!
+        lowStockAlerts: lowStockList.length, 
+        lowStockItems: lowStockList,
       );
 
     } catch (e) {
       debugPrint("Error loading inventory report: $e");
-      // Podrías manejar un estado de error aquí
       state = state.copyWith(isLoading: false);
     }
   }

@@ -8,6 +8,7 @@ import 'package:sicv_flutter/models/report/report_spots.dart';
 import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 import 'package:sicv_flutter/models/sale/sale_summary_model.dart';
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
+import 'package:sicv_flutter/providers/report/inventory_provider.dart' show StockAlert;
 
 class ReportService {
   final String _baseUrl = ApiUrl().url; // <-- ¡Cambia esto!
@@ -476,6 +477,34 @@ class ReportService {
     } catch (e) {
       debugPrint('Error en ReportService.getSupplierAnalysis: $e');
       throw Exception('Fallo la conexión o el procesamiento de datos.');
+    }
+  }
+
+  Future<List<StockAlert>> getLowStockAlerts() async {
+    final uri = Uri.parse('$_baseUrl/report/low_stock_alerts');
+    
+    try {
+      final response = await _client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+            json.decode(response.body) as Map<String, dynamic>;
+        
+        // Asumimos que la respuesta es { "success": true, "data": [...] }
+        final List<dynamic> data = responseData['data'] as List<dynamic>;
+
+        return data.map((json) => StockAlert.fromJson(json)).toList();
+      } else {
+        throw Exception('Error al cargar alertas de stock (Código: ${response.statusCode})');
+      }
+    } catch (e) {
+      debugPrint("Error en getLowStockAlerts: $e");
+      // Retornamos lista vacía en error para no romper toda la pantalla, 
+      // pero podrías lanzar la excepción si prefieres.
+      return []; 
     }
   }
 }
