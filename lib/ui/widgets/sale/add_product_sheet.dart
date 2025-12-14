@@ -82,15 +82,11 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
       next.whenData((stockList) {
         final uniqueDepots = {for (var e in stockList) e.depotId: e.depotName};
         
-        // CASO 1: Auto-selección inicial (Tu lógica original)
         if (uniqueDepots.length == 1 && _selectedDepotId == null) {
           _selectedDepotId = uniqueDepots.keys.first;
           _updateMaxStock(stockList);
         } 
-        // CASO 2 (EL ARREGLO): Ya hay un depósito seleccionado, pero la data se actualizó (Refresco)
         else if (_selectedDepotId != null) {
-          // Recalculamos _maxStock usando la NUEVA lista (stockList) 
-          // pero manteniendo el depósito que el usuario (o el auto-select) ya eligió.
           _updateMaxStock(stockList);
         }
       });
@@ -155,16 +151,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                 final uniqueDepots = {
                   for (var e in stockList) e.depotId: e.depotName,
                 };
-
-                // Si se carga la data por primera vez y solo hay 1 deposito,
-                // el ref.listen lo manejará, pero también podemos hacerlo aquí
-                // si _selectedDepotId es null.
-                // Sin embargo, hacerlo en build directamnete es inseguro (setState en build).
-                // Confiamos en ref.listen o usamos addPostFrameCallback si fuera necesario.
-                // PERO: ref.watch a veces retorna data inmediatamente si ya está cacheados.
-                // En ese caso ref.listen no se dispara si "previous" es igual a "next" o si es la primera carga?
-                // ref.listen se dispara en cambio. Si ya tenía valor, puede que no dispare ahora.
-                // Como precaución, podemos programar el seteo inicial:
+                
                 if (uniqueDepots.length == 1 && _selectedDepotId == null) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted && _selectedDepotId == null) {

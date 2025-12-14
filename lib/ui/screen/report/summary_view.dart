@@ -174,9 +174,7 @@
                 ),
               ],
             ),
-          ),/*
-          const SizedBox(height: 20),
-          ChartContainer(title: "Top Productos", child: _PieChartWidget()),*/
+          ),
         ],
       );
     }
@@ -201,52 +199,7 @@
               ),
             ),
           ),
-          /*const SizedBox(width: 20),
-          Expanded(
-            flex: 1,
-            child: ChartContainer(
-              title: "Top Productos",
-              height: 450,
-              child: _PieChartWidget(),
-            ),
-          ),*/
         ],
-      );
-    }
-  }
-
-  class _PieChartWidget extends StatelessWidget {
-    @override
-    Widget build(BuildContext context) {
-      return PieChart(
-        PieChartData(
-          sections: [
-            PieChartSectionData(
-              value: 40,
-              color: Colors.blueAccent,
-              radius: 50,
-              title: '40%',
-            ),
-            PieChartSectionData(
-              value: 30,
-              color: Colors.orangeAccent,
-              radius: 50,
-              title: '30%',
-            ),
-            PieChartSectionData(
-              value: 15,
-              color: Colors.purpleAccent,
-              radius: 50,
-              title: '15%',
-            ),
-            PieChartSectionData(
-              value: 15,
-              color: Colors.grey[400],
-              radius: 50,
-              title: '15%',
-            ),
-          ],
-        ),
       );
     }
   }

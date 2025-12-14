@@ -190,7 +190,7 @@ class SlowStockNotifierService {
 
   void _startProviderPolling() {
     // Inmediatamente pedimos datos frescos
-    ref.refresh(productsProvider);
+    final _ = ref.refresh(productsProvider);
 
     // Repite cada 60 segundos
     _scheduleNextRefresh();
