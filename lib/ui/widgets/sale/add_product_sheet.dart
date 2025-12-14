@@ -216,7 +216,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                     // --- 2. SELECCIÓN DE LOTE (Solo si es perecedero) ---
                     if (widget.product.perishable) ...[
                       DropdownButtonFormField<int>(
-                        value: _selectedLotId,
+                        initialValue: _selectedLotId,
                         decoration: const InputDecoration(
                           labelText: "Fecha de Vencimiento / Lote",
                           border: OutlineInputBorder(),
@@ -424,8 +424,6 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                             tempExpirationInfo = lotItem.displayLabel;
                             // O si prefieres solo la fecha: item.expiration
                           }
-                          // ---------------------------------------------
-
                           final newItem = SaleItemModel(
                             productId: widget.product.id,
                             depotId: _selectedDepotId!,

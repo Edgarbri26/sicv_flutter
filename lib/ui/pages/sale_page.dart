@@ -144,6 +144,7 @@ class _SalePageState extends ConsumerState<SalePage> {
         unitPriceUsd: item.unitPriceUsd,
         unitPriceBs: item.unitPriceBs,
         depotId: item.depotId,
+        stockLotId: item.stockLotId,
       );
     }).toList();
 
