@@ -8,9 +8,10 @@ import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
 // 2. IMPORTA TU PROVIDER (Donde están InventoryState, ProductMetric, etc.)
 import 'package:sicv_flutter/providers/report/inventory_provider.dart';
-import 'package:sicv_flutter/ui/widgets/kpi_card.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
 import 'package:sicv_flutter/ui/widgets/report/app_pie_chart.dart';
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
 
 class InventoryReportView extends ConsumerWidget {
   const InventoryReportView({super.key});
@@ -19,12 +20,41 @@ class InventoryReportView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 1. ESCUCHAMOS EL ESTADO (Datos + Loading)
     final state = ref.watch(inventoryReportProvider);
-    
+
     // 2. LEEMOS EL NOTIFIER (Para ejecutar acciones de filtro)
     final notifier = ref.read(inventoryReportProvider.notifier);
 
+    // final kpis = [
+    //   KpiData(
+    //     "Valor Inventario",
+    //     "\$${state.totalInventoryValue}",
+    //     Icons.monetization_on_outlined,
+    //     Colors.teal,
+    //   ),
+    //   KpiData(
+    //     "Total Items",
+    //     "${state.totalItems}",
+    //     Icons.inventory_2_outlined,
+    //     Colors.blue,
+    //   ),
+    //   KpiData(
+    //     "Alertas Stock",
+    //     "${state.lowStockItems.length}",
+    //     Icons.warning_amber_rounded,
+    //     Colors.red,
+    //   ),
+    //   KpiData(
+    //     "Mejor Producto",
+    //     state.topProducts.first.name,
+    //     Icons.star_border_outlined,
+    //     Colors.orange,
+    //   ),
+    // ];
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6), // AppColors.background
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // AppColors.background
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.blue))
           : SingleChildScrollView(
@@ -34,7 +64,7 @@ class InventoryReportView extends ConsumerWidget {
                 children: [
                   // --- HEADER CON EL NUEVO SELECTOR ---
                   _buildHeader(context, notifier),
-                  
+
                   const SizedBox(height: 32),
 
                   // Grid de KPIs
@@ -56,14 +86,30 @@ class InventoryReportView extends ConsumerWidget {
                             spacing: 12,
                             runSpacing: 8,
                             children: [
-                              _buildLegendItem(Colors.green, "Líderes", "Alta Venta / Alta Ganancia"),
-                              _buildLegendItem(Colors.blue, "Alta Rotación", "Alta Venta / Baja Ganancia"),
-                              _buildLegendItem(Colors.orange, "Alto Margen", "Baja Venta / Alta Ganancia"),
-                              _buildLegendItem(Colors.red, "Bajo Desempeño", "Baja Venta / Baja Ganancia"),
+                              _buildLegendItem(
+                                Colors.green,
+                                "Líderes",
+                                "Alta Venta / Alta Ganancia",
+                              ),
+                              _buildLegendItem(
+                                Colors.blue,
+                                "Alta Rotación",
+                                "Alta Venta / Baja Ganancia",
+                              ),
+                              _buildLegendItem(
+                                Colors.orange,
+                                "Alto Margen",
+                                "Baja Venta / Alta Ganancia",
+                              ),
+                              _buildLegendItem(
+                                Colors.red,
+                                "Bajo Desempeño",
+                                "Baja Venta / Baja Ganancia",
+                              ),
                             ],
                           ),
                         ),
-                        
+
                         // Scatter Chart
                         SizedBox(
                           height: 350,
@@ -110,9 +156,9 @@ class InventoryReportView extends ConsumerWidget {
             Text(
               "Reporte de Inventario",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.headlineSmall?.color,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -121,7 +167,7 @@ class InventoryReportView extends ConsumerWidget {
             ),
           ],
         ),
-        
+
         // --- AQUÍ USAMOS EL WIDGET REUTILIZABLE ---
         DateFilterSelector(
           selectedFilter: notifier.currentFilter,
@@ -155,9 +201,9 @@ class InventoryReportView extends ConsumerWidget {
         Colors.red,
       ),
       KpiData(
-        "Rotación Mes",
-        data.monthlyTurnover,
-        Icons.sync_alt,
+        "Mejor Producto",
+        data.topProducts.first.name,
+        Icons.star_border,
         Colors.orange,
       ),
     ];
@@ -285,7 +331,10 @@ class _TopProductsList extends StatelessWidget {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text("Sin ventas en este periodo.", style: TextStyle(color: Colors.grey)),
+          child: Text(
+            "Sin ventas en este periodo.",
+            style: TextStyle(color: Colors.grey),
+          ),
         ),
       );
     }
@@ -304,9 +353,18 @@ class _TopProductsList extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(prod.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    child: Text(
+                      prod.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
-                  Text("${prod.soldCount} Unds.", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(
+                    "${prod.soldCount} Unds.",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -317,7 +375,11 @@ class _TopProductsList extends StatelessWidget {
                   minHeight: 8,
                   backgroundColor: Colors.grey[100],
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    index == 0 ? const Color(0xFF6366F1) : Colors.blue.withOpacity((0.8 - (index * 0.05)).clamp(0.2, 1.0)),
+                    index == 0
+                        ? const Color(0xFF6366F1)
+                        : Colors.blue.withOpacity(
+                            (0.8 - (index * 0.05)).clamp(0.2, 1.0),
+                          ),
                   ),
                 ),
               ),
@@ -547,13 +609,13 @@ class ChartContainer extends StatelessWidget {
       width: width,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: isAlert
-                ? Colors.red.withOpacity(0.05)
-                : Colors.grey.withOpacity(0.05),
+                ? Colors.red.withValues(alpha: 0.05)
+                : Theme.of(context).shadowColor.withValues(alpha: 0.05),
             spreadRadius: 2,
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -562,7 +624,7 @@ class ChartContainer extends StatelessWidget {
         border: Border.all(
           color: isAlert
               ? Colors.red.withOpacity(0.2)
-              : Colors.grey.withOpacity(0.15),
+              : Theme.of(context).dividerColor,
         ),
       ),
       child: Column(
@@ -728,4 +790,3 @@ class _LowStockList extends StatelessWidget {
     );
   }
 }
-

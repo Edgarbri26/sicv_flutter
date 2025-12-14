@@ -256,13 +256,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           setState(() => _notificationsEnabled = value),
                       icon: Icons.notifications,
                     ),
-                    /*_buildConfigTile(
+                    _buildConfigTile(
                       context: context,
                       title: 'Interfaz y Tema',
                       subtitle: 'Modo claro/oscuro, idioma',
                       icon: Icons.palette,
                       routeName: AppRoutes.theme,
-                    ),*/
+                    ),
                     const SizedBox(height: 30), // Padding final
                   ],
                 ),
