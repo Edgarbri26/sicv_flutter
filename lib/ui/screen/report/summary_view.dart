@@ -174,9 +174,9 @@
                 ),
               ],
             ),
-          ),
+          ),/*
           const SizedBox(height: 20),
-          ChartContainer(title: "Top Productos", child: _PieChartWidget()),
+          ChartContainer(title: "Top Productos", child: _PieChartWidget()),*/
         ],
       );
     }
@@ -201,7 +201,7 @@
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          /*const SizedBox(width: 20),
           Expanded(
             flex: 1,
             child: ChartContainer(
@@ -209,7 +209,7 @@
               height: 450,
               child: _PieChartWidget(),
             ),
-          ),
+          ),*/
         ],
       );
     }
