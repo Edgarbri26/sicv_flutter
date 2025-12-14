@@ -78,15 +78,20 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // Escuchamos cambios en el provider para auto-seleccionar si solo hay 1 depósito
     ref.listen(productStockDetailProvider(widget.product.id), (previous, next) {
       next.whenData((stockList) {
         final uniqueDepots = {for (var e in stockList) e.depotId: e.depotName};
-        // Si solo hay un depósito y no está seleccionado, selecciónalo automáticamente
+        
+        // CASO 1: Auto-selección inicial (Tu lógica original)
         if (uniqueDepots.length == 1 && _selectedDepotId == null) {
           _selectedDepotId = uniqueDepots.keys.first;
           _updateMaxStock(stockList);
-          // Nota: _updateMaxStock ya llama a setState, lo cual es seguro en este callback
+        } 
+        // CASO 2 (EL ARREGLO): Ya hay un depósito seleccionado, pero la data se actualizó (Refresco)
+        else if (_selectedDepotId != null) {
+          // Recalculamos _maxStock usando la NUEVA lista (stockList) 
+          // pero manteniendo el depósito que el usuario (o el auto-select) ya eligió.
+          _updateMaxStock(stockList);
         }
       });
     });

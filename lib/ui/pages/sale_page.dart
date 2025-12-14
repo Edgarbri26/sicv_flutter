@@ -180,7 +180,12 @@ class _SalePageState extends ConsumerState<SalePage> {
 
         ref.invalidate(productsProvider);
 
+        for (var item in _itemsForSale) {
+          ref.invalidate(productStockDetailProvider(item.productId));
+        }
+
         setState(() {
+          
           _itemsForSale.clear();
           selectedClient = null;
           _selectedTypePayment = null;

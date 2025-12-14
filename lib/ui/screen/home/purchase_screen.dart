@@ -191,22 +191,27 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         final unitCost = double.tryParse(item.costController.text) ?? 0.0;
 
         // Validaciones por Item
-        if (amount <= 0)
+        if (amount <= 0) {
           throw "La cantidad de ${item.product.name} debe ser mayor a 0";
-        if (item.selectedDepot == null)
+        }
+        if (item.selectedDepot == null) {
           throw "Selecciona depósito para ${item.product.name}";
+        }
 
         DateTime? expirationDate;
 
         // Lógica Perecederos
         if (item.product.perishable) {
+
           final dateText = item.expirationDateController?.text ?? '';
-          if (dateText.isEmpty)
+          if (dateText.isEmpty) {
             throw "Falta fecha vencimiento para ${item.product.name}";
+          }
 
           expirationDate = DateTime.tryParse(dateText);
-          if (expirationDate == null)
+          if (expirationDate == null) {
             throw "Fecha inválida para ${item.product.name}";
+          }
         }
 
         itemsToSend.add(
@@ -243,6 +248,9 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
       // 7. LIMPIEZA
       ref.invalidate(productsProvider); // Refresca el stock global de productos
+      for (var item in _purchaseItems) {
+          ref.invalidate(productStockDetailProvider(item.product.id));
+        }
 
       setState(() {
         _purchaseItems.clear();
