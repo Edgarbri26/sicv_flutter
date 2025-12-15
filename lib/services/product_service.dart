@@ -21,7 +21,9 @@ class ProductService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
+        print( responseBody);
         final List<dynamic> jsonList = responseBody['data'];
+        print( jsonList);
 
         return jsonList.map((json) => ProductModel.fromJson(json)).toList();
       } else {
@@ -46,6 +48,7 @@ class ProductService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = json.decode(response.body);
         final Map<String, dynamic> productJson = responseBody['data'];
+        print(productJson);
 
         return ProductModel.fromJson(productJson);
       } else {
