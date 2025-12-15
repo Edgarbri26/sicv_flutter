@@ -39,10 +39,12 @@ class TransactionCard extends StatelessWidget {
         // Use Theme.of(context).cardColor for background
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          // Use theme divider color or generic border
-          color: Theme.of(context).dividerColor,
-        ),
+        // border: Border.all(
+        //   width: 3,
+        //   // Use theme divider color or generic border
+        //   style: BorderStyle.solid,
+        //   color: Theme.of(context).dividerColor,
+        // ),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).shadowColor.withValues(alpha: 0.03),

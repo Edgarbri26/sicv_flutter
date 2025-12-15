@@ -5,6 +5,7 @@ import 'dart:math';
 
 // 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
+import 'package:sicv_flutter/ui/widgets/report/chart_container.dart';
 
 // 2. IMPORTA EL WIDGET DE FILTRO (Ajusta la ruta si corregiste "rerport" a "report")
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
@@ -174,7 +175,7 @@ class ClientReportView extends ConsumerWidget {
               flex: 2,
               child: SizedBox(
                 height: 400, // Altura fija para ambos
-                child: _ChartContainer(
+                child: ChartContainer(
                   title: "Top 5 Clientes (Valor Monetario)",
                   child: Expanded(
                     child: data.topClients.isEmpty
@@ -189,7 +190,7 @@ class ClientReportView extends ConsumerWidget {
               flex: 1,
               child: SizedBox(
                 height: 400, // Altura fija para ambos
-                child: _ChartContainer(
+                child: ChartContainer(
                   title: "Actividad Reciente",
                   child: data.clientList.isEmpty
                       ? const Center(
@@ -213,7 +214,7 @@ class ClientReportView extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         // GRÁFICO DE CORRELACIÓN F-M
-        _ChartContainer(
+        ChartContainer(
           title: "Matriz Frecuencia vs. Valor",
           // Subtítulo limpio enfocado en la estrategia
           subtitle: "Segmentación de clientes por comportamiento de compra",
@@ -281,7 +282,7 @@ class ClientReportView extends ConsumerWidget {
   Widget _buildMobileLayout(BuildContext context, ClientReportState data) {
     return Column(
       children: [
-        _ChartContainer(
+        ChartContainer(
           title: "Top 5 Clientes",
           child: AspectRatio(
             aspectRatio: 1.3,
@@ -292,7 +293,7 @@ class ClientReportView extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         // GRÁFICO DE CORRELACIÓN EN MÓVIL
-        _ChartContainer(
+        ChartContainer(
           title: "Matriz Frecuencia vs. Valor",
           // Subtítulo limpio enfocado en la estrategia
           subtitle: "Segmentación de clientes por comportamiento de compra",
@@ -347,7 +348,7 @@ class ClientReportView extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 24),
-        _ChartContainer(
+        ChartContainer(
           title: "Actividad Reciente",
           child: data.clientList.isEmpty
               ? const Center(
@@ -369,53 +370,6 @@ class ClientReportView extends ConsumerWidget {
 // ==========================================
 // 4. WIDGETS AUXILIARES
 // ==========================================
-
-class _ChartContainer extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final Widget child;
-  const _ChartContainer({
-    required this.title,
-    required this.child,
-    this.subtitle,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.05),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-            ),
-          ],
-          const SizedBox(height: 24),
-          child,
-        ],
-      ),
-    );
-  }
-}
 
 class _TopClientsChart extends StatelessWidget {
   final List<ClientChartData> data;

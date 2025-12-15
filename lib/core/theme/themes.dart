@@ -6,18 +6,30 @@ import 'app_text_styles.dart';
 class Themes {
   Themes._();
 
-  // Tema por defecto
+  // ---------------------------------------------------------------------------
+  // TEMA CLARO (LIGHT)
+  // ---------------------------------------------------------------------------
   static ThemeData defaultTheme = ThemeData(
+    useMaterial3: true,
     primaryColor: AppColors.primary,
-    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-    scaffoldBackgroundColor: AppColors.secondary,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      // Forzamos el fondo blanco en superficies para evitar tintes rosados de Material 3
+      surface: AppColors.secondary,
+    ),
+
+    // 1. CAMBIO CLAVE: Fondo Gris Azulado (#F1F5F9)
+    scaffoldBackgroundColor: AppColors.background,
 
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.primary,
       foregroundColor: AppColors.secondary,
       elevation: 0,
       centerTitle: true,
-      titleTextStyle: AppTextStyles.headlineLarge,
+      titleTextStyle: AppTextStyles.headlineLarge.copyWith(
+        color: AppColors.secondary,
+      ),
+      iconTheme: const IconThemeData(color: AppColors.secondary),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -25,31 +37,40 @@ class Themes {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.secondary,
         minimumSize: Size(double.infinity, AppSizes.buttonHeight),
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.borderRadiusM),
         ),
-        // 3. AJUSTE: 'AppTextStyles.bodyMedium' tampoco es 'const'
         textStyle: AppTextStyles.bodyMedium,
       ),
     ),
 
-    // 3. AJUSTE: Se quitó 'const'
+    // Inputs: Fondo blanco sobre el fondo gris de la pantalla
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.secondary,
+      fillColor: AppColors.secondary, // Blanco
       border: OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(AppSizes.borderRadiusM)),
-        borderSide: BorderSide(color: AppColors.border),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppSizes.borderRadiusM)),
+        borderSide: const BorderSide(
+          color: AppColors.border,
+        ), // Borde gris suave
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppSizes.borderRadiusM)),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       contentPadding: EdgeInsets.symmetric(
         vertical: AppSizes.spacingS,
         horizontal: AppSizes.spacingM,
       ),
-      hintStyle: AppTextStyles.bodySmall, // <-- 'final', no 'const'
-      labelStyle: AppTextStyles.bodyMedium, // <-- 'final', no 'const'
+      hintStyle: AppTextStyles.bodySmall,
+      labelStyle: AppTextStyles.bodyMedium,
     ),
 
-    // 3. AJUSTE: Se quitó 'const'
     textTheme: TextTheme(
       displayMedium: AppTextStyles.displayMedium,
       displaySmall: AppTextStyles.displaySmall,
@@ -60,16 +81,23 @@ class Themes {
       bodySmall: AppTextStyles.bodySmall,
       labelSmall: AppTextStyles.labelSmall,
     ),
+
+    dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1),
   );
 
-  // Tema Oscuro
+  // ---------------------------------------------------------------------------
+  // TEMA OSCURO (DARK)
+  // ---------------------------------------------------------------------------
   static ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
     primaryColor: AppColors.primary,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
       surface: AppColors.surfaceDark,
     ),
+
+    // Fondo oscuro (#111827)
     scaffoldBackgroundColor: AppColors.backgroundDark,
 
     appBarTheme: AppBarTheme(
@@ -97,7 +125,7 @@ class Themes {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.secondaryDark,
+      fillColor: AppColors.secondaryDark, // Gris oscuro
       border: OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(AppSizes.borderRadiusM)),
         borderSide: const BorderSide(color: AppColors.borderDark),
@@ -105,6 +133,10 @@ class Themes {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(AppSizes.borderRadiusM)),
         borderSide: const BorderSide(color: AppColors.borderDark),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppSizes.borderRadiusM)),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       contentPadding: EdgeInsets.symmetric(
         vertical: AppSizes.spacingS,
@@ -146,7 +178,9 @@ class Themes {
     ),
 
     iconTheme: const IconThemeData(color: AppColors.textPrimaryDark),
-    dividerColor: AppColors.borderDark,
-    cardColor: AppColors.surfaceDark,
+    dividerTheme: const DividerThemeData(
+      color: AppColors.borderDark,
+      thickness: 1,
+    ),
   );
 }

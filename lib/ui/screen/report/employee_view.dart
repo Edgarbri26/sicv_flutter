@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/employee_provider.dart';
+import 'package:sicv_flutter/ui/widgets/report/chart_container.dart';
 
 // 2. EL BENDITO IMPORT SOLICITADO (Asegúrate de que la carpeta sea 'rerport' o corrige a 'report')
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
@@ -25,19 +27,20 @@ class EmployeeReportView extends ConsumerWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: employeeStateAsync.when(
         // ESTADO: CARGANDO
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.blue)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         // ESTADO: ERROR
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 48),
               const SizedBox(height: 16),
               Text(
                 'Error al cargar reporte de personal:\n$err',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               TextButton.icon(
@@ -140,7 +143,7 @@ class EmployeeReportView extends ConsumerWidget {
         "Empleados Activos",
         "${data.activeEmployees}",
         Icons.people_alt_outlined,
-        Colors.blue,
+        AppColors.info,
       ),
       KpiData(
         "Mejor Desempeño",
@@ -152,7 +155,7 @@ class EmployeeReportView extends ConsumerWidget {
         "Ganancia Total",
         "\$${data.totalProfit}",
         Icons.attach_money,
-        Colors.green,
+        AppColors.success,
       ),
       KpiData(
         "Promedio Ganancia",
@@ -176,7 +179,7 @@ class EmployeeReportView extends ConsumerWidget {
             // Gráfico de Barras
             Expanded(
               flex: 1,
-              child: _ChartContainer(
+              child: ChartContainer(
                 title: "Ventas por Empleado",
                 subtitle: "Cantidad de ventas realizadas",
                 child: AspectRatio(
@@ -185,7 +188,7 @@ class EmployeeReportView extends ConsumerWidget {
                       ? const Center(
                           child: Text(
                             "Sin datos de ventas",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                         )
                       : _EmployeeBarChart(data: data.chartData),
@@ -196,7 +199,7 @@ class EmployeeReportView extends ConsumerWidget {
             // Gráfico de Correlación
             Expanded(
               flex: 1,
-              child: _ChartContainer(
+              child: ChartContainer(
                 title: "Análisis de Desempeño: Cantidad vs Ganancia",
                 subtitle:
                     "Relación entre el esfuerzo de venta y el retorno financiero",
@@ -210,19 +213,19 @@ class EmployeeReportView extends ConsumerWidget {
                         children: [
                           _buildGuideItem(
                             Icons.attach_money,
-                            Colors.green,
+                            AppColors.success,
                             "Eje Vertical",
                             "Rentabilidad",
                           ),
                           _buildGuideItem(
                             Icons.shopping_cart,
-                            Colors.blue,
+                            AppColors.info,
                             "Eje Horizontal",
                             "Volumen",
                           ),
                           _buildGuideItem(
                             Icons.trending_up,
-                            Colors.orange,
+                            AppColors.edit,
                             "Objetivo",
                             "Sup. Derecha",
                           ),
@@ -235,7 +238,9 @@ class EmployeeReportView extends ConsumerWidget {
                           ? const Center(
                               child: Text(
                                 "Sin datos de correlación",
-                                style: TextStyle(color: Colors.grey),
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             )
                           : _CorrelationChart(data: data.correlationData),
@@ -248,7 +253,7 @@ class EmployeeReportView extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         // Lista de Empleados
-        _ChartContainer(
+        ChartContainer(
           title: "Detalle de Equipo",
           subtitle: "Estado y ganancias generadas",
           child: data.employees.isEmpty
@@ -257,7 +262,7 @@ class EmployeeReportView extends ConsumerWidget {
                     padding: EdgeInsets.all(20),
                     child: Text(
                       "No hay empleados con ventas",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 )
@@ -270,7 +275,7 @@ class EmployeeReportView extends ConsumerWidget {
   Widget _buildMobileLayout(BuildContext context, EmployeeReportState data) {
     return Column(
       children: [
-        _ChartContainer(
+        ChartContainer(
           title: "Correlación: Cantidad vs Ganancia",
           subtitle: "Rendimiento individual",
           child: AspectRatio(
@@ -279,14 +284,14 @@ class EmployeeReportView extends ConsumerWidget {
                 ? const Center(
                     child: Text(
                       "Sin datos",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   )
                 : _CorrelationChart(data: data.correlationData),
           ),
         ),
         const SizedBox(height: 24),
-        _ChartContainer(
+        ChartContainer(
           title: "Ventas por Empleado",
           subtitle: "Cantidad total",
           child: AspectRatio(
@@ -295,14 +300,14 @@ class EmployeeReportView extends ConsumerWidget {
                 ? const Center(
                     child: Text(
                       "Sin datos",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   )
                 : _EmployeeBarChart(data: data.chartData),
           ),
         ),
         const SizedBox(height: 24),
-        _ChartContainer(
+        ChartContainer(
           title: "Detalle de Equipo",
           subtitle: "Estado actual",
           child: data.employees.isEmpty
@@ -311,61 +316,13 @@ class EmployeeReportView extends ConsumerWidget {
                     padding: EdgeInsets.all(20),
                     child: Text(
                       "No hay empleados con ventas",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 )
               : _EmployeeList(employees: data.employees),
         ),
       ],
-    );
-  }
-}
-
-// --- 4. WIDGETS AUXILIARES (Mantenidos tal cual) ---
-
-class _ChartContainer extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Widget child;
-  const _ChartContainer({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.05),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-          ),
-          const SizedBox(height: 24),
-          child,
-        ],
-      ),
     );
   }
 }
@@ -388,13 +345,13 @@ class _EmployeeBarChart extends StatelessWidget {
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => Colors.blueGrey,
+            getTooltipColor: (group) => AppColors.primary,
             tooltipBorderRadius: BorderRadius.circular(8),
             getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                 BarTooltipItem(
                   rod.toY.toInt().toString(),
                   const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.secondary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -436,8 +393,10 @@ class _EmployeeBarChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: maxY / 5,
-          getDrawingHorizontalLine: (val) =>
-              FlLine(color: Colors.grey.withValues(alpha: 0.1), strokeWidth: 1),
+          getDrawingHorizontalLine: (val) => FlLine(
+            color: AppColors.border.withValues(alpha: 0.1),
+            strokeWidth: 1,
+          ),
         ),
         borderData: FlBorderData(show: false),
         barGroups: data
@@ -471,7 +430,7 @@ Widget _buildGuideItem(IconData icon, Color color, String label, String value) {
         label,
         style: const TextStyle(
           fontSize: 10,
-          color: Colors.grey,
+          color: AppColors.textSecondary,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -508,9 +467,9 @@ class _CorrelationChart extends StatelessWidget {
           drawVerticalLine: true,
           drawHorizontalLine: true,
           getDrawingHorizontalLine: (val) =>
-              FlLine(color: Colors.grey.withValues(alpha: 0.1)),
+              FlLine(color: AppColors.border.withValues(alpha: 0.1)),
           getDrawingVerticalLine: (val) =>
-              FlLine(color: Colors.grey.withValues(alpha: 0.1)),
+              FlLine(color: AppColors.border.withValues(alpha: 0.1)),
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
@@ -525,7 +484,10 @@ class _CorrelationChart extends StatelessWidget {
                 val >= 1000
                     ? "${(val / 1000).toStringAsFixed(0)}k"
                     : "${val.toInt()}",
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ),
@@ -538,7 +500,10 @@ class _CorrelationChart extends StatelessWidget {
               showTitles: true,
               getTitlesWidget: (val, meta) => Text(
                 "${val.toInt()}",
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ),
@@ -551,7 +516,7 @@ class _CorrelationChart extends StatelessWidget {
         ),
         borderData: FlBorderData(
           show: true,
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          border: Border.all(color: AppColors.border.withValues(alpha: 0.2)),
         ),
         scatterSpots: data.map((point) {
           return ScatterSpot(
@@ -567,7 +532,7 @@ class _CorrelationChart extends StatelessWidget {
         scatterTouchData: ScatterTouchData(
           enabled: true,
           touchTooltipData: ScatterTouchTooltipData(
-            getTooltipColor: (spot) => Colors.blueGrey,
+            getTooltipColor: (spot) => AppColors.primary,
             getTooltipItems: (ScatterSpot spot) {
               try {
                 final employee = data.firstWhere(
@@ -578,14 +543,14 @@ class _CorrelationChart extends StatelessWidget {
                     "Desconocido",
                     0,
                     0,
-                    Colors.grey,
+                    AppColors.disabled,
                   ),
                 );
                 return XAxisTooltipItem(
                   text:
                       "${employee.name}\nVentas: ${spot.x.toInt()}\nGanancia: \$${spot.y.toStringAsFixed(0)}",
                   textStyle: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.secondary,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -624,12 +589,12 @@ class _EmployeeList extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.blue.shade50,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                 radius: 20,
                 child: Text(
                   emp.name.isNotEmpty ? emp.name.substring(0, 1) : "?",
                   style: const TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -648,7 +613,10 @@ class _EmployeeList extends StatelessWidget {
                     ),
                     Text(
                       emp.role,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -668,8 +636,8 @@ class _EmployeeList extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: emp.status == "Activo"
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.orange.withValues(alpha: 0.1),
+                          ? AppColors.success.withValues(alpha: 0.1)
+                          : AppColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -677,8 +645,8 @@ class _EmployeeList extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         color: emp.status == "Activo"
-                            ? Colors.green
-                            : Colors.orange,
+                            ? AppColors.success
+                            : AppColors.warning,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
