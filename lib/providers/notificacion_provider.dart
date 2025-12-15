@@ -51,5 +51,5 @@ final notificationProvider =
 // ----------------------------------------------------------------
 final unreadCountProvider = Provider<int>((ref) {
   // Este provider observa el Notifier y solo redibuja el badge si el número de no leídas cambia.
-  return ref.watch(notificationProvider.notifier).unreadCount;
+  return ref.watch(notificationProvider).where((n) => !n.isRead).length;
 });

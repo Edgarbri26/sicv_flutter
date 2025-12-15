@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/client_report_provider.dart';
 
 // 2. IMPORTA EL WIDGET DE FILTRO (Ajusta la ruta si corregiste "rerport" a "report")
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
 
 // --- WIDGET PRINCIPAL ---
 
@@ -19,12 +20,12 @@ class ClientReportView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Escuchamos el estado de datos
     final clientStateAsync = ref.watch(clientReportProvider);
-    
+
     // Escuchamos el estado del FILTRO (FilterState)
     final filterState = ref.watch(clientFilterProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: clientStateAsync.when(
         // ESTADO: CARGANDO
         loading: () =>
@@ -59,7 +60,7 @@ class ClientReportView extends ConsumerWidget {
               // Header actualizado con el Selector de Fechas
               _buildHeader(context, ref, filterState),
               const SizedBox(height: 32),
-              
+
               // Grid de KPIs
               _buildKpiGrid(context, data),
               const SizedBox(height: 24),
@@ -97,7 +98,7 @@ class ClientReportView extends ConsumerWidget {
               "Reporte de Clientes",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
+                color: Theme.of(context).textTheme.headlineSmall?.color,
               ),
             ),
             const SizedBox(height: 4),
@@ -107,22 +108,22 @@ class ClientReportView extends ConsumerWidget {
             ),
           ],
         ),
-        
+
         // USO DEL WIDGET DateFilterSelector
         DateFilterSelector(
           selectedFilter: filterState.period,
           selectedDateRange: filterState.customRange,
-          
+
           // Caso 1: Cambio de filtro rápido (week, month, year)
           onFilterChanged: (newFilter) {
-            ref.read(clientFilterProvider.notifier).state =
-                filterState.copyWith(period: newFilter);
+            ref.read(clientFilterProvider.notifier).state = filterState
+                .copyWith(period: newFilter);
           },
-          
+
           // Caso 2: Selección de rango personalizado
           onDateRangeChanged: (newRange) {
-            ref.read(clientFilterProvider.notifier).state =
-                filterState.copyWith(period: 'custom', customRange: newRange);
+            ref.read(clientFilterProvider.notifier).state = filterState
+                .copyWith(period: 'custom', customRange: newRange);
           },
         ),
       ],
@@ -132,25 +133,25 @@ class ClientReportView extends ConsumerWidget {
   // --- Grid de KPIs (CON DATOS REALES) ---
   Widget _buildKpiGrid(BuildContext context, ClientReportState data) {
     final kpis = [
-      _KpiInfo(
+      KpiData(
         "Total Clientes",
-        data.totalClients,
+        "${data.totalClients}",
         Icons.groups_outlined,
         Colors.blue,
       ),
-      _KpiInfo(
+      KpiData(
         "Ingreso Total",
         "\$${data.totalRevenue}",
         Icons.attach_money,
         Colors.green,
       ),
-      _KpiInfo(
+      KpiData(
         "Valor Órden Prom.",
         "\$${data.avgOrderValue}",
         Icons.trending_up,
         Colors.orange,
       ),
-      _KpiInfo(
+      KpiData(
         "Cliente Top",
         data.topClientName,
         Icons.star_border,
@@ -158,23 +159,7 @@ class ClientReportView extends ConsumerWidget {
       ),
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
-        return GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 2.0,
-          ),
-          itemCount: kpis.length,
-          itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
-        );
-      },
-    );
+    return KpiGrid(kpis: kpis);
   }
 
   // --- LAYOUTS ---
@@ -432,60 +417,6 @@ class _ChartContainer extends StatelessWidget {
   }
 }
 
-class _KpiInfo {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  _KpiInfo(this.title, this.value, this.icon, this.color);
-}
-
-class _KpiCard extends StatelessWidget {
-  final _KpiInfo info;
-  const _KpiCard({required this.info});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: info.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(info.icon, color: info.color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                info.value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                info.title,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _TopClientsChart extends StatelessWidget {
   final List<ClientChartData> data;
   const _TopClientsChart({required this.data});
@@ -535,9 +466,15 @@ class _TopClientsChart extends StatelessWidget {
               },
             ),
           ),
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         borderData: FlBorderData(show: false),
         gridData: FlGridData(show: false),

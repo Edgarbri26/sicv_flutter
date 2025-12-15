@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/employee_provider.dart';
 
 // 2. EL BENDITO IMPORT SOLICITADO (Asegúrate de que la carpeta sea 'rerport' o corrige a 'report')
-import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart'; 
+import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
 
 class EmployeeReportView extends ConsumerWidget {
   const EmployeeReportView({super.key});
@@ -16,12 +17,12 @@ class EmployeeReportView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Escuchamos el estado del provider de datos
     final employeeStateAsync = ref.watch(employeeReportProvider);
-    
+
     // Escuchamos el estado del FILTRO (Ahora es FilterState, no String)
     final filterState = ref.watch(employeeFilterProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: employeeStateAsync.when(
         // ESTADO: CARGANDO
         loading: () =>
@@ -95,13 +96,16 @@ class EmployeeReportView extends ConsumerWidget {
               "Reporte de Personal",
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
+                color: Theme.of(context).textTheme.headlineSmall?.color,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               "Desempeño, comisiones y actividad reciente",
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -115,15 +119,15 @@ class EmployeeReportView extends ConsumerWidget {
           // 2. Caso: Usuario cambia el filtro (week, month, year, custom)
           onFilterChanged: (newFilter) {
             // Actualizamos el estado copiando el anterior y cambiando el periodo
-            ref.read(employeeFilterProvider.notifier).state =
-                filterState.copyWith(period: newFilter);
+            ref.read(employeeFilterProvider.notifier).state = filterState
+                .copyWith(period: newFilter);
           },
 
           // 3. Caso: Usuario selecciona fechas en el calendario
           onDateRangeChanged: (newRange) {
             // Forzamos periodo 'custom' y guardamos el rango
-            ref.read(employeeFilterProvider.notifier).state =
-                filterState.copyWith(period: 'custom', customRange: newRange);
+            ref.read(employeeFilterProvider.notifier).state = filterState
+                .copyWith(period: 'custom', customRange: newRange);
           },
         ),
       ],
@@ -132,25 +136,25 @@ class EmployeeReportView extends ConsumerWidget {
 
   Widget _buildKpiGrid(BuildContext context, EmployeeReportState data) {
     final kpis = [
-      _KpiInfo(
+      KpiData(
         "Empleados Activos",
         "${data.activeEmployees}",
         Icons.people_alt_outlined,
         Colors.blue,
       ),
-      _KpiInfo(
+      KpiData(
         "Mejor Desempeño",
         data.topPerformer,
         Icons.star_border,
         Colors.amber,
       ),
-      _KpiInfo(
+      KpiData(
         "Ganancia Total",
         "\$${data.totalProfit}",
         Icons.attach_money,
         Colors.green,
       ),
-      _KpiInfo(
+      KpiData(
         "Promedio Ganancia",
         "\$${data.avgProfit}",
         Icons.bar_chart,
@@ -158,25 +162,7 @@ class EmployeeReportView extends ConsumerWidget {
       ),
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
-        double ratio = constraints.maxWidth < 600 ? 1.5 : 2.2;
-
-        return GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: ratio,
-          ),
-          itemCount: kpis.length,
-          itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
-        );
-      },
-    );
+    return KpiGrid(kpis: kpis);
   }
 
   // --- LAYOUTS ---
@@ -212,7 +198,8 @@ class EmployeeReportView extends ConsumerWidget {
               flex: 1,
               child: _ChartContainer(
                 title: "Análisis de Desempeño: Cantidad vs Ganancia",
-                subtitle: "Relación entre el esfuerzo de venta y el retorno financiero",
+                subtitle:
+                    "Relación entre el esfuerzo de venta y el retorno financiero",
                 child: Column(
                   children: [
                     // --- GUÍA DE INTERPRETACIÓN ---
@@ -221,9 +208,24 @@ class EmployeeReportView extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildGuideItem(Icons.attach_money, Colors.green, "Eje Vertical", "Rentabilidad"),
-                          _buildGuideItem(Icons.shopping_cart, Colors.blue, "Eje Horizontal", "Volumen"),
-                          _buildGuideItem(Icons.trending_up, Colors.orange, "Objetivo", "Sup. Derecha"),
+                          _buildGuideItem(
+                            Icons.attach_money,
+                            Colors.green,
+                            "Eje Vertical",
+                            "Rentabilidad",
+                          ),
+                          _buildGuideItem(
+                            Icons.shopping_cart,
+                            Colors.blue,
+                            "Eje Horizontal",
+                            "Volumen",
+                          ),
+                          _buildGuideItem(
+                            Icons.trending_up,
+                            Colors.orange,
+                            "Objetivo",
+                            "Sup. Derecha",
+                          ),
                         ],
                       ),
                     ),
@@ -346,7 +348,7 @@ class _ChartContainer extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,61 +364,6 @@ class _ChartContainer extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           child,
-        ],
-      ),
-    );
-  }
-}
-
-class _KpiInfo {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  _KpiInfo(this.title, this.value, this.icon, this.color);
-}
-
-class _KpiCard extends StatelessWidget {
-  final _KpiInfo info;
-  const _KpiCard({required this.info});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: info.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(info.icon, color: info.color, size: 20),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                info.value,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                info.title,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -475,9 +422,15 @@ class _EmployeeBarChart extends StatelessWidget {
               },
             ),
           ),
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         gridData: FlGridData(
           show: true,
@@ -663,7 +616,7 @@ class _EmployeeList extends StatelessWidget {
       shrinkWrap: true,
       itemCount: employees.length,
       separatorBuilder: (c, i) =>
-          Divider(color: Colors.grey.withValues(alpha: 0.1)),
+          Divider(color: Theme.of(context).dividerColor),
       itemBuilder: (context, index) {
         final emp = employees[index];
         return Padding(

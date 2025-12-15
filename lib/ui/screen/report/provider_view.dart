@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
-import 'package:sicv_flutter/providers/report/inventory_provider.dart' show AppPieChartData;
+import 'package:sicv_flutter/providers/report/inventory_provider.dart'
+    show AppPieChartData;
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
 
 // Importamos el provider y el widget de filtro
 import 'package:sicv_flutter/providers/report/supplier_provider.dart';
 
 import '../../widgets/report/app_pie_chart.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
+import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
 
 class SupplierReportView extends ConsumerWidget {
   const SupplierReportView({super.key});
@@ -20,7 +22,7 @@ class SupplierReportView extends ConsumerWidget {
     final filterState = ref.watch(supplierFilterProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: supplierStateAsync.when(
         // CARGANDO
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -35,7 +37,7 @@ class SupplierReportView extends ConsumerWidget {
               TextButton(
                 onPressed: () => ref.refresh(supplierReportProvider),
                 child: const Text("Reintentar"),
-              )
+              ),
             ],
           ),
         ),
@@ -71,7 +73,11 @@ class SupplierReportView extends ConsumerWidget {
   }
 
   // --- Header Actualizado con DateFilterSelector ---
-  Widget _buildHeader(BuildContext context, WidgetRef ref, FilterState filterState) {
+  Widget _buildHeader(
+    BuildContext context,
+    WidgetRef ref,
+    FilterState filterState,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -80,30 +86,29 @@ class SupplierReportView extends ConsumerWidget {
           children: [
             Text(
               "Análisis de Proveedores",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               "Volumen de compras y distribución de gastos",
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),
-        
+
         // WIDGET DE FILTRO DE FECHAS
         DateFilterSelector(
           selectedFilter: filterState.period,
           selectedDateRange: filterState.customRange,
           onFilterChanged: (newFilter) {
-            ref.read(supplierFilterProvider.notifier).state =
-                filterState.copyWith(period: newFilter);
+            ref.read(supplierFilterProvider.notifier).state = filterState
+                .copyWith(period: newFilter);
           },
           onDateRangeChanged: (newRange) {
-            ref.read(supplierFilterProvider.notifier).state =
-                filterState.copyWith(period: 'custom', customRange: newRange);
+            ref.read(supplierFilterProvider.notifier).state = filterState
+                .copyWith(period: 'custom', customRange: newRange);
           },
         ),
       ],
@@ -112,25 +117,25 @@ class SupplierReportView extends ConsumerWidget {
 
   Widget _buildKpiGrid(BuildContext context, SupplierReportState data) {
     final kpis = [
-      _KpiInfo(
+      KpiData(
         "Gasto Total",
         "\$${data.totalSpentGlobal}",
         Icons.attach_money,
         Colors.green,
       ),
-      _KpiInfo(
+      KpiData(
         "Compras Realizadas",
         "${data.totalTransactions}",
         Icons.shopping_bag_outlined,
         Colors.blue,
       ),
-      _KpiInfo(
+      KpiData(
         "Proveedores Activos",
         "${data.totalSuppliers}",
         Icons.storefront,
         Colors.indigo,
       ),
-      _KpiInfo(
+      KpiData(
         "Top Proveedor",
         data.topSupplierName,
         Icons.emoji_events_outlined,
@@ -138,23 +143,7 @@ class SupplierReportView extends ConsumerWidget {
       ),
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        int crossAxisCount = constraints.maxWidth < 600 ? 2 : 4;
-        return GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 2.0,
-          ),
-          itemCount: kpis.length,
-          itemBuilder: (context, index) => _KpiCard(info: kpis[index]),
-        );
-      },
-    );
+    return KpiGrid(kpis: kpis);
   }
 
   Widget _buildDesktopLayout(BuildContext context, SupplierReportState data) {
@@ -176,7 +165,9 @@ class SupplierReportView extends ConsumerWidget {
                             flex: 3,
                             child: SizedBox(
                               height: 250,
-                              child: AppPieChart(data: data.spendingDistribution),
+                              child: AppPieChart(
+                                data: data.spendingDistribution,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 20),
@@ -253,11 +244,11 @@ class _ChartContainer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.05),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
             spreadRadius: 2,
             blurRadius: 10,
           ),
@@ -272,71 +263,10 @@ class _ChartContainer extends StatelessWidget {
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-            ),
+            Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
           ],
           const SizedBox(height: 24),
           child,
-        ],
-      ),
-    );
-  }
-}
-
-class _KpiInfo {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  _KpiInfo(this.title, this.value, this.icon, this.color);
-}
-
-class _KpiCard extends StatelessWidget {
-  final _KpiInfo info;
-  const _KpiCard({required this.info});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: info.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(info.icon, color: info.color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  info.value,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  info.title,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -368,14 +298,18 @@ class _CostLegend extends StatelessWidget {
               Expanded(
                 child: Text(
                   item.name,
-                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontSize: 13),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Text(
                 "${item.value.toStringAsFixed(0)}%",
                 style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -408,7 +342,11 @@ class _SupplierList extends StatelessWidget {
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.business, size: 20, color: Colors.blue.shade700),
+              child: Icon(
+                Icons.business,
+                size: 20,
+                color: Colors.blue.shade700,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -433,15 +371,17 @@ class _SupplierList extends StatelessWidget {
                             minHeight: 6,
                             backgroundColor: Colors.grey[100],
                             valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blue.shade400),
+                              Colors.blue.shade400,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         "${item.purchaseCount} compras",
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade500),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(fontSize: 11),
                       ),
                     ],
                   ),
@@ -454,15 +394,17 @@ class _SupplierList extends StatelessWidget {
               children: [
                 Text(
                   currency.format(item.totalSpent),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
                 Text(
                   "Total",
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 11),
                 ),
               ],
             ),

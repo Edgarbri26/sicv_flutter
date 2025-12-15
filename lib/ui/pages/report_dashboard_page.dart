@@ -1,6 +1,5 @@
 // lib/pages/report_dashboard_page.dart
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
@@ -100,7 +99,7 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
       builder: (context, constraints) {
         bool isWide = constraints.maxWidth > AppSizes.breakpoint;
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: !isWide
               ? AppBarApp(
                   title: 'Dashboard de Reportes',

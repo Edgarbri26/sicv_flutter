@@ -1,18 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
+import 'package:sicv_flutter/providers/theme_provider.dart';
 
-class ThemeScreen extends StatefulWidget {
+class ThemeScreen extends ConsumerStatefulWidget {
   const ThemeScreen({super.key});
 
   @override
-  _ThemeScreenState createState() => _ThemeScreenState();
+  ConsumerState<ThemeScreen> createState() => _ThemeScreenState();
 }
 
-class _ThemeScreenState extends State<ThemeScreen> {
+class _ThemeScreenState extends ConsumerState<ThemeScreen> {
   String _theme = 'sistema';
   String _language = 'es';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize state after build frame to access provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentMode = ref.read(themeProvider);
+      setState(() {
+        _theme = _modeToString(currentMode);
+      });
+    });
+  }
+
+  String _modeToString(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.dark:
+        return 'oscuro';
+      case ThemeMode.light:
+        return 'claro';
+      default:
+        return 'sistema';
+    }
+  }
+
+  ThemeMode _stringToMode(String s) {
+    switch (s) {
+      case 'oscuro':
+        return ThemeMode.dark;
+      case 'claro':
+        return ThemeMode.light;
+      default:
+        return ThemeMode.system;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +66,12 @@ class _ThemeScreenState extends State<ThemeScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE0E0E0), width: 1.0),
+              border: Border.all(
+                color: Theme.of(context).dividerColor,
+                width: 1.0,
+              ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -58,7 +97,14 @@ class _ThemeScreenState extends State<ThemeScreen> {
                       }
                     },
                     onChanged: (value) {
-                      if (value != null) setState(() => _theme = value);
+                      if (value != null) {
+                        setState(() => _theme = value);
+                        // Optional: Apply immediately or wait for save?
+                        // Applying immediately gives better feedback
+                        ref
+                            .read(themeProvider.notifier)
+                            .setTheme(_stringToMode(value));
+                      }
                     },
                   ),
 
@@ -80,7 +126,9 @@ class _ThemeScreenState extends State<ThemeScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -113,6 +161,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
             icon: Icons.save,
             maxWidth: 250,
             onPressed: () {
+              ref.read(themeProvider.notifier).setTheme(_stringToMode(_theme));
               debugPrint('Guardar tema=$_theme, language=$_language');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

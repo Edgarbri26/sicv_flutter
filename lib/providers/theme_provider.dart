@@ -1,34 +1,46 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/legacy.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-//   final notifier = ThemeNotifier();
-//   notifier.loadTheme();
-//   return notifier;
-// });
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(
+  ThemeNotifier.new,
+);
 
-// class ThemeNotifier extends StateNotifier<ThemeMode> {
-//   static const _themeKey = 'theme_mode';
+class ThemeNotifier extends Notifier<ThemeMode> {
+  static const _themeKey = 'theme_mode';
 
-//   ThemeNotifier() : super(ThemeMode.system);
+  @override
+  ThemeMode build() {
+    _loadTheme();
+    return ThemeMode.system;
+  }
 
-//   Future<void> loadTheme() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     // if (!mounted) return; // Removed as it causes issues and is less critical here
-//     final themeString = prefs.getString(_themeKey);
-//     if (themeString == 'dark') {
-//       state = ThemeMode.dark;
-//     } else if (themeString == 'light') {
-//       state = ThemeMode.light;
-//     } else {
-//       state = ThemeMode.system;
-//     }
-//   }
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeString = prefs.getString(_themeKey);
+    if (themeString == 'dark') {
+      state = ThemeMode.dark;
+    } else if (themeString == 'light') {
+      state = ThemeMode.light;
+    } else {
+      state = ThemeMode.system;
+    }
+  }
 
-//   Future<void> toggleTheme(bool isDark) async {
-//     state = isDark ? ThemeMode.dark : ThemeMode.light;
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.setString(_themeKey, isDark ? 'dark' : 'light');
-//   }
-// }
+  Future<void> setTheme(ThemeMode mode) async {
+    state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    String themeString;
+    switch (mode) {
+      case ThemeMode.dark:
+        themeString = 'dark';
+        break;
+      case ThemeMode.light:
+        themeString = 'light';
+        break;
+      default:
+        themeString = 'system';
+    }
+    await prefs.setString(_themeKey, themeString);
+  }
+}

@@ -14,13 +14,13 @@ final summaryReportProvider = ChangeNotifierProvider<SummaryReportProvider>((
 class SummaryReportProvider extends ChangeNotifier {
   // --- ESTADO ---
   bool _isLoading = false;
-  String _selectedFilter = 'week'; 
-  
+  String _selectedFilter = 'week';
+
   // 1. NUEVO: Variable para guardar el rango de fechas personalizado
   DateTimeRange? _selectedDateRange;
 
   List<FlSpot> _salesData = [];
-  List<FlSpot> _purchasesData = []; 
+  List<FlSpot> _purchasesData = [];
   List<String> _labels = [];
   double _totalSales = 0;
   double _totalPurchases = 0;
@@ -39,20 +39,20 @@ class SummaryReportProvider extends ChangeNotifier {
   // --- GETTERS ---
   bool get isLoading => _isLoading;
   String get selectedFilter => _selectedFilter;
-  
+
   // Getter para el Rango de Fechas
   DateTimeRange? get selectedDateRange => _selectedDateRange;
 
   String get selectedFilterLabel =>
       _filterLabels[_selectedFilter] ?? _selectedFilter;
-      
+
   List<String> get filterOptions => _filterOptions;
   List<FlSpot> get salesData => _salesData;
   List<FlSpot> get purchasesData => _purchasesData;
   List<String> get labels => _labels;
-  double get totalSales => _totalSales;
-  double get totalPurchases => _totalPurchases;
-  double get totalProfit => _totalProfit;
+  double get totalSales => double.parse(_totalSales.toStringAsFixed(2));
+  double get totalPurchases => double.parse(_totalPurchases.toStringAsFixed(2));
+  double get totalProfit => double.parse(_totalProfit.toStringAsFixed(2));
 
   final ReportService _reportService = ReportService();
 
@@ -86,14 +86,16 @@ class SummaryReportProvider extends ChangeNotifier {
         end: _selectedDateRange?.end,
       );
 
-      // (Nota: Si tu backend soporta filtrado por fechas en estos endpoints también, 
+      // (Nota: Si tu backend soporta filtrado por fechas en estos endpoints también,
       // deberías actualizarlos, por ahora asumo que traen totales generales)
       final totalSales = await _reportService.getTotalSales();
       final totalPurchases = await _reportService.getTotalPurchases();
 
       _labels = reportSpots.labels;
       _salesData = reportSpots.spots
-          .map((spot) => FlSpot(spot.x, spot.y)) // Asegúrate que spot.x sea double
+          .map(
+            (spot) => FlSpot(spot.x, spot.y),
+          ) // Asegúrate que spot.x sea double
           .toList();
 
       _totalSales = totalSales;
