@@ -58,7 +58,7 @@ class _PurchasePageState extends State<PurchasePage> {
               // Llama al modal de búsqueda dentro del contenido
               _contentKey.currentState?.showProductSearchModal();
             },
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             icon: Icon(
               Icons.add_shopping_cart,
               color: Theme.of(context).colorScheme.onPrimary,

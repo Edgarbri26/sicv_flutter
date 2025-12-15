@@ -297,7 +297,7 @@ class _SalePageState extends ConsumerState<SalePage> {
             onPressed: () {
               showSaleDetail(context); // Llama al método local
             },
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             icon: Icon(
               Symbols.shopping_cart_checkout,
               color: Theme.of(context).colorScheme.onPrimary,
