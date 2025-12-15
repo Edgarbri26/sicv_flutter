@@ -99,6 +99,8 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isWide = constraints.maxWidth > AppSizes.breakpoint;
+
+        // Adaptive Layout: Scaffold handles both modes
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: !isWide
@@ -125,15 +127,13 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
                   appbartitle: 'Dashboard de Reportes',
                   child: TabBarView(
                     controller: _tabController,
-                    physics:
-                        const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
+                    physics: const NeverScrollableScrollPhysics(),
                     children: _mainViews,
                   ),
                 )
               : TabBarView(
                   controller: _tabController,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Deshabilita swipe en PC
+                  physics: const NeverScrollableScrollPhysics(),
                   children: _mainViews,
                 ),
 

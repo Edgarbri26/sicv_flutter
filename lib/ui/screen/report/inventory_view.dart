@@ -54,104 +54,114 @@ class InventoryReportView extends ConsumerWidget {
     //   ),
     // ];
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: state.isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor,
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // --- HEADER CON EL NUEVO SELECTOR ---
-                  _buildHeader(context, notifier),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final content = state.isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- HEADER CON EL NUEVO SELECTOR ---
+                    _buildHeader(context, notifier),
 
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                  // Grid de KPIs
-                  _buildKpiGrid(context, state),
+                    // Grid de KPIs
+                    _buildKpiGrid(context, state),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // --- GRÁFICO DE EFICIENCIA ---
-                  ChartContainer(
-                    height: 520,
-                    title: "Matriz Rentabilidad vs Volumen",
-                    subtitle: "Distribución de productos según su desempeño",
-                    child: Column(
-                      children: [
-                        // Leyenda de colores
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0),
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 12,
-                            runSpacing: 8,
-                            children: [
-                              _buildLegendItem(
-                                context,
-                                Colors.green,
-                                "Líderes",
-                                "Alta Venta / Alta Ganancia",
-                              ),
-                              _buildLegendItem(
-                                context,
-                                Colors.blue,
-                                "Alta Rotación",
-                                "Alta Venta / Baja Ganancia",
-                              ),
-                              _buildLegendItem(
-                                context,
-                                Colors.orange,
-                                "Alto Margen",
-                                "Baja Venta / Alta Ganancia",
-                              ),
-                              _buildLegendItem(
-                                context,
-                                Colors.red,
-                                "Bajo Desempeño",
-                                "Baja Venta / Baja Ganancia",
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Scatter Chart
-                        SizedBox(
-                          height: 350,
-                          child: state.efficiencyData.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    "No hay datos de ventas en este periodo.",
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                )
-                              : _InventoryEfficiencyChart(
-                                  points: state.efficiencyData,
+                    // --- GRÁFICO DE EFICIENCIA ---
+                    ChartContainer(
+                      height: 520,
+                      title: "Matriz Rentabilidad vs Volumen",
+                      subtitle: "Distribución de productos según su desempeño",
+                      child: Column(
+                        children: [
+                          // Leyenda de colores
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20.0),
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 12,
+                              runSpacing: 8,
+                              children: [
+                                _buildLegendItem(
+                                  context,
+                                  Colors.green,
+                                  "Líderes",
+                                  "Alta Venta / Alta Ganancia",
                                 ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                                _buildLegendItem(
+                                  context,
+                                  Colors.blue,
+                                  "Alta Rotación",
+                                  "Alta Venta / Baja Ganancia",
+                                ),
+                                _buildLegendItem(
+                                  context,
+                                  Colors.orange,
+                                  "Alto Margen",
+                                  "Baja Venta / Alta Ganancia",
+                                ),
+                                _buildLegendItem(
+                                  context,
+                                  Colors.red,
+                                  "Bajo Desempeño",
+                                  "Baja Venta / Baja Ganancia",
+                                ),
+                              ],
+                            ),
+                          ),
 
-                  // Layout Responsivo (Desktop/Mobile)
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (constraints.maxWidth > 900) {
-                        return _buildDesktopLayout(context, state);
-                      } else {
-                        return _buildMobileLayout(context, state);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
+                          // Scatter Chart
+                          SizedBox(
+                            height: 350,
+                            child: state.efficiencyData.isEmpty
+                                ? const Center(
+                                    child: Text(
+                                      "No hay datos de ventas en este periodo.",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  )
+                                : _InventoryEfficiencyChart(
+                                    points: state.efficiencyData,
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Layout Responsivo (Desktop/Mobile)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth > 900) {
+                          return _buildDesktopLayout(context, state);
+                        } else {
+                          return _buildMobileLayout(context, state);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              );
+
+        if (constraints.maxWidth > 900) {
+          return content;
+        } else {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: content,
+          );
+        }
+      },
     );
   }
 
@@ -160,26 +170,29 @@ class InventoryReportView extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Reporte de Inventario",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.headlineSmall?.color,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Reporte de Inventario",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.headlineSmall?.color,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Valoración, eficiencia y niveles de stock",
-              style: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontSize: 14,
+              const SizedBox(height: 4),
+              Text(
+                "Valoración, eficiencia y niveles de stock",
+                style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontSize: 14,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        const SizedBox(width: 16),
 
         // --- AQUÍ USAMOS EL WIDGET REUTILIZABLE ---
         DateFilterSelector(

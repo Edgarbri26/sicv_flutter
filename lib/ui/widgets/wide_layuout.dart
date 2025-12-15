@@ -20,12 +20,14 @@ class WideLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         MySideBar(controller: controller),
         Expanded(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              sideNavigationMenu ?? SizedBox.shrink(),
+              sideNavigationMenu ?? const SizedBox.shrink(),
               Expanded(
                 child: Column(
                   children: [

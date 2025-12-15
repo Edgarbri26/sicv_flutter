@@ -23,57 +23,67 @@ class SupplierReportView extends ConsumerWidget {
     final supplierStateAsync = ref.watch(supplierReportProvider);
     final filterState = ref.watch(supplierFilterProvider);
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: supplierStateAsync.when(
-        // CARGANDO
-        loading: () => const Center(child: CircularProgressIndicator()),
-        // ERROR
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: Theme.of(context).colorScheme.error,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Error: $err",
-                style: TextStyle(color: Theme.of(context).hintColor),
-              ),
-              TextButton(
-                onPressed: () => ref.refresh(supplierReportProvider),
-                child: const Text("Reintentar"),
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final content = supplierStateAsync.when(
+          // CARGANDO
+          loading: () => const Center(child: CircularProgressIndicator()),
+          // ERROR
+          error: (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Error: $err",
+                  style: TextStyle(color: Theme.of(context).hintColor),
+                ),
+                TextButton(
+                  onPressed: () => ref.refresh(supplierReportProvider),
+                  child: const Text("Reintentar"),
+                ),
+              ],
+            ),
           ),
-        ),
-        // DATA
-        data: (data) => SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header con Filtro
-              _buildHeader(context, ref, filterState),
-              const SizedBox(height: 32),
+          // DATA
+          data: (data) => SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header con Filtro
+                _buildHeader(context, ref, filterState),
+                const SizedBox(height: 32),
 
-              // Grid de KPIs
-              _buildKpiGrid(context, data),
-              const SizedBox(height: 24),
+                // Grid de KPIs
+                _buildKpiGrid(context, data),
+                const SizedBox(height: 24),
 
-              // Layout Responsivo
-              // Layout Responsivo
-              if (MediaQuery.of(context).size.width > 900)
-                _buildDesktopLayout(context, data)
-              else
-                _buildMobileLayout(context, data),
-            ],
+                // Layout Responsivo
+                // Layout Responsivo
+                if (MediaQuery.of(context).size.width > 900)
+                  _buildDesktopLayout(context, data)
+                else
+                  _buildMobileLayout(context, data),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+
+        if (constraints.maxWidth > 900) {
+          return content;
+        } else {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: content,
+          );
+        }
+      },
     );
   }
 
@@ -86,22 +96,25 @@ class SupplierReportView extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Análisis de Proveedores",
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Volumen de compras y distribución de gastos",
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Análisis de Proveedores",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Volumen de compras y distribución de gastos",
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 16),
 
         // WIDGET DE FILTRO DE FECHAS
         DateFilterSelector(

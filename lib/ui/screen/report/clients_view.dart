@@ -25,61 +25,72 @@ class ClientReportView extends ConsumerWidget {
     // Escuchamos el estado del FILTRO (FilterState)
     final filterState = ref.watch(clientFilterProvider);
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: clientStateAsync.when(
-        // ESTADO: CARGANDO
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.blue)),
-        // ESTADO: ERROR
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                'Error al cargar reporte de clientes:\n$err',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () => ref.refresh(clientReportProvider),
-                icon: const Icon(Icons.refresh),
-                label: const Text("Reintentar"),
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final content = clientStateAsync.when(
+          // ESTADO: CARGANDO
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: Colors.blue),
           ),
-        ),
-        // ESTADO: DATOS LISTOS
-        data: (data) => SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header actualizado con el Selector de Fechas
-              _buildHeader(context, ref, filterState),
-              const SizedBox(height: 32),
-
-              // Grid de KPIs
-              _buildKpiGrid(context, data),
-              const SizedBox(height: 24),
-
-              // Layout principal
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth > 900) {
-                    return _buildDesktopLayout(context, data);
-                  } else {
-                    return _buildMobileLayout(context, data);
-                  }
-                },
-              ),
-            ],
+          // ESTADO: ERROR
+          error: (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Error al cargar reporte de clientes:\n$err',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: () => ref.refresh(clientReportProvider),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text("Reintentar"),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+          // ESTADO: DATOS LISTOS
+          data: (data) => SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header actualizado con el Selector de Fechas
+                _buildHeader(context, ref, filterState),
+                const SizedBox(height: 32),
+
+                // Grid de KPIs
+                _buildKpiGrid(context, data),
+                const SizedBox(height: 24),
+
+                // Layout principal
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth > 900) {
+                      return _buildDesktopLayout(context, data);
+                    } else {
+                      return _buildMobileLayout(context, data);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+
+        if (constraints.maxWidth > 900) {
+          return content;
+        } else {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: content,
+          );
+        }
+      },
     );
   }
 
@@ -92,23 +103,26 @@ class ClientReportView extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Reporte de Clientes",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.headlineSmall?.color,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Reporte de Clientes",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.headlineSmall?.color,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Análisis de fidelización y comportamiento de compra",
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                "Análisis de fidelización y comportamiento de compra",
+                style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 16),
 
         // USO DEL WIDGET DateFilterSelector
         DateFilterSelector(

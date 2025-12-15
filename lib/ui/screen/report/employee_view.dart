@@ -23,69 +23,79 @@ class EmployeeReportView extends ConsumerWidget {
     // Escuchamos el estado del FILTRO (Ahora es FilterState, no String)
     final filterState = ref.watch(employeeFilterProvider);
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: employeeStateAsync.when(
-        // ESTADO: CARGANDO
-        loading: () => Center(
-          child: CircularProgressIndicator(
-            color: Theme.of(context).primaryColor,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final content = employeeStateAsync.when(
+          // ESTADO: CARGANDO
+          loading: () => Center(
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
           ),
-        ),
-        // ESTADO: ERROR
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: Theme.of(context).colorScheme.error,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Error al cargar reporte de personal:\n$err',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).hintColor),
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () => ref.refresh(employeeReportProvider),
-                icon: const Icon(Icons.refresh),
-                label: const Text("Reintentar"),
-              ),
-            ],
+          // ESTADO: ERROR
+          error: (err, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Error al cargar reporte de personal:\n$err',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Theme.of(context).hintColor),
+                ),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: () => ref.refresh(employeeReportProvider),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text("Reintentar"),
+                ),
+              ],
+            ),
           ),
-        ),
-        // ESTADO: DATOS LISTOS
-        data: (data) => SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header con el Widget de Filtro Importado
-              _buildHeader(context, ref, filterState),
-              const SizedBox(height: 32),
+          // ESTADO: DATOS LISTOS
+          data: (data) => SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header con el Widget de Filtro Importado
+                _buildHeader(context, ref, filterState),
+                const SizedBox(height: 32),
 
-              // Grid de KPIs
-              _buildKpiGrid(context, data),
+                // Grid de KPIs
+                _buildKpiGrid(context, data),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Layout Adaptativo (Gráficos y Lista)
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth > 900) {
-                    return _buildDesktopLayout(context, data);
-                  } else {
-                    return _buildMobileLayout(context, data);
-                  }
-                },
-              ),
-            ],
+                // Layout Adaptativo (Gráficos y Lista)
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth > 900) {
+                      return _buildDesktopLayout(context, data);
+                    } else {
+                      return _buildMobileLayout(context, data);
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+
+        if (constraints.maxWidth > 680) {
+          return content;
+        } else {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: content,
+          );
+        }
+      },
     );
   }
 
@@ -98,26 +108,29 @@ class EmployeeReportView extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Reporte de Personal",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.headlineSmall?.color,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Reporte de Personal",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.headlineSmall?.color,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Desempeño, comisiones y actividad reciente",
-              style: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontSize: 14,
+              const SizedBox(height: 4),
+              Text(
+                "Desempeño, comisiones y actividad reciente",
+                style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontSize: 14,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        const SizedBox(width: 16),
 
         // WIDGET CORREGIDO
         DateFilterSelector(

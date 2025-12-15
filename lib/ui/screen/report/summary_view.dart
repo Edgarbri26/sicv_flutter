@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
 // import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,28 +50,40 @@ class ResumeView extends ConsumerWidget {
       ),
     ];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeaderAndFilter(context, provider),
-          const SizedBox(height: 24),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final content = SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeaderAndFilter(context, provider),
+              const SizedBox(height: 24),
 
-          KpiGrid(kpis: kpis),
-          const SizedBox(height: 24),
+              KpiGrid(kpis: kpis),
+              const SizedBox(height: 24),
 
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth > 900) {
-                return _buildDesktopLayout(context, provider);
-              } else {
-                return _buildMobileLayout(context, provider);
-              }
-            },
+              LayoutBuilder(
+                builder: (context, innerConstraints) {
+                  if (innerConstraints.maxWidth > AppSizes.breakpoint) {
+                    return _buildDesktopLayout(context, provider);
+                  } else {
+                    return _buildMobileLayout(context, provider);
+                  }
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+
+        return content;
+        // } else {
+        //   return Scaffold(
+        //     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        //     body: content,
+        //   );
+        // }
+      },
     );
   }
 
@@ -82,24 +95,27 @@ class ResumeView extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center, // Alineación vertical
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Resumen Ejecutivo",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.headlineSmall?.color,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Resumen Ejecutivo",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.headlineSmall?.color,
+                ),
               ),
-            ),
-            Text(
-              "Panorama general del negocio",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
+              Text(
+                "Panorama general del negocio",
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        const SizedBox(width: 16),
 
         // --- AQUÍ USAMOS EL WIDGET REUTILIZABLE ---
         DateFilterSelector(
@@ -127,6 +143,7 @@ class ResumeView extends ConsumerWidget {
         ChartContainer(
           title: "Balance Financiero",
           subtitle: "Ventas vs Compras",
+          height: 300,
           child: AppLineChart(
             lineChartBarData: [
               AppLineChartData(data: provider.salesData, color: Colors.green),
@@ -134,26 +151,28 @@ class ResumeView extends ConsumerWidget {
             labels: provider.labels,
           ),
         ),
-        ChartContainer(
-          title: "Grafico de barras",
-          child: AppBarChart(
-            labels: provider.labels,
-            barChartData: [
-              ...provider.salesData.map(
-                (spot) => BarChartGroupData(
-                  x: spot.x.toInt(),
-                  barRods: [
-                    BarChartRodData(
-                      toY: spot.y,
-                      color: Colors.green,
-                      width: 16,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        // const SizedBox(height: 20),
+        // ChartContainer(
+        //   title: "Grafico de barras",
+        //   height: 300,
+        //   child: AppBarChart(
+        //     labels: provider.labels,
+        //     barChartData: [
+        //       ...provider.salesData.map(
+        //         (spot) => BarChartGroupData(
+        //           x: spot.x.toInt(),
+        //           barRods: [
+        //             BarChartRodData(
+        //               toY: spot.y,
+        //               color: Colors.green,
+        //               width: 16,
+        //             ),
+        //           ],
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }

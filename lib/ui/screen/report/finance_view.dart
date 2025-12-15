@@ -42,164 +42,178 @@ class _FinancesViewState extends ConsumerState<FinancesView>
     // 1. Escuchamos el estado del filtro para pasárselo al widget selector
     final filterState = ref.watch(historyFilterProvider);
 
-    return Column(
-      children: [
-        // --- CABECERA Y FILTROS ---
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Título y Selector de Fechas
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final content = Column(
+          children: [
+            // --- CABECERA Y FILTROS ---
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  // 1. Título y Selector de Fechas
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Historial",
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Historial",
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            "Movimientos",
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(fontSize: 14),
+                          ),
+                        ],
                       ),
-                      Text(
-                        "Movimientos",
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.copyWith(fontSize: 14),
+
+                      // WIDGET DE FILTRO DE FECHAS
+                      DateFilterSelector(
+                        selectedFilter: filterState.period,
+                        selectedDateRange: filterState.customRange,
+                        onFilterChanged: (newFilter) {
+                          // Actualizamos el provider, esto dispara la recarga de las listas
+                          ref.read(historyFilterProvider.notifier).state =
+                              filterState.copyWith(period: newFilter);
+                        },
+                        onDateRangeChanged: (newRange) {
+                          ref
+                              .read(historyFilterProvider.notifier)
+                              .state = filterState.copyWith(
+                            period: 'custom',
+                            customRange: newRange,
+                          );
+                        },
                       ),
                     ],
                   ),
 
-                  // WIDGET DE FILTRO DE FECHAS
-                  DateFilterSelector(
-                    selectedFilter: filterState.period,
-                    selectedDateRange: filterState.customRange,
-                    onFilterChanged: (newFilter) {
-                      // Actualizamos el provider, esto dispara la recarga de las listas
-                      ref.read(historyFilterProvider.notifier).state =
-                          filterState.copyWith(period: newFilter);
-                    },
-                    onDateRangeChanged: (newRange) {
-                      ref
-                          .read(historyFilterProvider.notifier)
-                          .state = filterState.copyWith(
-                        period: 'custom',
-                        customRange: newRange,
-                      );
-                    },
-                  ),
-                ],
-              ),
+                  const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
-
-              // 2. Tabs y Botón de Ordenar
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
+                  // 2. Tabs y Botón de Ordenar
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: TabBar(
+                            controller: _tabController,
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            indicator: BoxDecoration(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(
+                                    context,
+                                  ).shadowColor.withValues(alpha: 0.08),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            labelColor: Theme.of(context).primaryColor,
+                            labelStyle: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                            unselectedLabelColor: Theme.of(context).hintColor,
+                            dividerColor: Colors.transparent,
+                            tabs: const [
+                              Tab(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.trending_up, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Ventas'),
+                                  ],
+                                ),
+                              ),
+                              Tab(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.trending_down, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Compras'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Botón de Ordenamiento
+                      Material(
                         color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BoxDecoration(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(
-                                context,
-                              ).shadowColor.withValues(alpha: 0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        labelColor: Theme.of(context).primaryColor,
-                        labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                        unselectedLabelColor: Theme.of(context).hintColor,
-                        dividerColor: Colors.transparent,
-                        tabs: const [
-                          Tab(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.trending_up, size: 18),
-                                SizedBox(width: 8),
-                                Text('Ventas'),
-                              ],
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isAscending = !_isAscending;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(
+                            12,
+                          ), // Esto está bien, es para la animación del click
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            child: Icon(
+                              _isAscending
+                                  ? Icons.arrow_upward_rounded
+                                  : Icons.arrow_downward_rounded,
+                              color: Theme.of(context).primaryColor,
+                              size: 24,
                             ),
                           ),
-                          Tab(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.trending_down, size: 18),
-                                SizedBox(width: 8),
-                                Text('Compras'),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Botón de Ordenamiento
-                  Material(
-                    color: Theme.of(context).cardColor,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Theme.of(context).dividerColor),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _isAscending = !_isAscending;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ), // Esto está bien, es para la animación del click
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        child: Icon(
-                          _isAscending
-                              ? Icons.arrow_upward_rounded
-                              : Icons.arrow_downward_rounded,
-                          color: Theme.of(context).primaryColor,
-                          size: 24,
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
 
-        const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-        // --- CONTENIDO (LISTAS) ---
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [_buildSalesList(), _buildPurchasesList()],
-          ),
-        ),
-      ],
+            // --- CONTENIDO (LISTAS) ---
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [_buildSalesList(), _buildPurchasesList()],
+              ),
+            ),
+          ],
+        );
+
+        if (constraints.maxWidth > 680) {
+          return content;
+        } else {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: content,
+          );
+        }
+      },
     );
   }
 
