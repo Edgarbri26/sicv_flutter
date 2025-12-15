@@ -5,6 +5,7 @@ class ChartContainer extends StatelessWidget {
   final String? subtitle;
   final Widget child;
   final double? height;
+  final bool fillAvailableSpace;
 
   const ChartContainer({
     super.key,
@@ -12,6 +13,7 @@ class ChartContainer extends StatelessWidget {
     this.subtitle,
     required this.child,
     this.height,
+    this.fillAvailableSpace = false,
   });
 
   @override
@@ -49,7 +51,10 @@ class ChartContainer extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          if (height != null) Expanded(child: child) else child,
+          if (height != null || fillAvailableSpace)
+            Expanded(child: child)
+          else
+            child,
         ],
       ),
     );
