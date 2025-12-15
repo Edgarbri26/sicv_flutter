@@ -101,13 +101,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                     // --- Secciones de Configuración ---
                     _buildSectionTitle('CONFIGURACIÓN GENERAL'),
-                    _buildConfigTile(
+                    /*_buildConfigTile(
                       context: context,
                       title: 'Indicaciones de tu perfil',
                       subtitle: 'Nombre, contraseña, foto',
                       icon: Icons.person,
                       routeName: AppRoutes.perfil,
-                    ),
+                    ),*/
 
                     /*_buildConfigTile(
                       context: context,

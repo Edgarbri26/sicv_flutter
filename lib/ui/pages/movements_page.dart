@@ -172,6 +172,7 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
             DataColumn(label: Text('Producto')),
             DataColumn(label: Text('Tipo')),
             DataColumn(label: Text('Cant.')),
+            DataColumn(label: Text('Deposito')),
             DataColumn(label: Text('Usuario')),
           ],
           rows: movements.map((m) {
@@ -190,6 +191,7 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
                     ),
                   ),
                 ),
+                DataCell(Text(m.depotName)),
                 DataCell(Text(m.userName)),
               ],
             );
