@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sicv_flutter/core/theme/app_sizes.dart';
+import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'dart:math';
 
 // 1. IMPORTA TU MODELO DE EFICIENCIA
@@ -8,6 +10,7 @@ import 'package:sicv_flutter/models/report/inventory_efficiency.dart';
 
 // 2. IMPORTA TU PROVIDER (Donde están InventoryState, ProductMetric, etc.)
 import 'package:sicv_flutter/providers/report/inventory_provider.dart';
+import 'package:sicv_flutter/ui/widgets/report/chart_container.dart';
 import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
 import 'package:sicv_flutter/ui/widgets/report/app_pie_chart.dart';
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
@@ -74,6 +77,7 @@ class InventoryReportView extends ConsumerWidget {
 
                   // --- GRÁFICO DE EFICIENCIA ---
                   ChartContainer(
+                    height: 520,
                     title: "Matriz Rentabilidad vs Volumen",
                     subtitle: "Distribución de productos según su desempeño",
                     child: Column(
@@ -231,13 +235,39 @@ class InventoryReportView extends ConsumerWidget {
   Widget _buildDesktopLayout(BuildContext context, InventoryState data) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: AppSizes.spacingL,
       children: [
         Expanded(
-          flex: 4,
+          flex: 5,
           child: Column(
             children: [
               ChartContainer(
-                height: 396,
+                height:
+                    670, // Altura fija para alinear con la columna izquierda
+                title: "Top Productos Vendidos",
+                child: _TopProductsList(
+                  products: data.topProducts,
+                  isScrollable: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Column(
+            spacing: AppSizes.spacingL,
+            children: [
+              ChartContainer(
+                height: 300,
+                title: "Alertas de Stock Bajo",
+                child: _LowStockList(
+                  items: data.lowStockItems,
+                  isScrollable: true,
+                ),
+              ),
+              ChartContainer(
+                height: 350,
                 title: "Distribución por Categoría",
                 child: data.categoryDistribution.isEmpty
                     ? const Center(child: Text("Sin datos"))
@@ -246,7 +276,7 @@ class InventoryReportView extends ConsumerWidget {
                           Expanded(
                             flex: 3,
                             child: SizedBox(
-                              height: 290,
+                              height: 300,
                               child: AppPieChart(
                                 data: data.categoryDistribution,
                               ),
@@ -262,21 +292,7 @@ class InventoryReportView extends ConsumerWidget {
                         ],
                       ),
               ),
-              const SizedBox(height: 24),
-              ChartContainer(
-                title: "Alertas de Stock Bajo",
-                child: _LowStockList(items: data.lowStockItems),
-              ),
             ],
-          ),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          flex: 5,
-          child: ChartContainer(
-            height: 640, // Altura fija para alinear con la columna izquierda
-            title: "Top Productos Vendidos",
-            child: _TopProductsList(products: data.topProducts),
           ),
         ),
       ],
@@ -323,7 +339,8 @@ class InventoryReportView extends ConsumerWidget {
 
 class _TopProductsList extends StatelessWidget {
   final List<ProductMetric> products;
-  const _TopProductsList({required this.products});
+  final bool isScrollable;
+  const _TopProductsList({required this.products, this.isScrollable = false});
 
   @override
   Widget build(BuildContext context) {
@@ -333,14 +350,16 @@ class _TopProductsList extends StatelessWidget {
           padding: EdgeInsets.all(16.0),
           child: Text(
             "Sin ventas en este periodo.",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
       );
     }
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    Widget list = ListView.builder(
+      shrinkWrap: !isScrollable,
+      physics: isScrollable
+          ? const AlwaysScrollableScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final prod = products[index];
@@ -373,10 +392,10 @@ class _TopProductsList extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: prod.percentage,
                   minHeight: 8,
-                  backgroundColor: Colors.grey[100],
+                  backgroundColor: AppColors.background,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     index == 0
-                        ? const Color(0xFF6366F1)
+                        ? AppColors.info
                         : Colors.blue.withOpacity(
                             (0.8 - (index * 0.05)).clamp(0.2, 1.0),
                           ),
@@ -388,6 +407,8 @@ class _TopProductsList extends StatelessWidget {
         );
       },
     );
+
+    return list;
   }
 }
 
@@ -586,90 +607,6 @@ class XAxisTooltipItem extends ScatterTooltipItem {
     : super(text, textStyle: textStyle, bottomMargin: 10);
 }
 
-class ChartContainer extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final Widget child;
-  final bool isAlert;
-  final double? height;
-  final double? width;
-  const ChartContainer({
-    super.key,
-    required this.title,
-    required this.child,
-    this.isAlert = false,
-    this.subtitle,
-    this.height,
-    this.width,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      width: width,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: isAlert
-                ? Colors.red.withValues(alpha: 0.05)
-                : Theme.of(context).shadowColor.withValues(alpha: 0.05),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: isAlert
-              ? Colors.red.withOpacity(0.2)
-              : Theme.of(context).dividerColor,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              if (isAlert) ...[
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: Colors.red,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-              ],
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        subtitle!,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
 class CategoryLegend extends StatelessWidget {
   final List<AppPieChartData> categories;
   const CategoryLegend({super.key, required this.categories});
@@ -720,21 +657,27 @@ class CategoryLegend extends StatelessWidget {
 
 class _LowStockList extends StatelessWidget {
   final List<StockAlert> items;
-  const _LowStockList({required this.items});
+  final bool isScrollable;
+  const _LowStockList({required this.items, this.isScrollable = false});
+
   @override
   Widget build(BuildContext context) {
-    if (items.isEmpty)
+    if (items.isEmpty) {
       return const Center(
         child: Text(
           "No hay alertas de stock.",
-          style: TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
       );
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    }
+    Widget list = ListView.separated(
+      shrinkWrap: !isScrollable,
+      physics: isScrollable
+          ? const AlwaysScrollableScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
       itemCount: items.length,
-      separatorBuilder: (c, i) => Divider(color: Colors.grey.withOpacity(0.1)),
+      separatorBuilder: (c, i) =>
+          Divider(color: AppColors.border.withValues(alpha: 0.5)),
       itemBuilder: (context, index) {
         final item = items[index];
         return Padding(
@@ -744,10 +687,14 @@ class _LowStockList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.inventory, color: Colors.red, size: 16),
+                child: const Icon(
+                  Icons.inventory,
+                  color: AppColors.error,
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -763,7 +710,10 @@ class _LowStockList extends StatelessWidget {
                     ),
                     Text(
                       "Stock actual: ${item.quantity}",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -771,13 +721,15 @@ class _LowStockList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red.withOpacity(0.5)),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.5),
+                  ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   item.level.toUpperCase(),
                   style: const TextStyle(
-                    color: Colors.red,
+                    color: AppColors.error,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -788,5 +740,7 @@ class _LowStockList extends StatelessWidget {
         );
       },
     );
+
+    return list;
   }
 }
