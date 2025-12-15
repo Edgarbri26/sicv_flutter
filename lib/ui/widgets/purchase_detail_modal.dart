@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/purchase/purchase_model.dart'; // Asegúrate de importar tu modelo de COMPRA
 
@@ -17,9 +16,9 @@ class PurchaseDetailModal extends StatelessWidget {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -27,58 +26,88 @@ class PurchaseDetailModal extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: Column(
               children: [
-                const Icon(Icons.shopping_bag_outlined, color: Colors.red, size: 48),
+                Icon(
+                  Icons.shopping_bag_outlined,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 48,
+                ),
                 const SizedBox(height: 10),
                 Text(
                   "Compra #${purchase.purchaseId ?? '---'}",
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(date, style: TextStyle(color: Colors.grey[600])),
+                Text(
+                  date,
+                  style: TextStyle(color: Theme.of(context).hintColor),
+                ),
                 const SizedBox(height: 10),
                 Text(
                   // Mostramos el total negativo para indicar egreso
                   "-${currency.format(purchase.totalUsd)}",
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.red),
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 ),
                 if (purchase.status != 'Aprobado')
                   Container(
                     margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
+                      color: Colors.orange.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       purchase.status,
-                      style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.bold, fontSize: 12),
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
               ],
             ),
           ),
-          
+
           // --- DETALLES ---
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                _buildInfoRow("Proveedor", purchase.providerName),
-                _buildInfoRow("Comprador", purchase.userName),
-                _buildInfoRow("Método Pago", purchase.paymentMethodName),
-                
+                _buildInfoRow(context, "Proveedor", purchase.providerName),
+                _buildInfoRow(context, "Comprador", purchase.userName),
+                _buildInfoRow(
+                  context,
+                  "Método Pago",
+                  purchase.paymentMethodName,
+                ),
+
                 const Divider(height: 30),
-                const Text("Productos Adquiridos", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text(
+                  "Productos Adquiridos",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 const SizedBox(height: 10),
 
                 // LISTA DE PRODUCTOS (Usamos la lista unificada 'items' que creamos en el modelo)
                 ...purchase.items.map((item) {
                   final bool isPerishable = item.expirationDate != null;
-                  
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
                     child: Row(
@@ -87,10 +116,13 @@ class PurchaseDetailModal extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text("${item.amount}x", style: const TextStyle(fontWeight: FontWeight.bold)),
+                          child: Text(
+                            "${item.amount}x",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -98,17 +130,30 @@ class PurchaseDetailModal extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                item.productName.isNotEmpty ? item.productName : "Producto #${item.productId}", 
-                                style: const TextStyle(fontWeight: FontWeight.w500)
+                                item.productName.isNotEmpty
+                                    ? item.productName
+                                    : "Producto #${item.productId}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               Text(
-                                item.depotName.isNotEmpty ? item.depotName : "Depósito #${item.depotId}",
-                                style: const TextStyle(fontSize: 12, color: Colors.grey)
+                                item.depotName.isNotEmpty
+                                    ? item.depotName
+                                    : "Depósito #${item.depotId}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).hintColor,
+                                ),
                               ),
                               if (isPerishable)
                                 Text(
                                   "Vence: ${DateFormat('dd/MM/yyyy').format(item.expirationDate!)}",
-                                  style: TextStyle(fontSize: 11, color: Colors.orange.shade800, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                             ],
                           ),
@@ -132,8 +177,8 @@ class PurchaseDetailModal extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () => Navigator.pop(context),
@@ -146,19 +191,19 @@ class PurchaseDetailModal extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey[600])),
+          Text(label, style: TextStyle(color: Theme.of(context).hintColor)),
           Flexible(
             child: Text(
-              value, 
+              value,
               style: const TextStyle(fontWeight: FontWeight.bold),
               textAlign: TextAlign.right,
-            )
+            ),
           ),
         ],
       ),

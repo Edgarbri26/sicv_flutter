@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 
 class AppCard extends StatelessWidget {
@@ -20,10 +19,10 @@ class AppCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppSizes.borderRadiusM),
         border: Border.all(
-          color: AppColors.border,
+          color: Theme.of(context).dividerColor,
           style: BorderStyle.solid,
           width: 3,
         ),
@@ -35,15 +34,16 @@ class AppCard extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: AppSizes.bodyM,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
         subtitle: Text(
           subTitle,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: AppSizes.bodyS,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).hintColor,
           ),
         ),
         trailing: trailing,

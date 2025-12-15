@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-// Asegúrate de importar tu archivo de colores
-import 'package:sicv_flutter/core/theme/app_colors.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/providers/notificacion_provider.dart';
 import 'package:sicv_flutter/ui/pages/notification_page.dart';
@@ -53,7 +50,7 @@ class AppBarApp extends ConsumerWidget implements PreferredSizeWidget {
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 20,
-          color: AppColors.textPrimary, // Mantenemos tu estilo
+          color: Theme.of(context).textTheme.titleLarge?.color,
         ),
       ),
       toolbarHeight: toolbarHeight,
@@ -73,7 +70,10 @@ class AppBarApp extends ConsumerWidget implements PreferredSizeWidget {
             label: Text('$unreadCount'),
             child: Icon(
               Icons.notifications_outlined,
-              color: iconColor ?? AppColors.textPrimary,
+              color:
+                  iconColor ??
+                  Theme.of(context).iconTheme.color ??
+                  Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),
@@ -87,7 +87,8 @@ class AppBarApp extends ConsumerWidget implements PreferredSizeWidget {
       iconTheme: IconThemeData(
         color:
             iconColor ??
-            AppColors.textPrimary, // Permite override desde el widget
+            Theme.of(context).iconTheme.color ??
+            Theme.of(context).colorScheme.onSurface,
       ),
     );
   }

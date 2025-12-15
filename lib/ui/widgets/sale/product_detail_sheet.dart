@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Asegúrate de importar esto para fechas
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/ui/widgets/img_product.dart';
 
@@ -12,12 +11,14 @@ class ProductDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isLowStock = product.totalStock <= product.minStock;
-    final Color stockColor = isLowStock ? AppColors.danger : AppColors.success;
+    final Color stockColor = isLowStock
+        ? Theme.of(context).colorScheme.error
+        : Colors.green;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.secondary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
       ),
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -35,7 +36,7 @@ class ProductDetailSheet extends StatelessWidget {
                 width: 50,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -60,17 +61,33 @@ class ProductDetailSheet extends StatelessWidget {
                     top: 10,
                     right: 25,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.edit,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-                      child: const Row(
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4),
+                        ],
+                      ),
+                      child: Row(
                         children: [
-                          Icon(Icons.access_time_filled, color: AppColors.secondary, size: 14),
-                          SizedBox(width: 4),
-                          Text("Perecedero", style: TextStyle(color: AppColors.secondary, fontSize: 11, fontWeight: FontWeight.bold)),
+                          Icon(
+                            Icons.access_time_filled,
+                            color: Theme.of(context).cardColor,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Perecedero",
+                            style: TextStyle(
+                              color: Theme.of(context).cardColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -90,8 +107,12 @@ class ProductDetailSheet extends StatelessWidget {
                     children: [
                       Chip(
                         label: Text(product.category.name.toUpperCase()),
-                        labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.info),
-                        backgroundColor: AppColors.info.withOpacity(0.1),
+                        labelStyle: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.blue,
+                        ),
+                        backgroundColor: Colors.blue.withOpacity(0.1),
                         side: BorderSide.none,
                         shape: const StadiumBorder(),
                         padding: EdgeInsets.zero,
@@ -99,23 +120,42 @@ class ProductDetailSheet extends StatelessWidget {
                       ),
                       Text(
                         "SKU: ${product.sku ?? 'N/A'}",
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: Theme.of(context).hintColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text(product.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, height: 1.1, letterSpacing: -0.5)),
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  Text(product.description, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15, height: 1.4)),
+                  Text(
+                    product.description,
+                    style: TextStyle(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // 3. PRECIO Y STOCK TOTAL
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,29 +163,99 @@ class ProductDetailSheet extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("PRECIO UNITARIO", style: TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w700)),
+                            Text(
+                              "PRECIO UNITARIO",
+                              style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text("\$${product.price.toStringAsFixed(2)}", style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.success)),
-                                const Padding(padding: EdgeInsets.only(bottom: 6, left: 4), child: Text("USD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.success))),
+                                const Text(
+                                  "\$",
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                Text(
+                                  product.price.toStringAsFixed(2),
+                                  style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 6, left: 4),
+                                  child: Text(
+                                    "USD",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                            Text("≈ Bs. ${product.priceBs.toStringAsFixed(2)}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                            Text(
+                              "≈ Bs. ${product.priceBs.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).hintColor,
+                              ),
+                            ),
                           ],
                         ),
-                        Container(width: 1, height: 50, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 50,
+                          color: Theme.of(context).dividerColor,
+                        ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Text("DISPONIBILIDAD", style: TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w700)),
+                            Text(
+                              "DISPONIBILIDAD",
+                              style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text(product.totalStock.toStringAsFixed(0), style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: stockColor)),
+                            Text(
+                              product.totalStock.toStringAsFixed(0),
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                color: stockColor,
+                              ),
+                            ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(color: stockColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                              child: Text(isLowStock ? "STOCK BAJO" : "EN STOCK", style: TextStyle(fontSize: 10, color: stockColor, fontWeight: FontWeight.bold)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: stockColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                isLowStock ? "STOCK BAJO" : "EN STOCK",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: stockColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -156,37 +266,47 @@ class ProductDetailSheet extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 4. NUEVA SECCIÓN: DESGLOSE DE DEPÓSITOS
-                  const Text(
+                  Text(
                     "UBICACIÓN EN INVENTARIO",
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).hintColor,
                       letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  
+
                   // Lógica para mostrar lista de lotes o general
                   if (product.perishable)
-                    ...product.stockLots.map((lot) => _buildStockRow(
-                      depotName: lot.depotName,
-                      amount: lot.amount,
-                      expiry: lot.expirationDate,
-                      isLast: product.stockLots.last == lot,
-                    ))
+                    ...product.stockLots.map(
+                      (lot) => _buildStockRow(
+                        context,
+                        depotName: lot.depotName,
+                        amount: lot.amount,
+                        expiry: lot.expirationDate,
+                        isLast: product.stockLots.last == lot,
+                      ),
+                    )
                   else
-                    ...product.stockGenerals.map((stock) => _buildStockRow(
-                      depotName: stock.depotName,
-                      amount: stock.amount,
-                      isLast: product.stockGenerals.last == stock,
-                    )),
-                    
-                  if ((product.perishable && product.stockLots.isEmpty) || (!product.perishable && product.stockGenerals.isEmpty))
-                     const Padding(
-                       padding: EdgeInsets.symmetric(vertical: 10),
-                       child: Text("No hay desglose de stock disponible.", style: TextStyle(color: Colors.grey)),
-                     ),
+                    ...product.stockGenerals.map(
+                      (stock) => _buildStockRow(
+                        context,
+                        depotName: stock.depotName,
+                        amount: stock.amount,
+                        isLast: product.stockGenerals.last == stock,
+                      ),
+                    ),
+
+                  if ((product.perishable && product.stockLots.isEmpty) ||
+                      (!product.perishable && product.stockGenerals.isEmpty))
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        "No hay desglose de stock disponible.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
 
                   const SizedBox(height: 30),
                 ],
@@ -199,7 +319,8 @@ class ProductDetailSheet extends StatelessWidget {
   }
 
   // Widget auxiliar para cada fila de depósito
-  Widget _buildStockRow({
+  Widget _buildStockRow(
+    BuildContext context, {
     required String depotName,
     required int amount,
     DateTime? expiry,
@@ -209,11 +330,13 @@ class ProductDetailSheet extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.6),
+        ),
         boxShadow: [
-           BoxShadow(
+          BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 5,
             offset: const Offset(0, 2),
@@ -226,13 +349,17 @@ class ProductDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.warehouse_rounded, color: AppColors.primary, size: 18),
+            child: Icon(
+              Icons.warehouse_rounded,
+              color: Theme.of(context).primaryColor,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 12),
-          
+
           // Información del Depósito y Fecha
           Expanded(
             child: Column(
@@ -240,17 +367,17 @@ class ProductDetailSheet extends StatelessWidget {
               children: [
                 Text(
                   depotName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
                 if (expiry != null)
                   Text(
                     "Vence: ${DateFormat('dd/MM/yyyy').format(expiry)}",
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: Theme.of(context).hintColor,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -263,15 +390,15 @@ class ProductDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Text(
               "$amount Unid.",
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontSize: 13,
               ),
             ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart'; // Asumo esta ruta
 
 class SearchTextFieldApp extends StatelessWidget {
   final ValueChanged<String>? onChanged;
@@ -33,35 +32,65 @@ class SearchTextFieldApp extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       validator: validator,
-      style: const TextStyle(fontSize: 15.0, color: AppColors.textPrimary),
+      style: TextStyle(
+        fontSize: 15.0,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
+      ),
       decoration: InputDecoration(
         filled: true,
-        fillColor: AppColors.secondary,
+        fillColor: Theme.of(context).inputDecorationTheme.fillColor,
         labelText: labelText, // Usa el parámetro
         hintText: hintText,
         prefixIcon: Icon(prefixIcon, size: 20), // Usa el parámetro
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontSize: 14.0,
-          color: AppColors.textSecondary,
+          color:
+              Theme.of(context).inputDecorationTheme.labelStyle?.color ??
+              Theme.of(context).hintColor,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 3.0, color: AppColors.border),
+          borderSide: BorderSide(
+            width: 3.0,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.enabledBorder?.borderSide.color ??
+                Theme.of(context).dividerColor,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             width: 3.0,
-            color: AppColors.textSecondary,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.focusedBorder?.borderSide.color ??
+                Theme.of(context).primaryColor,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 3.0, color: Colors.red),
+          borderSide: BorderSide(
+            width: 3.0,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.errorBorder?.borderSide.color ??
+                Theme.of(context).colorScheme.error,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 3.0, color: Colors.red),
+          borderSide: BorderSide(
+            width: 3.0,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.errorBorder?.borderSide.color ??
+                Theme.of(context).colorScheme.error,
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       ),

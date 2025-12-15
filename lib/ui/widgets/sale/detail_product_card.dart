@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_text_styles.dart';
 import 'package:sicv_flutter/models/sale/sale_item_model.dart';
 import 'package:sicv_flutter/ui/widgets/info_chip.dart';
 
@@ -32,7 +30,7 @@ class DetailProductCart extends StatelessWidget {
           bottom: AppSizes.spacingM,
         ),
         decoration: BoxDecoration(
-          color: AppColors.secondary,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -42,25 +40,28 @@ class DetailProductCart extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.inventory_2, color: AppColors.primary),
+              child: Icon(
+                Icons.inventory_2,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.productName!, style: AppTextStyles.bodyMedium),
+                  Text(
+                    item.productName!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   Row(
                     children: [
-                      InfoChip(
-                        text: '${item.amount} Uds',
-                        color: AppColors.info,
-                      ),
+                      InfoChip(text: '${item.amount} Uds', color: Colors.blue),
                       InfoChip(
                         text: '\$${item.unitPriceUsd.toStringAsFixed(2)}',
-                        color: AppColors.info,
+                        color: Colors.blue,
                       ),
                     ],
                   ),
@@ -72,11 +73,14 @@ class DetailProductCart extends StatelessWidget {
               children: [
                 Text(
                   '\$${(item.unitPriceUsd * item.amount).toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
                 ),
                 IconButton(
                   onPressed: onDelete,
-                  icon: Icon(Icons.delete),
-                  color: AppColors.error,
+                  icon: const Icon(Icons.delete),
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ],
             ),

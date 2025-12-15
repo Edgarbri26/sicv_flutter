@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart'; // Asumo esta ruta
 
 class TextFieldApp extends StatelessWidget {
   final TextEditingController controller;
@@ -61,29 +60,42 @@ class TextFieldApp extends StatelessWidget {
       onTap: onTap,
       readOnly: readOnly ?? false,
       onChanged: onChanged,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15.0,
-        color: AppColors.textPrimary, // Estilo del texto que escribes
+        color: Theme.of(context).textTheme.bodyMedium?.color,
       ),
       decoration: InputDecoration(
         suffixIcon: suffixIcon,
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontSize: 16.0,
-          color: AppColors.textSecondary,
+          color:
+              Theme.of(context).inputDecorationTheme.labelStyle?.color ??
+              Theme.of(context).hintColor,
         ),
         filled: true,
-        fillColor: AppColors.secondary,
+        fillColor: Theme.of(context).inputDecorationTheme.fillColor,
         labelText: labelText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18) : null,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 3.0, color: AppColors.border),
+          borderSide: BorderSide(
+            width: 3.0,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.enabledBorder?.borderSide.color ??
+                Theme.of(context).dividerColor,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             width: 3.0,
-            color: AppColors.textSecondary,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.focusedBorder?.borderSide.color ??
+                Theme.of(context).primaryColor,
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(

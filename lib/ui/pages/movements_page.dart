@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/movement/movement_type.dart';
@@ -49,18 +48,21 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
           AppPermissions.createMovements,
         );
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: !isWide ? AppBarApp(title: 'Movimientos') : null,
           drawer: isWide ? null : MySideBar(controller: widget.controller),
 
           floatingActionButton: hasAccessCreateMovements
               ? FloatingActionButton.extended(
-                  backgroundColor: AppColors.primary,
-                  icon: Icon(Symbols.add, color: AppColors.secondary),
+                  backgroundColor: Theme.of(context).primaryColor,
+                  icon: Icon(
+                    Symbols.add,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                   label: Text(
                     "Agregar Movimiento",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -162,11 +164,13 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
       padding: const EdgeInsets.all(20),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).dividerColor),
           borderRadius: BorderRadius.circular(8),
         ),
         child: DataTable(
-          headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+          headingRowColor: WidgetStateProperty.all(
+            Theme.of(context).dividerColor,
+          ),
           columns: const [
             DataColumn(label: Text('Fecha')),
             DataColumn(label: Text('Producto')),

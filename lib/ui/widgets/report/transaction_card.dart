@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/utils/date_utils.dart';
 
 class TransactionCard extends StatelessWidget {
@@ -25,11 +24,11 @@ class TransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(symbol: '\$');
     final currencyBs = NumberFormat.currency(symbol: 'Bs. ');
-    final color = isIncome ? AppColors.success : AppColors.danger;
+    final color = isIncome ? Colors.green : Colors.red;
     // Adjust icon background opacity for dark mode visibility if needed, or rely on color
     final iconBg = isIncome
-        ? AppColors.success.withValues(alpha: 0.1)
-        : AppColors.danger.withValues(alpha: 0.1);
+        ? Colors.green.withValues(alpha: 0.1)
+        : Colors.red.withValues(alpha: 0.1);
     final icon = isIncome
         ? Icons.arrow_upward_rounded
         : Icons.arrow_downward_rounded;

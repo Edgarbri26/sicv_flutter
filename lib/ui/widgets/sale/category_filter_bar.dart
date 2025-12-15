@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/providers/sale_provider.dart';
@@ -57,16 +56,18 @@ class CategoryFilterBar extends ConsumerWidget {
                           category.id;
                     }
                   },
-                  selectedColor: AppColors.primary,
+                  selectedColor: Theme.of(context).primaryColor,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).textTheme.bodyMedium?.color,
                   ),
-                  backgroundColor: AppColors.secondary,
+                  backgroundColor: Theme.of(context).cardColor,
                   shape: StadiumBorder(
                     side: BorderSide(
                       color: isSelected
                           ? Theme.of(context).primaryColor
-                          : Colors.grey.shade300,
+                          : Theme.of(context).dividerColor,
                     ),
                   ),
                 ),

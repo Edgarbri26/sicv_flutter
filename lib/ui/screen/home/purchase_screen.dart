@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/depot/depot_model.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
@@ -202,7 +201,6 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
         // Lógica Perecederos
         if (item.product.perishable) {
-
           final dateText = item.expirationDateController?.text ?? '';
           if (dateText.isEmpty) {
             throw "Falta fecha vencimiento para ${item.product.name}";
@@ -249,8 +247,8 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
       // 7. LIMPIEZA
       ref.invalidate(productsProvider); // Refresca el stock global de productos
       for (var item in _purchaseItems) {
-          ref.invalidate(productStockDetailProvider(item.product.id));
-        }
+        ref.invalidate(productStockDetailProvider(item.product.id));
+      }
 
       setState(() {
         _purchaseItems.clear();
@@ -359,13 +357,15 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                     side: BorderSide(
-                                      color: AppColors.border,
+                                      color: Theme.of(context).dividerColor,
                                       width: 3.0,
                                     ),
                                   ),
                                   clipBehavior: Clip.antiAlias,
                                   color: isAlreadyAdded
-                                      ? Colors.grey[300]
+                                      ? Theme.of(
+                                          context,
+                                        ).disabledColor.withOpacity(0.12)
                                       : null,
                                   child: ListTile(
                                     title: Text(product.name),
@@ -412,7 +412,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: isWide ? AppBarApp(title: 'Registrar Compra') : null,
           drawer: isWide || widget.controller == null
               ? null
@@ -518,10 +518,10 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
   ) {
     return Card(
       elevation: 0.0,
-      color: AppColors.background,
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
-        side: const BorderSide(color: AppColors.border, width: 2.0),
+        side: BorderSide(color: Theme.of(context).dividerColor, width: 2.0),
       ),
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Padding(
@@ -652,7 +652,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
   Widget _buildSummaryAndSave() {
     return Card(
-      color: AppColors.secondary,
+      color: Theme.of(context).cardColor,
       elevation: 0.0,
       // 2. Define el borde exterior usando 'shape'
       shape: RoundedRectangleBorder(
@@ -661,7 +661,7 @@ class PurchaseScreenState extends ConsumerState<PurchaseScreen> {
 
         // Define el borde (grosor y color)
         side: BorderSide(
-          color: AppColors.border, // El color del borde
+          color: Theme.of(context).dividerColor, // El color del borde
           width: 3.0, // El grosor del borde
         ),
       ),

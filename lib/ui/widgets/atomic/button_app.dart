@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 enum ButtonType { primary, secondary }
 
@@ -55,14 +54,14 @@ class ButtonApp extends StatelessWidget {
           // --- FIN DEL CAMBIO ---
           style: ElevatedButton.styleFrom(
             backgroundColor: type == ButtonType.primary
-                ? AppColors.primary
-                : Colors.white,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surface,
             foregroundColor: type == ButtonType.primary
                 ? Theme.of(context).colorScheme.onPrimary
-                : AppColors.primary,
+                : Theme.of(context).colorScheme.primary,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             side: type == ButtonType.secondary
-                ? const BorderSide(color: AppColors.primary)
+                ? BorderSide(color: Theme.of(context).colorScheme.primary)
                 : null,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

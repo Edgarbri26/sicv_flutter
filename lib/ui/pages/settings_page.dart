@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
@@ -46,11 +45,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBarApp(
         title: 'Configuración',
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).iconTheme.color,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -79,18 +81,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         CircleAvatar(
                           radius: 50,
-                          backgroundColor: AppColors.primary,
-                          child: const Icon(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          child: Icon(
                             Icons.person_outline_rounded,
                             size: 58,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Nombre de Usuario', // Reemplaza con el nombre real
                           style: TextStyle(
-                            color: Colors.black,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
@@ -101,21 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                     // --- Secciones de Configuración ---
                     _buildSectionTitle('CONFIGURACIÓN GENERAL'),
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Indicaciones de tu perfil',
-                      subtitle: 'Nombre, contraseña, foto',
-                      icon: Icons.person,
-                      routeName: AppRoutes.perfil,
-                    ),*/
 
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Configuración de Moneda',
-                      subtitle: 'Tipo de moneda, decimales, símbolo',
-                      icon: Icons.attach_money,
-                      routeName: AppRoutes.currency,
-                    ),*/
                     if (hasAccessTypePaymentManagement)
                       _buildConfigTile(
                         context: context,
@@ -130,13 +118,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     if (hasAccessCategoryManagement || hasAccessDepotManagement)
                       _buildSectionTitle('CONFIGURACIÓN DE INVENTARIO'),
 
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Unidades de Medida',
-                      subtitle: 'Pieza, kg, litro, etc.',
-                      icon: Icons.square_foot,
-                      routeName: AppRoutes.units,
-                    ),*/
                     if (hasAccessCategoryManagement)
                       _buildConfigTile(
                         context: context,
@@ -146,13 +127,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         routeName: AppRoutes.categories,
                       ),
 
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Niveles de Stock',
-                      subtitle: 'Stock mínimo/máximo, alertas',
-                      icon: Icons.warning_amber,
-                      routeName: AppRoutes.stock,
-                    ),*/
                     if (hasAccessDepotManagement)
                       _buildConfigTile(
                         context: context,
@@ -206,49 +180,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
 
                     const SizedBox(height: 16),
-                    /*_buildSectionTitle('CONFIGURACIÓN DE PRODUCTOS'),*/
 
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Códigos y SKU',
-                      subtitle: 'Formato automático, prefijos',
-                      icon: Icons.qr_code,
-                      routeName: AppRoutes.sku,
-                    ),*/
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Atributos de Productos',
-                      subtitle: 'Colores, tallas, modelos',
-                      icon: Icons.style,
-                      routeName: AppRoutes.atributes,
-                    ),*/
-                    /*const SizedBox(height: 16),
-                    _buildSectionTitle('REPORTES Y BACKUP'),
-                    _buildConfigTile(
-                      context: context,
-                      title: 'Configuración de Reportes',
-                      subtitle: 'Formatos de exportación (PDF, Excel)',
-                      icon: Icons.picture_as_pdf,
-                      routeName: AppRoutes.reportDashboard,
-                    ),*/
-                    /*_buildConfigTile(
-                      context: context,
-                      title: 'Backup Automático',
-                      subtitle: 'Frecuencia y destino de respaldos',
-                      icon: Icons.cloud_upload,
-                      routeName: AppRoutes.backup,
-                    ),*/
-                    // const SizedBox(height: 16),
-                    // _buildSectionTitle('PREFERENCIAS DEL SISTEMA'),
-                    // _buildSwitchTile(
-                    //   title: 'Modo Oscuro',
-                    //   value: isDarkMode,
-                    //   onChanged: (value) {
-                    //     // ref.read(themeProvider.notifier).toggleTheme(value);
-                    //     // setState(() => isDarkMode = value);
-                    //   },
-                    //   icon: Icons.dark_mode,
-                    // ),
                     _buildSwitchTile(
                       title: 'Notificaciones',
                       value: _notificationsEnabled,
@@ -279,8 +211,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Colors.black,
+        style: TextStyle(
+          color: Theme.of(context).textTheme.titleLarge?.color,
           fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
@@ -298,21 +230,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.black),
+        leading: Icon(icon, color: Theme.of(context).iconTheme.color),
         title: Text(
           title,
-          style: const TextStyle(color: Colors.black, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontSize: 16,
+          ),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(color: Colors.black54, fontSize: 14),
+          style: TextStyle(color: Theme.of(context).hintColor, fontSize: 14),
         ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.black),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: Theme.of(context).iconTheme.color,
+        ),
         onTap: () {
           Navigator.pushNamed(context, routeName);
         },
@@ -329,20 +267,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.black),
+        leading: Icon(icon, color: Theme.of(context).iconTheme.color),
         title: Text(
           title,
-          style: const TextStyle(color: Colors.black, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontSize: 16,
+          ),
         ),
         trailing: Switch(
           value: value,
           onChanged: onChanged,
-          activeThumbColor: AppColors.primary,
+          activeThumbColor: Theme.of(context).primaryColor,
         ),
       ),
     );

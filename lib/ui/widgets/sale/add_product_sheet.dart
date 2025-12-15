@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+import 'package:intl/intl.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/models/product/stock_option_model.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
@@ -81,12 +81,11 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
     ref.listen(productStockDetailProvider(widget.product.id), (previous, next) {
       next.whenData((stockList) {
         final uniqueDepots = {for (var e in stockList) e.depotId: e.depotName};
-        
+
         if (uniqueDepots.length == 1 && _selectedDepotId == null) {
           _selectedDepotId = uniqueDepots.keys.first;
           _updateMaxStock(stockList);
-        } 
-        else if (_selectedDepotId != null) {
+        } else if (_selectedDepotId != null) {
           _updateMaxStock(stockList);
         }
       });
@@ -119,7 +118,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                       ),
                       Text(
                         "Precio: \$${widget.product.price}",
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: Theme.of(context).hintColor),
                       ),
                     ],
                   ),
@@ -137,29 +136,21 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
               loading: () => const Center(child: LinearProgressIndicator()),
               error: (e, _) => Text(
                 "Error: $e",
-                style: const TextStyle(color: AppColors.error),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
               data: (stockList) {
                 if (stockList.isEmpty) {
-                  return const Text(
+                  return Text(
                     "Sin stock disponible",
-                    style: TextStyle(color: AppColors.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   );
                 }
 
-                // Mapa de depósitos únicos
                 final uniqueDepots = {
                   for (var e in stockList) e.depotId: e.depotName,
                 };
-                
-                if (uniqueDepots.length == 1 && _selectedDepotId == null) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted && _selectedDepotId == null) {
-                      _selectedDepotId = uniqueDepots.keys.first;
-                      _updateMaxStock(stockList);
-                    }
-                  });
-                }
 
                 // Lista de lotes filtrada (si aplica)
                 final availableLots = _selectedDepotId == null
@@ -198,44 +189,47 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                       }).toList(),
                     ),
                     if (_selectedDepotId == null && _errorMessage != null)
-                      const Text(
+                      Text(
                         "Debes seleccionar un depósito",
-                        style: TextStyle(color: AppColors.error, fontSize: 12),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
                       ),
 
                     const SizedBox(height: 20),
 
-                    // --- 2. SELECCIÓN DE LOTE (Solo si es perecedero) ---
-                    if (widget.product.perishable) ...[
-                      DropdownButtonFormField<int>(
-                        initialValue: _selectedLotId,
-                        decoration: const InputDecoration(
-                          labelText: "Fecha de Vencimiento / Lote",
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 0,
-                          ),
-                        ),
-                        items: availableLots.map((item) {
-                          return DropdownMenuItem(
-                            value: item.lotId,
-                            child: Text(
-                              item.displayLabel,
-                              style: const TextStyle(fontSize: 14),
+                    if (widget.product.perishable &&
+                        availableLots.isNotEmpty) ...[
+                      const Text(
+                        "Selecciona Lote:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8.0,
+                        children: availableLots.map((lot) {
+                          final isSelected = _selectedLotId == lot.lotId;
+                          final expirationDate = lot.expiration != null
+                              ? DateFormat('dd/MM/yyyy')
+                                  .format(DateTime.parse(lot.expiration!))
+                              : 'N/A';
+
+                          return ChoiceChip(
+                            label: Text(
+                              "Lote #${lot.lotId} - Vence: $expirationDate (${lot.amount})",
                             ),
-                          );
-                        }).toList(),
-                        onChanged: _selectedDepotId == null
-                            ? null
-                            : (val) {
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
                                 setState(() {
-                                  _selectedLotId = val;
-                                  _errorMessage = null;
+                                  _selectedLotId = lot.lotId;
                                   _updateMaxStock(stockList);
                                 });
-                              },
-                        validator: (val) => val == null ? 'Requerido' : null,
+                              }
+                            },
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 20),
                     ],
@@ -254,7 +248,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                         // Botón Menos
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.border,
+                            color: Theme.of(context).dividerColor,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: IconButton(
@@ -293,7 +287,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                         // Botón Más
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.border,
+                            color: Theme.of(context).dividerColor,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: IconButton(
@@ -318,8 +312,8 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                           color:
                               (int.tryParse(_qtyController.text) ?? 0) >
                                   _maxStock
-                              ? AppColors.error
-                              : AppColors.textSecondary,
+                              ? Theme.of(context).colorScheme.error
+                              : Theme.of(context).hintColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -332,12 +326,16 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.error.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Text(
                             _errorMessage!,
-                            style: TextStyle(color: AppColors.error),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -350,13 +348,15 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              AppColors.primary, // Tu color primario
+                          backgroundColor: Theme.of(
+                            context,
+                          ).primaryColor, // Tu color primario
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                         onPressed: () {
+                          // ... (validation logic unchanged)
                           if (_selectedDepotId == null) {
                             setState(
                               () => _errorMessage = "Selecciona un depósito",
@@ -432,10 +432,10 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
 
                           Navigator.pop(context, newItem);
                         },
-                        child: const Text(
+                        child: Text(
                           "AGREGAR AL CARRITO",
                           style: TextStyle(
-                            color: AppColors.secondary,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

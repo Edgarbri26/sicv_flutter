@@ -19,27 +19,28 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLowStock = product.totalStock <= product.minStock && !isOutOfStock;
-    final Color stockColor = isOutOfStock 
-        ? Colors.red 
+    final bool isLowStock =
+        product.totalStock <= product.minStock && !isOutOfStock;
+    final Color stockColor = isOutOfStock
+        ? Colors.red
         : (isLowStock ? Colors.orange : Colors.green);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppSizes.borderRadiusL),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
         ],
         border: Border.all(
-          color: isLowStock || isOutOfStock 
-              ? stockColor.withOpacity(0.3) 
-              : Colors.grey.shade200, 
-          width: 1
+          color: isLowStock || isOutOfStock
+              ? stockColor.withOpacity(0.3)
+              : Theme.of(context).dividerColor,
+          width: 1,
         ),
       ),
       child: Material(
@@ -60,7 +61,8 @@ class ProductCard extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(AppSizes.borderRadiusL)),
+                        top: Radius.circular(AppSizes.borderRadiusL),
+                      ),
                       child: Opacity(
                         opacity: isOutOfStock ? 0.6 : 1.0,
                         child: SizedBox(
@@ -69,7 +71,7 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                     // Badge: Perecedero
                     if (product.perishable)
                       Positioned(
@@ -78,11 +80,20 @@ class ProductCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Theme.of(context).cardColor.withOpacity(0.9),
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)]
+                            boxShadow: [
+                              const BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 2,
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.access_time_filled, color: Colors.orange, size: 14),
+                          child: const Icon(
+                            Icons.access_time_filled,
+                            color: Colors.orange,
+                            size: 14,
+                          ),
                         ),
                       ),
 
@@ -90,17 +101,22 @@ class ProductCard extends StatelessWidget {
                     if (isOutOfStock)
                       Center(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.9),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.error.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
+                          child: Text(
                             "AGOTADO",
                             style: TextStyle(
-                              color: Colors.white, 
-                              fontWeight: FontWeight.bold, 
-                              fontSize: 10
+                              color: Theme.of(context).colorScheme.onError,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
                             ),
                           ),
                         ),
@@ -115,7 +131,10 @@ class ProductCard extends StatelessWidget {
               Expanded(
                 flex: 11, // Antes 4 (Ahora tiene 55% del alto)
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0), // Padding reducido
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 8.0,
+                  ), // Padding reducido
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,9 +146,9 @@ class ProductCard extends StatelessWidget {
                           Text(
                             product.category.name.toUpperCase(),
                             style: TextStyle(
-                              fontSize: 9, 
-                              fontWeight: FontWeight.w800, 
-                              color: Colors.grey[400],
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).hintColor,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -137,12 +156,12 @@ class ProductCard extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             product.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold, 
-                              fontSize: 12.5, // Fuente ligeramente más pequeña
-                              height: 1.1,
-                              color: Color(0xFF1F2937)
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                  height: 1.1,
+                                ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -161,51 +180,66 @@ class ProductCard extends StatelessWidget {
                               Text(
                                 "\$${product.price.toStringAsFixed(2)}",
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w800, 
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 16,
-                                  color: isOutOfStock ? Colors.grey : const Color(0xFF059669)
+                                  color: isOutOfStock
+                                      ? Theme.of(context).disabledColor
+                                      : const Color(0xFF059669),
                                 ),
                               ),
                               const SizedBox(width: 2),
                               if (!isOutOfStock)
                                 const Text(
                                   "USD",
-                                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF059669)),
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF059669),
+                                  ),
                                 ),
                             ],
                           ),
-                          
+
                           // Precio Bs (Usamos FittedBox para evitar salto de línea)
                           SizedBox(
-                            height: 16, // Altura fija forzada para evitar expansión
+                            height:
+                                16, // Altura fija forzada para evitar expansión
                             child: FittedBox(
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 "Bs. ${product.priceBs.toStringAsFixed(2)}",
                                 style: TextStyle(
-                                  fontSize: 25, 
-                                  color: Colors.grey[500],
-                                  fontWeight: FontWeight.w500
+                                  fontSize: 25,
+                                  color: Theme.of(context).hintColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           ),
-                          
+
                           const SizedBox(height: 4),
-                          
+
                           // Indicador de Stock
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: stockColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4)
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.inventory_2_outlined, size: 10, color: stockColor),
+                                Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 10,
+                                  color: stockColor,
+                                ),
                                 const SizedBox(width: 3),
-                                Flexible( // Evita overflow horizontal
+                                Flexible(
+                                  // Evita overflow horizontal
                                   child: Text(
                                     "Stock: ${product.totalStock.toStringAsFixed(0)}",
                                     style: TextStyle(

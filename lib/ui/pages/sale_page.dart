@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart';
@@ -17,6 +16,7 @@ import 'package:sicv_flutter/ui/widgets/sale/add_product_sheet.dart';
 import 'package:sicv_flutter/ui/widgets/sale/category_filter_bar.dart';
 import 'package:sicv_flutter/ui/widgets/sale/product_detail_sheet.dart';
 import 'package:sicv_flutter/ui/widgets/sale/sale_detail_modal.dart';
+import 'package:sicv_flutter/ui/widgets/wide_layuout.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 class SalePage extends ConsumerStatefulWidget {
@@ -54,7 +54,6 @@ class _SalePageState extends ConsumerState<SalePage> {
     });
   }
 
- 
   Future<void> _onProductAddedToSale(
     BuildContext context,
     ProductModel product,
@@ -84,7 +83,8 @@ class _SalePageState extends ConsumerState<SalePage> {
         SnackBar(
           content: Text("Agregado: ${newItem.productName}"),
           duration: const Duration(seconds: 1),
-          backgroundColor: AppColors.success,
+          backgroundColor: Colors
+              .green, // O Theme.of(context).colorScheme.primary si prefieres
         ),
       );
     }
@@ -173,7 +173,7 @@ class _SalePageState extends ConsumerState<SalePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Venta registrada exitosamente.'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
         );
@@ -185,7 +185,6 @@ class _SalePageState extends ConsumerState<SalePage> {
         }
 
         setState(() {
-          
           _itemsForSale.clear();
           selectedClient = null;
           _selectedTypePayment = null;
@@ -273,35 +272,40 @@ class _SalePageState extends ConsumerState<SalePage> {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: !isWide ? AppBarApp(title: 'Punto de Venta') : null,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: !isWide ? AppBarApp(title: 'Venta') : null,
           drawer: isWide ? null : MySideBar(controller: widget.controller),
           body: isWide
-              ? Row(
-                  children: [
-                    MySideBar(controller: widget.controller),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: saleContent,
-                      ),
-                    ),
-                  ],
+              ? WideLayout(
+                  controller: widget.controller,
+                  appbartitle: 'Venta',
+                  child: saleContent,
                 )
+              // ? Row(
+              //     children: [
+              //       MySideBar(controller: widget.controller),
+              //       Expanded(
+              //         child: Padding(
+              //           padding: const EdgeInsets.only(top: 16.0),
+              //           child: saleContent,
+              //         ),
+              //       ),
+              //     ],
+              //   )
               : saleContent,
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () {
               showSaleDetail(context); // Llama al método local
             },
-            backgroundColor: AppColors.primary,
+            backgroundColor: Theme.of(context).primaryColor,
             icon: Icon(
               Symbols.shopping_cart_checkout,
-              color: AppColors.secondary,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
             label: Text(
               "Ver Orden",
               style: TextStyle(
-                color: AppColors.secondary,
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),

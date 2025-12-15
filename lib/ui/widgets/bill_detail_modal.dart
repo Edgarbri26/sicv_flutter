@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/utils/date_utils.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
 
@@ -18,9 +17,9 @@ class BillDetailModal extends StatelessWidget {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -28,7 +27,7 @@ class BillDetailModal extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: Colors.green.withOpacity(0.1),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(20),
               ),
@@ -39,12 +38,14 @@ class BillDetailModal extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   "Venta #${sale.saleId}",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                Text(date, style: TextStyle(color: Colors.grey[600])),
+                Text(
+                  date,
+                  style: TextStyle(color: Theme.of(context).hintColor),
+                ),
                 const SizedBox(height: 10),
                 Text(
                   currency.format(
@@ -66,11 +67,12 @@ class BillDetailModal extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               children: [
                 _buildInfoRow(
+                  context,
                   "Cliente",
                   sale.clientName,
                 ), // O sale.clientName si tienes el join
-                _buildInfoRow("Vendedor", sale.sellerName),
-                _buildInfoRow("Método Pago", sale.paymentMethodName),
+                _buildInfoRow(context, "Vendedor", sale.sellerName),
+                _buildInfoRow(context, "Método Pago", sale.paymentMethodName),
 
                 const Divider(height: 30),
                 const Text(
@@ -88,7 +90,7 @@ class BillDetailModal extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -111,16 +113,17 @@ class BillDetailModal extends StatelessWidget {
                                 children: [
                                   Text(
                                     currency.format(item.unitPriceUsd),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey,
+                                      color: Theme.of(context).hintColor,
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Text(
                                     currency.format(item.unitPriceBs),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey,
+                                      color: Theme.of(context).hintColor,
                                     ),
                                   ),
                                 ],
@@ -147,8 +150,8 @@ class BillDetailModal extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () => Navigator.pop(context),
@@ -161,13 +164,13 @@ class BillDetailModal extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey[600])),
+          Text(label, style: TextStyle(color: Theme.of(context).hintColor)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),

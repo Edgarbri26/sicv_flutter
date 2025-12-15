@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 // Importa los NUEVOS providers
 import 'package:sicv_flutter/providers/auth_provider.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
@@ -14,11 +13,15 @@ class MySideBar extends ConsumerWidget {
   final SidebarXController controller;
 
   // Colores (puedes dejarlos aquí o moverlos al tema global)
-  final Color primaryColor = AppColors.primary;
-  final Color sidebarBackgroundColor = AppColors.background;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Definimos colores desde el tema
+    final Color primaryColor = Theme.of(context).primaryColor;
+    final Color sidebarBackgroundColor = Theme.of(context).cardColor;
+    final Color textColor =
+        Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+    final Color iconColor = Theme.of(context).iconTheme.color ?? Colors.grey;
+
     final authState = ref.watch(authProvider);
     final user = authState.value;
     final userPermissions = ref.watch(currentUserPermissionsProvider);
@@ -51,13 +54,17 @@ class MySideBar extends ConsumerWidget {
             ),
           ],
         ),
-        textStyle: TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        selectedTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
-        iconTheme: IconThemeData(color: AppColors.textSecondary, size: 22),
+        textStyle: TextStyle(color: textColor, fontSize: 14),
+        selectedTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: IconThemeData(color: iconColor, size: 22),
         selectedIconTheme: const IconThemeData(color: Colors.white, size: 22),
         hoverColor: primaryColor.withValues(alpha: 0.1),
         hoverTextStyle: TextStyle(
-          color: primaryColor,
+          color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.w600,
         ),
         itemTextPadding: const EdgeInsets.only(left: 15),
@@ -93,18 +100,21 @@ class MySideBar extends ConsumerWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                const Icon(Icons.person, size: 40, color: Colors.grey),
+                Icon(Icons.person, size: 40, color: iconColor),
                 if (extended) ...[
                   const SizedBox(height: 4),
                   Text(
                     user?.name ?? "Usuario",
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: textColor),
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     user?.role?.name ?? "Usuario",
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(
+                      color: Theme.of(context).hintColor,
+                      fontSize: 12,
+                    ),
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
                   ),

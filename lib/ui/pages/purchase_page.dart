@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/ui/screen/home/purchase_screen.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
@@ -30,7 +29,7 @@ class _PurchasePageState extends State<PurchasePage> {
         final bool isWide = constraints.maxWidth >= AppSizes.breakpoint;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
           // --- APP BAR (Solo móvil) ---
           appBar: !isWide ? AppBarApp(title: 'Registro de Compra') : null,
@@ -59,12 +58,15 @@ class _PurchasePageState extends State<PurchasePage> {
               // Llama al modal de búsqueda dentro del contenido
               _contentKey.currentState?.showProductSearchModal();
             },
-            backgroundColor: AppColors.primary,
-            icon: Icon(Icons.add_shopping_cart, color: AppColors.secondary),
+            backgroundColor: Theme.of(context).primaryColor,
+            icon: Icon(
+              Icons.add_shopping_cart,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
             label: Text(
               "Agregar Producto",
               style: TextStyle(
-                color: AppColors.secondary,
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),

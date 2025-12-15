@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. 'T' fue reemplazado por 'ItemType' para más claridad
 class DropDownApp<ItemType> extends StatelessWidget {
@@ -35,30 +34,43 @@ class DropDownApp<ItemType> extends StatelessWidget {
     // 4. El Dropdown es de tipo 'ItemType'
     return DropdownButtonFormField<ItemType>(
       focusNode: focusNode,
-      dropdownColor: AppColors.background,
+      dropdownColor: Theme.of(context).scaffoldBackgroundColor,
       borderRadius: BorderRadius.circular(12),
-      icon: Icon(Icons.keyboard_arrow_down_rounded),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded),
       iconSize: 24,
       menuMaxHeight: 500.0,
       isExpanded: true,
       decoration: InputDecoration(
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontSize: 16.0,
-          color: AppColors.textSecondary,
+          color:
+              Theme.of(context).inputDecorationTheme.labelStyle?.color ??
+              Theme.of(context).hintColor,
         ),
         filled: true,
-        fillColor: AppColors.secondary,
+        fillColor: Theme.of(context).inputDecorationTheme.fillColor,
         labelText: labelText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18) : null,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(width: 3.0, color: AppColors.border),
+          borderSide: BorderSide(
+            width: 3.0,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.enabledBorder?.borderSide.color ??
+                Theme.of(context).dividerColor,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             width: 3.0,
-            color: AppColors.textSecondary,
+            color:
+                Theme.of(
+                  context,
+                ).inputDecorationTheme.focusedBorder?.borderSide.color ??
+                Theme.of(context).primaryColor,
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -78,7 +90,7 @@ class DropDownApp<ItemType> extends StatelessWidget {
             // 7. Usamos la función para convertir el 'ItemType' a String
             itemToString(item),
             style: TextStyle(
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
               fontSize: 16,
               overflow: TextOverflow.ellipsis,
             ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
 
 class SideNavigationMenu extends StatefulWidget {
@@ -47,7 +46,7 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
       // Estilo y Configuración
       labelType: NavigationRailLabelType.all,
       groupAlignment: 0.0, // Centro vertical
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       // Estado
       selectedIndex: _currentIndex,

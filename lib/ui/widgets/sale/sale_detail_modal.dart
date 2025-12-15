@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/providers/cliente_provider.dart';
 import 'package:sicv_flutter/providers/type_payment_provider.dart';
@@ -73,9 +72,11 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
           maxChildSize: 0.95,
           builder: (context, scrollController) {
             return Container(
-              decoration: const BoxDecoration(
-                color: AppColors.secondary,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
               child: Form(
                 key: _formKey,
@@ -88,7 +89,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                         width: 40,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: AppColors.border,
+                          color: Theme.of(context).dividerColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -112,11 +113,11 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                         padding: const EdgeInsets.all(16),
                         children: [
                           // --- A. SECCIÓN CLIENTE ---
-                          const Text(
+                          Text(
                             "Cliente",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).hintColor,
                             ),
                           ),
                           const SizedBox(height: 5),
@@ -128,24 +129,28 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                               margin: const EdgeInsets.only(top: 10),
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.primary),
+                                border: Border.all(
+                                  color: Theme.of(context).primaryColor,
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.check_circle,
-                                    color: AppColors.primary,
+                                    color: Theme.of(context).primaryColor,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       "Seleccionado: ${_selectedClient!.name}",
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.primary,
+                                        color: Theme.of(context).primaryColor,
                                       ),
                                     ),
                                   ),
@@ -173,8 +178,8 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                               ),
                               Text(
                                 "${widget.items.length} Items",
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
+                                style: TextStyle(
+                                  color: Theme.of(context).hintColor,
                                 ),
                               ),
                             ],
@@ -182,13 +187,13 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                           const SizedBox(height: 10),
 
                           if (widget.items.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.all(30.0),
+                            Padding(
+                              padding: const EdgeInsets.all(30.0),
                               child: Center(
                                 child: Text(
                                   "El carrito está vacío",
                                   style: TextStyle(
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).hintColor,
                                   ),
                                 ),
                               ),
@@ -293,7 +298,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
             final bool? clientWasAdded = await showModalBottomSheet<bool>(
               context: context,
               isScrollControlled: true,
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).primaryColor,
               builder: (ctx) => AddClientForm(),
             );
 
@@ -302,7 +307,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Cliente agregado correctamente'),
-                  backgroundColor: AppColors.success,
+                  backgroundColor: Colors.green,
                 ),
               );
 
@@ -358,7 +363,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -399,15 +404,15 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.success,
+                            color: Colors.green,
                           ),
                         ),
                         Text(
                           "Bs. ${totalBs.toStringAsFixed(2)}",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: Theme.of(context).primaryColor,
                           ),
                         ),
                       ],
@@ -444,7 +449,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                         _modalMessengerKey.currentState?.showSnackBar(
                           const SnackBar(
                             content: Text('⚠️ El carrito está vacío.'),
-                            backgroundColor: AppColors.edit,
+                            backgroundColor: Colors.orange,
                           ),
                         );
                         return;

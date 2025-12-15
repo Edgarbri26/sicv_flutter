@@ -414,9 +414,6 @@ class _SupplierList extends StatelessWidget {
       },
     );
 
-    if (isScrollable) {
-      return Expanded(child: list);
-    }
     return list;
   }
 }

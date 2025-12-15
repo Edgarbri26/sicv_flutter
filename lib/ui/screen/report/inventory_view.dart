@@ -55,9 +55,7 @@ class InventoryReportView extends ConsumerWidget {
     // ];
 
     return Scaffold(
-      backgroundColor: Theme.of(
-        context,
-      ).scaffoldBackgroundColor, // AppColors.background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.blue))
           : SingleChildScrollView(

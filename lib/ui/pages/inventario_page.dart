@@ -11,7 +11,6 @@ import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 // Imports internos (Asegúrate de que las rutas sean correctas en tu proyecto)
-import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/core/theme/color_stock.dart';
 import 'package:sicv_flutter/models/category_model.dart';
@@ -64,13 +63,9 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
         );
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           // AppBar solo para móvil
-          appBar: !isWide
-              ? AppBarApp(
-                  title: 'Gestión del Inventario',
-                )
-              : null,
+          appBar: !isWide ? AppBarApp(title: 'Gestión del Inventario') : null,
 
           // Drawer solo para móvil
           drawer: isWide ? null : MySideBar(controller: widget.controller),
@@ -79,11 +74,16 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
           floatingActionButton: hasAccessProducts
               ? FloatingActionButton.extended(
                   onPressed: () => showProductForm(),
-                  backgroundColor: AppColors.primary,
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  icon: Icon(
+                    Icons.add,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  label: Text(
                     'Nuevo Producto',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
                   ),
                 )
               : null,
@@ -116,8 +116,8 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                         elevation: 0.0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
-                          side: const BorderSide(
-                            color: AppColors.border,
+                          side: BorderSide(
+                            color: Theme.of(context).dividerColor,
                             width: 3.0,
                           ),
                         ),
@@ -339,11 +339,11 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
 
   Widget _buildKpiCard(String title, String value, Color color) {
     return Card(
-      color: AppColors.secondary,
+      color: Theme.of(context).cardColor,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
-        side: const BorderSide(color: AppColors.border, width: 2.5),
+        side: BorderSide(color: Theme.of(context).dividerColor, width: 2.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -360,9 +360,9 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
             ),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -463,8 +463,10 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
       columnSpacing: 20.0,
       sortColumnIndex: _sortColumnIndex,
       sortAscending: _sortAscending,
-      dataRowColor: WidgetStateProperty.all(AppColors.background),
-      headingRowColor: WidgetStateProperty.all(AppColors.border),
+      dataRowColor: WidgetStateProperty.all(
+        Theme.of(context).scaffoldBackgroundColor,
+      ),
+      headingRowColor: WidgetStateProperty.all(Theme.of(context).dividerColor),
       headingRowHeight: 48.0,
       columns: [
         const DataColumn(
@@ -751,10 +753,10 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                     width: 120,
                                     height: 120,
                                     decoration: BoxDecoration(
-                                      color: AppColors.secondary,
+                                      color: Theme.of(context).cardColor,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: AppColors.border,
+                                        color: Theme.of(context).dividerColor,
                                         width: 2,
                                       ),
                                       image: imageToShow != null
@@ -765,11 +767,13 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                                           : null,
                                     ),
                                     child: imageToShow == null
-                                        ? const Center(
+                                        ? Center(
                                             child: Icon(
                                               Icons.add_a_photo_outlined,
                                               size: 40,
-                                              color: AppColors.textSecondary,
+                                              color: Theme.of(
+                                                context,
+                                              ).iconTheme.color,
                                             ),
                                           )
                                         : null,
@@ -862,16 +866,16 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
                             ),
                             const SizedBox(height: 16),
                             if (!isEditing)
-                            SwitchListTile(
-                              title: const Text('Producto Perecible'),
-                              value: isPerishable,
-                              onChanged: (bool value) {
-                                setStateModal(() {
-                                  isPerishable = value;
-                                });
-                                refresh();
-                              },
-                            ),
+                              SwitchListTile(
+                                title: const Text('Producto Perecible'),
+                                value: isPerishable,
+                                onChanged: (bool value) {
+                                  setStateModal(() {
+                                    isPerishable = value;
+                                  });
+                                  refresh();
+                                },
+                              ),
                             const SizedBox(height: 24),
                           ],
                         ),
