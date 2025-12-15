@@ -58,9 +58,9 @@ class CategoryFilterBar extends ConsumerWidget {
                   },
                   selectedColor: Theme.of(context).primaryColor,
                   labelStyle: TextStyle(
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).textTheme.bodyMedium?.color,
+                    // color: isSelected
+                    //     ? Theme.of(context).colorScheme.onSecondary
+                    //     : Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                   backgroundColor: Theme.of(context).cardColor,
                   shape: StadiumBorder(

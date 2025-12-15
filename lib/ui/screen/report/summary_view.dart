@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/providers/report/inventory_provider.dart';
@@ -27,25 +27,25 @@ class ResumeView extends ConsumerWidget {
         "Ventas Totales",
         "\$${provider.totalSales}",
         Icons.attach_money,
-        AppColors.success,
+        Colors.green, // Keep success color for money/positive
       ),
       KpiData(
         "Compras",
         "\$ ${provider.totalPurchases}",
         Icons.shopping_bag_outlined,
-        AppColors.hover,
+        Theme.of(context).primaryColor, // Replaced hover
       ),
       KpiData(
         "Ganancia Neta",
         "\$ ${provider.totalProfit}",
         Icons.account_balance_wallet_outlined,
-        AppColors.primary,
+        Theme.of(context).colorScheme.primary,
       ),
       KpiData(
         "Alertas Stock",
         "${inventoryProvider.lowStockItems.length} Items",
         Icons.warning_amber_rounded,
-        AppColors.edit,
+        Theme.of(context).colorScheme.secondary, // Replaced edit
       ),
     ];
 

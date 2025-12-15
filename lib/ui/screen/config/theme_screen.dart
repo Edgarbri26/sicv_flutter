@@ -56,11 +56,7 @@ class _ThemeScreenState extends ConsumerState<ThemeScreen> {
     final languages = ['es', 'en'];
 
     return Scaffold(
-      appBar: const AppBarApp(
-        title: 'Interfaz y Tema',
-        iconColor: Colors.black,
-        toolbarHeight: 64.0,
-      ),
+      appBar: const AppBarApp(title: 'Interfaz y Tema', toolbarHeight: 64.0),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -110,19 +106,18 @@ class _ThemeScreenState extends ConsumerState<ThemeScreen> {
 
                   const SizedBox(height: 16),
 
-                  DropDownApp<String>(
-                    labelText: 'Idioma del Sistema',
-                    prefixIcon: Icons.language,
-                    initialValue: _language,
-                    items: languages,
-                    itemToString: (s) => s == 'es' ? 'Español' : 'English',
-                    onChanged: (value) {
-                      if (value != null) setState(() => _language = value);
-                    },
-                  ),
+                  // DropDownApp<String>(
+                  //   labelText: 'Idioma del Sistema',
+                  //   prefixIcon: Icons.language,
+                  //   initialValue: _language,
+                  //   items: languages,
+                  //   itemToString: (s) => s == 'es' ? 'Español' : 'English',
+                  //   onChanged: (value) {
+                  //     if (value != null) setState(() => _language = value);
+                  //   },
+                  // ),
 
-                  const SizedBox(height: 16),
-
+                  // const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -152,35 +147,6 @@ class _ThemeScreenState extends ConsumerState<ThemeScreen> {
                 ],
               ),
             ),
-          ),
-
-          const SizedBox(height: 24),
-
-          ButtonApp(
-            text: 'Guardar Preferencias',
-            icon: Icons.save,
-            maxWidth: 250,
-            onPressed: () {
-              ref.read(themeProvider.notifier).setTheme(_stringToMode(_theme));
-              debugPrint('Guardar tema=$_theme, language=$_language');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Preferencias guardadas'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-          ButtonApp(
-            text: 'Guardar Configuración',
-            icon: Icons.save,
-            onPressed: () {},
-            isLoading: false,
-            maxWidth: 400,
           ),
         ],
       ),

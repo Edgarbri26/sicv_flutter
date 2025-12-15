@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/role_model.dart';
 import 'package:sicv_flutter/models/user/user_model.dart';
 import 'package:sicv_flutter/providers/role_provider.dart';
@@ -32,12 +32,12 @@ class _AdminUserManagementPageState
     final rolesAsync = ref.watch(rolesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const AppBarApp(title: 'Gestionar Usuarios'),
 
       // Botón Flotante para Agregar
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
         onPressed: () {
@@ -115,7 +115,9 @@ class _AdminUserManagementPageState
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(
+                          color: Theme.of(context).dividerColor,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: DataTable(
@@ -169,15 +171,15 @@ class _AdminUserManagementPageState
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
                                     user.role?.name ?? 'Sin role',
                                     style: TextStyle(
-                                      color: AppColors.primary,
+                                      color: Theme.of(context).primaryColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -427,7 +429,7 @@ class _AdminUserManagementPageState
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
             child: const Text("Guardar Cambios"),

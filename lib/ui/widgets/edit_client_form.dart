@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/client_model.dart';
 import 'package:sicv_flutter/services/client_service.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
@@ -87,9 +87,9 @@ class EditClientFormState extends State<EditClientForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
@@ -116,11 +116,15 @@ class EditClientFormState extends State<EditClientForm> {
               ),
             ),
             const SizedBox(height: 16),
-            const Row(
+            Row(
               children: [
-                Icon(Icons.edit_note, color: AppColors.primary, size: 24),
-                SizedBox(width: 8),
-                Text(
+                Icon(
+                  Icons.edit_note,
+                  color: Theme.of(context).primaryColor,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                const Text(
                   'Editar Cliente',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -167,12 +171,12 @@ class EditClientFormState extends State<EditClientForm> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      side: const BorderSide(color: AppColors.primary),
+                      side: BorderSide(color: Theme.of(context).primaryColor),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Cancelar',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

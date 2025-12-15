@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
@@ -64,9 +64,10 @@ class _BackupScreenState extends State<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(
+      appBar: const AppBarApp(
         title: 'Backup Automático',
-        iconColor: AppColors.textPrimary,
+        // iconColor: Theme.of(context).iconTheme.color, // AppBarApp already handles this? Or just remove if default is good.
+        // Let's assume AppBarApp's default is good or use Theme.
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

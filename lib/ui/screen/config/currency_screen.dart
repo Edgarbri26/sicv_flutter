@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/drop_down_app.dart';
@@ -67,10 +67,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(
-        title: 'Configuración de Moneda',
-        iconColor: AppColors.textPrimary,
-      ),
+      appBar: const AppBarApp(title: 'Configuración de Moneda'),
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 600),

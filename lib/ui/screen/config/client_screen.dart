@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // --- Asegúrate de que estas rutas de importación sean correctas ---
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/add_client_form.dart';
 import 'package:sicv_flutter/ui/widgets/edit_client_form.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
@@ -131,7 +131,7 @@ class ClientManagementPageState extends State<ClientManagementPage> {
     return Scaffold(
       appBar: const AppBarApp(
         title: 'Gestionar Clientes',
-        iconColor: Colors.black,
+        // iconColor: Colors.black, // Default to theme
         toolbarHeight: 64.0,
       ),
       body: Column(
@@ -146,9 +146,12 @@ class ClientManagementPageState extends State<ClientManagementPage> {
               child: Container(
                 margin: const EdgeInsets.all(25.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border, width: 3.0),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                    width: 3.0,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -379,8 +382,8 @@ class ClientManagementPageState extends State<ClientManagementPage> {
       columnSpacing: 20.0,
       sortColumnIndex: _sortColumnIndex,
       sortAscending: _sortAscending,
-      dataRowColor: WidgetStateProperty.all(AppColors.background),
-      headingRowColor: WidgetStateProperty.all(AppColors.border),
+      dataRowColor: WidgetStateProperty.all(Theme.of(context).cardColor),
+      headingRowColor: WidgetStateProperty.all(Theme.of(context).dividerColor),
       headingRowHeight: 48.0,
       columns: [
         DataColumn(

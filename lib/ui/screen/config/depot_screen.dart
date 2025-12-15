@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
 
@@ -350,7 +350,7 @@ class _DepotScreemState extends State<DepotScreem> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(title: 'Almacenes', iconColor: AppColors.textPrimary),
+      appBar: const AppBarApp(title: 'Almacenes'),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),

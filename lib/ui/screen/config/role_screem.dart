@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/providers/role_provider.dart';
 // Asegúrate de importar el archivo donde definiste los nuevos providers
@@ -23,7 +23,7 @@ class RoleListView extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSizes.spacingM),
             child: IconButton(
-              icon: const Icon(Icons.refresh, color: AppColors.primary),
+              icon: Icon(Icons.refresh, color: Theme.of(context).primaryColor),
               onPressed: () {
                 // 2. Usamos el método refresh() del notifier
                 ref.read(rolesProvider.notifier).refresh();

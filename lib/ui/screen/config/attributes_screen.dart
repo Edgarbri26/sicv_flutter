@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 class AttributesScreen extends StatelessWidget {
   const AttributesScreen({super.key});
@@ -10,16 +10,11 @@ class AttributesScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
-          iconTheme: IconThemeData(color: AppColors.textPrimary),
           title: const Text(
             'Atributos y Campos',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
           bottom: const TabBar(
             tabs: [

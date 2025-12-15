@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/movement/movement_model.dart';
 import 'package:sicv_flutter/models/movement/movement_type.dart';
 import 'package:sicv_flutter/models/product/product_model.dart';
@@ -335,7 +335,7 @@ class _AddMovementModalState extends ConsumerState<AddMovementModal> {
                       )
                     : const Text("GUARDAR"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,

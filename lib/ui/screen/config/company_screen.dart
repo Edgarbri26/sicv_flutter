@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -50,10 +50,7 @@ class _CompanyScreenState extends State<CompanyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarApp(
-        title: 'Información de la Empresa',
-        iconColor: AppColors.textPrimary,
-      ),
+      appBar: const AppBarApp(title: 'Información de la Empresa'),
       body: Form(
         key: _formKey,
         child: Center(

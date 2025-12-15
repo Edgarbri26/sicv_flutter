@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'dart:math';
 
 // 1. IMPORTA TU MODELO DE EFICIENCIA
@@ -14,7 +14,7 @@ import 'package:sicv_flutter/ui/widgets/report/chart_container.dart';
 import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
 import 'package:sicv_flutter/ui/widgets/report/app_pie_chart.dart';
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
-import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
+// import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
 
 class InventoryReportView extends ConsumerWidget {
   const InventoryReportView({super.key});
@@ -57,7 +57,11 @@ class InventoryReportView extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: state.isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.blue))
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -89,21 +93,25 @@ class InventoryReportView extends ConsumerWidget {
                             runSpacing: 8,
                             children: [
                               _buildLegendItem(
+                                context,
                                 Colors.green,
                                 "Líderes",
                                 "Alta Venta / Alta Ganancia",
                               ),
                               _buildLegendItem(
+                                context,
                                 Colors.blue,
                                 "Alta Rotación",
                                 "Alta Venta / Baja Ganancia",
                               ),
                               _buildLegendItem(
+                                context,
                                 Colors.orange,
                                 "Alto Margen",
                                 "Baja Venta / Alta Ganancia",
                               ),
                               _buildLegendItem(
+                                context,
                                 Colors.red,
                                 "Bajo Desempeño",
                                 "Baja Venta / Baja Ganancia",
@@ -165,7 +173,10 @@ class InventoryReportView extends ConsumerWidget {
             const SizedBox(height: 4),
             Text(
               "Valoración, eficiencia y niveles de stock",
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -200,11 +211,11 @@ class InventoryReportView extends ConsumerWidget {
         "Alertas Stock",
         "${data.lowStockItems.length}",
         Icons.warning_amber_rounded,
-        Colors.red,
+        Theme.of(context).colorScheme.error,
       ),
       KpiData(
         "Mejor Producto",
-        data.topProducts.first.name,
+        data.topProducts.isNotEmpty ? data.topProducts.first.name : "N/A",
         Icons.star_border,
         Colors.orange,
       ),
@@ -343,12 +354,12 @@ class _TopProductsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (products.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Text(
             "Sin ventas en este periodo.",
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: Theme.of(context).hintColor),
           ),
         ),
       );
@@ -390,11 +401,11 @@ class _TopProductsList extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: prod.percentage,
                   minHeight: 8,
-                  backgroundColor: AppColors.background,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     index == 0
-                        ? AppColors.info
-                        : Colors.blue.withOpacity(
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).primaryColor.withOpacity(
                             (0.8 - (index * 0.05)).clamp(0.2, 1.0),
                           ),
                   ),
@@ -410,7 +421,12 @@ class _TopProductsList extends StatelessWidget {
   }
 }
 
-Widget _buildLegendItem(Color color, String title, String subtitle) {
+Widget _buildLegendItem(
+  BuildContext context,
+  Color color,
+  String title,
+  String subtitle,
+) {
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -429,7 +445,7 @@ Widget _buildLegendItem(Color color, String title, String subtitle) {
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: Colors.grey, fontSize: 10),
+            style: TextStyle(color: Theme.of(context).hintColor, fontSize: 10),
           ),
         ],
       ),
@@ -476,10 +492,14 @@ class _InventoryEfficiencyChart extends StatelessWidget {
           drawHorizontalLine: true,
           verticalInterval: maxX / 5,
           horizontalInterval: maxY / 5,
-          getDrawingHorizontalLine: (value) =>
-              FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
-          getDrawingVerticalLine: (value) =>
-              FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            strokeWidth: 1,
+          ),
+          getDrawingVerticalLine: (value) => FlLine(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            strokeWidth: 1,
+          ),
         ),
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
@@ -492,7 +512,10 @@ class _InventoryEfficiencyChart extends StatelessWidget {
               reservedSize: 30,
               getTitlesWidget: (val, meta) => Text(
                 "${val.toInt()}",
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).hintColor,
+                ),
               ),
             ),
           ),
@@ -508,7 +531,10 @@ class _InventoryEfficiencyChart extends StatelessWidget {
                 val >= 1000
                     ? "${(val / 1000).toStringAsFixed(1)}k"
                     : "${val.toInt()}",
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).hintColor,
+                ),
               ),
             ),
           ),
@@ -521,7 +547,9 @@ class _InventoryEfficiencyChart extends StatelessWidget {
         ),
         borderData: FlBorderData(
           show: true,
-          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+          ),
         ),
         scatterSpots: points.map((point) {
           // Lógica de colores (igual que antes, pero usa los nuevos targets)
@@ -661,10 +689,10 @@ class _LowStockList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           "No hay alertas de stock.",
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: Theme.of(context).hintColor),
         ),
       );
     }
@@ -675,7 +703,7 @@ class _LowStockList extends StatelessWidget {
           : const NeverScrollableScrollPhysics(),
       itemCount: items.length,
       separatorBuilder: (c, i) =>
-          Divider(color: AppColors.border.withValues(alpha: 0.5)),
+          Divider(color: Theme.of(context).dividerColor.withOpacity(0.5)),
       itemBuilder: (context, index) {
         final item = items[index];
         return Padding(
@@ -685,12 +713,12 @@ class _LowStockList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
+                  color: Theme.of(context).colorScheme.error.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.inventory,
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                   size: 16,
                 ),
               ),
@@ -708,8 +736,8 @@ class _LowStockList extends StatelessWidget {
                     ),
                     Text(
                       "Stock actual: ${item.quantity}",
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: Theme.of(context).hintColor,
                         fontSize: 12,
                       ),
                     ),
@@ -720,14 +748,14 @@ class _LowStockList extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.error.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.error.withOpacity(0.5),
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   item.level.toUpperCase(),
-                  style: const TextStyle(
-                    color: AppColors.error,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),

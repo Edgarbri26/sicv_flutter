@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/providers_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/search_text_field_app.dart';
@@ -283,7 +283,7 @@ class _ProviderScreemState extends ConsumerState<ProviderScreem> {
     final providersAsyncValue = ref.watch(providersProvider);
 
     return Scaffold(
-      appBar: AppBarApp(title: 'Proveedores', iconColor: AppColors.textPrimary),
+      appBar: const AppBarApp(title: 'Proveedores'),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),

@@ -59,7 +59,7 @@ class _SideNavigationMenuState extends State<SideNavigationMenu> {
           icon: Icon(item.icon),
           selectedIcon: Icon(
             item.iconActive,
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(context).primaryColorLight,
           ), // Feedback visual mejorado
 
           label: Text(item.label),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/models/purchase/purchase_model.dart';
 import 'package:sicv_flutter/models/sale/sale_model.dart';
 import 'package:sicv_flutter/models/sale/sale_summary_model.dart';
@@ -214,7 +214,11 @@ class _FinancesViewState extends ConsumerState<FinancesView>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 40),
+            Icon(
+              Icons.error_outline,
+              color: Theme.of(context).colorScheme.error,
+              size: 40,
+            ),
             Text("Error: $err", textAlign: TextAlign.center),
             TextButton(
               onPressed: () => ref.refresh(salesHistoryProvider),
@@ -399,7 +403,7 @@ class _FinancesViewState extends ConsumerState<FinancesView>
               color: Theme.of(context).cardColor,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 48, color: AppColors.disabled),
+            child: Icon(icon, size: 48, color: Theme.of(context).disabledColor),
           ),
           const SizedBox(height: 16),
           Text(

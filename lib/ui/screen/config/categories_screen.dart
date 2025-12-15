@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/category_provider.dart';
 import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
@@ -39,7 +39,7 @@ class CategoriasScreenState extends ConsumerState<CategoriesScreen> {
   Widget build(BuildContext context) {
     final categoryState = ref.watch(categoryProvider);
     return Scaffold(
-      appBar: AppBarApp(title: 'Categorías', iconColor: AppColors.textPrimary),
+      appBar: const AppBarApp(title: 'Categorías'),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),

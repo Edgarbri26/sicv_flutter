@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/report/inventory_provider.dart'
     show AppPieChartData;
 import 'package:sicv_flutter/ui/widgets/report/date_filter_selector.dart';
@@ -11,7 +12,7 @@ import 'package:sicv_flutter/providers/report/supplier_provider.dart';
 import '../../widgets/report/app_pie_chart.dart';
 import 'package:sicv_flutter/ui/widgets/report/kpi_grid.dart';
 import 'package:sicv_flutter/ui/widgets/report/kpi_card.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 class SupplierReportView extends ConsumerWidget {
   const SupplierReportView({super.key});
@@ -32,9 +33,16 @@ class SupplierReportView extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              Icon(
+                Icons.error_outline,
+                color: Theme.of(context).colorScheme.error,
+                size: 48,
+              ),
               const SizedBox(height: 16),
-              Text("Error: $err", style: const TextStyle(color: Colors.grey)),
+              Text(
+                "Error: $err",
+                style: TextStyle(color: Theme.of(context).hintColor),
+              ),
               TextButton(
                 onPressed: () => ref.refresh(supplierReportProvider),
                 child: const Text("Reintentar"),
@@ -118,25 +126,25 @@ class SupplierReportView extends ConsumerWidget {
         "Gasto Total",
         "\$${data.totalSpentGlobal}",
         Icons.attach_money,
-        AppColors.success,
+        Colors.green,
       ),
       KpiData(
         "Compras Realizadas",
         "${data.totalTransactions}",
         Icons.shopping_bag_outlined,
-        AppColors.info,
+        Colors.lightBlue,
       ),
       KpiData(
         "Proveedores Activos",
         "${data.totalSuppliers}",
         Icons.storefront,
-        AppColors.primary,
+        Theme.of(context).primaryColor,
       ),
       KpiData(
         "Top Proveedor",
         data.topSupplierName,
         Icons.emoji_events_outlined,
-        AppColors.warning,
+        Colors.orange,
       ),
     ];
 
@@ -340,13 +348,13 @@ class _SupplierList extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.info.withValues(alpha: 0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.business,
                 size: 20,
-                color: AppColors.info,
+                color: Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(width: 16),
@@ -370,9 +378,11 @@ class _SupplierList extends StatelessWidget {
                           child: LinearProgressIndicator(
                             value: item.percentage / 100,
                             minHeight: 6,
-                            backgroundColor: AppColors.background,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.info,
+                              Theme.of(context).primaryColor,
                             ),
                           ),
                         ),

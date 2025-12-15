@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/providers/auth_provider.dart'; // Asegúrate de importar el provider correcto
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart';
@@ -147,7 +147,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: Theme.of(context).colorScheme.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -159,7 +159,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     // LayoutBuilder decide si mostrar vista Móvil o Escritorio
     return Scaffold(
-      backgroundColor: AppColors.background, // Fondo limpio
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // Fondo limpio
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -172,7 +174,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     constraints: const BoxConstraints(maxWidth: 500),
                     child: Card(
                       elevation: 8,
-                      shadowColor: Colors.black26,
+                      shadowColor: Theme.of(
+                        context,
+                      ).shadowColor.withOpacity(0.1),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -205,7 +209,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   /// Construye el contenido del formulario.
   /// Se extrae aquí para reutilizarlo en ambos layouts y limpiar el build().
   Widget _buildLoginForm() {
-    final primaryColor = AppColors.primary;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Form(
       key: _formKey,
@@ -218,8 +222,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.1),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Icon(
               Icons.lock_person_rounded,
@@ -242,7 +253,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           Text(
             'Inicia sesión para gestionar tu inventario',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            style: TextStyle(color: Theme.of(context).hintColor, fontSize: 14),
           ),
           const SizedBox(height: 32),
 
@@ -281,7 +292,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 _obscurePassword
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
-                color: Colors.grey,
+                color: Theme.of(context).iconTheme.color,
               ),
               onPressed: () =>
                   setState(() => _obscurePassword = !_obscurePassword),

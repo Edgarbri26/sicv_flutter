@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // 1. IMPORTA EL PAQUETE
-import 'package:calendar_date_picker2/calendar_date_picker2.dart'; 
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 
 class DateFilterSelector extends StatelessWidget {
   final String selectedFilter;
@@ -27,7 +27,7 @@ class DateFilterSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
@@ -36,24 +36,30 @@ class DateFilterSelector extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 18, color: Colors.blue[700]),
+              Icon(
+                Icons.calendar_today_outlined,
+                size: 18,
+                color: Theme.of(context).primaryColor,
+              ),
               const SizedBox(width: 8),
               Text(
                 _getDisplayText(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down,
-                  size: 20, color: Colors.grey),
+              Icon(
+                Icons.keyboard_arrow_down,
+                size: 20,
+                color: Theme.of(context).iconTheme.color,
+              ),
             ],
           ),
         ),
@@ -88,7 +94,7 @@ class DateFilterSelector extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -108,14 +114,19 @@ class DateFilterSelector extends StatelessWidget {
                     isSelected
                         ? Icons.radio_button_checked
                         : Icons.radio_button_unchecked,
-                    color: isSelected ? Colors.blue : Colors.grey,
+                    color: isSelected
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).unselectedWidgetColor,
                   ),
                   title: Text(
                     entry.value,
                     style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.blue[800] : Colors.black87,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                   onTap: () {
@@ -149,13 +160,15 @@ class DateFilterSelector extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
+
       isScrollControlled: true, // Importante para que se vea bien la altura
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (BuildContext ctx) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.65, // Ocupa 65% pantalla
+          height:
+              MediaQuery.of(context).size.height * 0.65, // Ocupa 65% pantalla
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
@@ -163,22 +176,24 @@ class DateFilterSelector extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Seleccionar Rango", 
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Seleccionar Rango",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(ctx),
-                  )
+                  ),
                 ],
               ),
               const Divider(),
-              
+
               // EL CALENDARIO INCRUSTADO
               Expanded(
                 child: CalendarDatePicker2WithActionButtons(
                   config: CalendarDatePicker2WithActionButtonsConfig(
                     calendarType: CalendarDatePicker2Type.range, // Modo Rango
-                    selectedDayHighlightColor: Colors.blue,
+                    selectedDayHighlightColor: Theme.of(context).primaryColor,
                     closeDialogOnCancelTapped: true,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
@@ -190,17 +205,19 @@ class DateFilterSelector extends StatelessWidget {
                   },
                   onCancelTapped: () => Navigator.pop(ctx),
                   onOkTapped: () {
-                    if (initDates.length == 2 && initDates[0] != null && initDates[1] != null) {
-                        // Ordenamos las fechas por si acaso
-                        initDates.sort((a, b) => a!.compareTo(b!));
-                        
-                        final range = DateTimeRange(
-                            start: initDates[0]!, 
-                            end: initDates[1]!
-                        );
-                        
-                        onDateRangeChanged(range);
-                        Navigator.pop(ctx);
+                    if (initDates.length == 2 &&
+                        initDates[0] != null &&
+                        initDates[1] != null) {
+                      // Ordenamos las fechas por si acaso
+                      initDates.sort((a, b) => a!.compareTo(b!));
+
+                      final range = DateTimeRange(
+                        start: initDates[0]!,
+                        end: initDates[1]!,
+                      );
+
+                      onDateRangeChanged(range);
+                      Navigator.pop(ctx);
                     }
                   },
                 ),

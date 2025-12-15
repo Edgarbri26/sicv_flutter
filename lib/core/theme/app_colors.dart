@@ -6,6 +6,8 @@ class AppColors {
   /// Color principal de la aplicación.
   /// (Azul Pizarra Oscuro)
   static const Color primary = Color.fromARGB(255, 45, 63, 87);
+  // Color principal para Dark Mode (Más claro para contraste)
+  static const Color primaryLight = Color(0xFF3B82F6); // Blue 500 equivalent
 
   /// Color secundario, usado generalmente para SUPERFICIES (Tarjetas, Inputs).
   /// Mantenlo blanco para que contraste con el fondo.

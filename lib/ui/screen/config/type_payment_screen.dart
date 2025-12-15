@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/type_payment_model.dart';
 import 'package:sicv_flutter/services/type_payment_service.dart';
@@ -245,7 +245,7 @@ class _TypePaymentScreenState extends State<TypePaymentScreen> {
                     ),
                     leading: Icon(
                       Icons.payment,
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                       size: AppSizes.iconL,
                     ),
                   );

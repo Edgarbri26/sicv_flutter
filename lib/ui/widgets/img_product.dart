@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 
 class ImgProduct extends StatelessWidget {
@@ -18,7 +18,7 @@ class ImgProduct extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: AppColors.iconPassive.withValues(alpha: 0.2),
+        color: Theme.of(context).disabledColor.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppSizes.borderRadiusM),
       ),
       child: (imageUrl.isNotEmpty)
@@ -28,7 +28,11 @@ class ImgProduct extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) =>
                   const Icon(Icons.broken_image),
             )
-          : Icon(Icons.inventory_2, size: 40, color: Theme.of(context).colorScheme.primary),
+          : Icon(
+              Icons.inventory_2,
+              size: 40,
+              color: Theme.of(context).colorScheme.primary,
+            ),
     );
   }
 }

@@ -113,7 +113,7 @@ class Themes {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primaryLight,
         foregroundColor: Colors.white,
         minimumSize: Size(double.infinity, AppSizes.buttonHeight),
         shape: RoundedRectangleBorder(
@@ -121,6 +121,11 @@ class Themes {
         ),
         textStyle: AppTextStyles.bodyMedium,
       ),
+    ),
+
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primaryLight,
+      foregroundColor: Colors.white,
     ),
 
     inputDecorationTheme: InputDecorationTheme(

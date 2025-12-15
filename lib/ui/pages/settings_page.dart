@@ -181,13 +181,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                     const SizedBox(height: 16),
 
-                    _buildSwitchTile(
-                      title: 'Notificaciones',
-                      value: _notificationsEnabled,
-                      onChanged: (value) =>
-                          setState(() => _notificationsEnabled = value),
-                      icon: Icons.notifications,
-                    ),
+                    // _buildSwitchTile(
+                    //   title: 'Notificaciones',
+                    //   value: _notificationsEnabled,
+                    //   onChanged: (value) =>
+                    //       setState(() => _notificationsEnabled = value),
+                    //   icon: Icons.notifications,
+                    // ),
                     _buildConfigTile(
                       context: context,
                       title: 'Interfaz y Tema',

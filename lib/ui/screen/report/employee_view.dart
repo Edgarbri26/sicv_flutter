@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// // import 'package:sicv_flutter/core/theme/app_colors.dart';
 
 // 1. IMPORTA TU PROVIDER
 import 'package:sicv_flutter/providers/report/employee_provider.dart';
@@ -27,20 +27,26 @@ class EmployeeReportView extends ConsumerWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: employeeStateAsync.when(
         // ESTADO: CARGANDO
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+        loading: () => Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColor,
+          ),
         ),
         // ESTADO: ERROR
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+              Icon(
+                Icons.error_outline,
+                color: Theme.of(context).colorScheme.error,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Error al cargar reporte de personal:\n$err',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: Theme.of(context).hintColor),
               ),
               const SizedBox(height: 16),
               TextButton.icon(
@@ -143,7 +149,7 @@ class EmployeeReportView extends ConsumerWidget {
         "Empleados Activos",
         "${data.activeEmployees}",
         Icons.people_alt_outlined,
-        AppColors.info,
+        Colors.lightBlue,
       ),
       KpiData(
         "Mejor Desempeño",
@@ -155,7 +161,7 @@ class EmployeeReportView extends ConsumerWidget {
         "Ganancia Total",
         "\$${data.totalProfit}",
         Icons.attach_money,
-        AppColors.success,
+        Colors.green,
       ),
       KpiData(
         "Promedio Ganancia",
@@ -186,10 +192,12 @@ class EmployeeReportView extends ConsumerWidget {
                   subtitle: "Cantidad de ventas realizadas",
                   fillAvailableSpace: true,
                   child: data.chartData.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
                             "Sin datos de ventas",
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(
+                              color: Theme.of(context).hintColor,
+                            ),
                           ),
                         )
                       : _EmployeeBarChart(data: data.chartData),
@@ -213,20 +221,23 @@ class EmployeeReportView extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _buildGuideItem(
+                              context,
                               Icons.attach_money,
-                              AppColors.success,
+                              Colors.green,
                               "Eje Vertical",
                               "Rentabilidad",
                             ),
                             _buildGuideItem(
+                              context,
                               Icons.shopping_cart,
-                              AppColors.info,
+                              Colors.blue,
                               "Eje Horizontal",
                               "Volumen",
                             ),
                             _buildGuideItem(
+                              context,
                               Icons.trending_up,
-                              AppColors.edit,
+                              Colors.orange,
                               "Objetivo",
                               "Sup. Derecha",
                             ),
@@ -235,11 +246,11 @@ class EmployeeReportView extends ConsumerWidget {
                       ),
                       Expanded(
                         child: data.correlationData.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: Text(
                                   "Sin datos de correlación",
                                   style: TextStyle(
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).hintColor,
                                   ),
                                 ),
                               )
@@ -258,12 +269,12 @@ class EmployeeReportView extends ConsumerWidget {
           title: "Detalle de Equipo",
           subtitle: "Estado y ganancias generadas",
           child: data.employees.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Text(
                       "No hay empleados con ventas",
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: Theme.of(context).hintColor),
                     ),
                   ),
                 )
@@ -282,10 +293,10 @@ class EmployeeReportView extends ConsumerWidget {
           child: AspectRatio(
             aspectRatio: 1.3,
             child: data.correlationData.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       "Sin datos",
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: Theme.of(context).hintColor),
                     ),
                   )
                 : _CorrelationChart(data: data.correlationData),
@@ -298,10 +309,10 @@ class EmployeeReportView extends ConsumerWidget {
           child: AspectRatio(
             aspectRatio: 1.5,
             child: data.chartData.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       "Sin datos",
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: Theme.of(context).hintColor),
                     ),
                   )
                 : _EmployeeBarChart(data: data.chartData),
@@ -312,12 +323,12 @@ class EmployeeReportView extends ConsumerWidget {
           title: "Detalle de Equipo",
           subtitle: "Estado actual",
           child: data.employees.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Text(
                       "No hay empleados con ventas",
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: Theme.of(context).hintColor),
                     ),
                   ),
                 )
@@ -346,13 +357,13 @@ class _EmployeeBarChart extends StatelessWidget {
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => AppColors.primary,
+            getTooltipColor: (group) => Theme.of(context).primaryColor,
             tooltipBorderRadius: BorderRadius.circular(8),
             getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                 BarTooltipItem(
                   rod.toY.toInt().toString(),
-                  const TextStyle(
-                    color: AppColors.secondary,
+                  TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -395,7 +406,7 @@ class _EmployeeBarChart extends StatelessWidget {
           drawVerticalLine: false,
           horizontalInterval: maxY / 5,
           getDrawingHorizontalLine: (val) => FlLine(
-            color: AppColors.border.withValues(alpha: 0.1),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
             strokeWidth: 1,
           ),
         ),
@@ -422,16 +433,22 @@ class _EmployeeBarChart extends StatelessWidget {
   }
 }
 
-Widget _buildGuideItem(IconData icon, Color color, String label, String value) {
+Widget _buildGuideItem(
+  BuildContext context,
+  IconData icon,
+  Color color,
+  String label,
+  String value,
+) {
   return Column(
     children: [
       Icon(icon, size: 18, color: color),
       const SizedBox(height: 4),
       Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
-          color: AppColors.textSecondary,
+          color: Theme.of(context).hintColor,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -467,10 +484,12 @@ class _CorrelationChart extends StatelessWidget {
           show: true,
           drawVerticalLine: true,
           drawHorizontalLine: true,
-          getDrawingHorizontalLine: (val) =>
-              FlLine(color: AppColors.border.withValues(alpha: 0.1)),
-          getDrawingVerticalLine: (val) =>
-              FlLine(color: AppColors.border.withValues(alpha: 0.1)),
+          getDrawingHorizontalLine: (val) => FlLine(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          ),
+          getDrawingVerticalLine: (val) => FlLine(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+          ),
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
@@ -485,9 +504,9 @@ class _CorrelationChart extends StatelessWidget {
                 val >= 1000
                     ? "${(val / 1000).toStringAsFixed(0)}k"
                     : "${val.toInt()}",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).hintColor,
                 ),
               ),
             ),
@@ -501,9 +520,9 @@ class _CorrelationChart extends StatelessWidget {
               showTitles: true,
               getTitlesWidget: (val, meta) => Text(
                 "${val.toInt()}",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).hintColor,
                 ),
               ),
             ),
@@ -517,7 +536,9 @@ class _CorrelationChart extends StatelessWidget {
         ),
         borderData: FlBorderData(
           show: true,
-          border: Border.all(color: AppColors.border.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+          ),
         ),
         scatterSpots: data.map((point) {
           return ScatterSpot(
@@ -533,7 +554,7 @@ class _CorrelationChart extends StatelessWidget {
         scatterTouchData: ScatterTouchData(
           enabled: true,
           touchTooltipData: ScatterTouchTooltipData(
-            getTooltipColor: (spot) => AppColors.primary,
+            getTooltipColor: (spot) => Theme.of(context).primaryColor,
             getTooltipItems: (ScatterSpot spot) {
               try {
                 final employee = data.firstWhere(
@@ -544,14 +565,14 @@ class _CorrelationChart extends StatelessWidget {
                     "Desconocido",
                     0,
                     0,
-                    AppColors.disabled,
+                    Theme.of(context).disabledColor,
                   ),
                 );
                 return XAxisTooltipItem(
                   text:
                       "${employee.name}\nVentas: ${spot.x.toInt()}\nGanancia: \$${spot.y.toStringAsFixed(0)}",
-                  textStyle: const TextStyle(
-                    color: AppColors.secondary,
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -590,12 +611,14 @@ class _EmployeeList extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                backgroundColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.1),
                 radius: 20,
                 child: Text(
                   emp.name.isNotEmpty ? emp.name.substring(0, 1) : "?",
-                  style: const TextStyle(
-                    color: AppColors.primary,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -615,7 +638,7 @@ class _EmployeeList extends StatelessWidget {
                     Text(
                       emp.role,
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).hintColor,
                         fontSize: 12,
                       ),
                     ),
@@ -637,8 +660,8 @@ class _EmployeeList extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: emp.status == "Activo"
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.warning.withValues(alpha: 0.1),
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -646,8 +669,8 @@ class _EmployeeList extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         color: emp.status == "Activo"
-                            ? AppColors.success
-                            : AppColors.warning,
+                            ? Colors.green
+                            : Colors.orange,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

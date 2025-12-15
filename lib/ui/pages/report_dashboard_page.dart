@@ -1,6 +1,6 @@
 // lib/pages/report_dashboard_page.dart
 import 'package:flutter/material.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart';
+// import 'package:sicv_flutter/core/theme/app_colors.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
 import 'package:sicv_flutter/models/icon_menu.dart';
 import 'package:sicv_flutter/ui/screen/report/clients_view.dart';
@@ -85,13 +85,13 @@ class _ReportDashboardPageState extends State<ReportDashboardPage>
   }
 
   /// Lista de las vistas principales que se mostrarán.
-  static const List<Widget> _mainViews = [
-    ResumeView(),
-    FinancesView(), // Esta vista contendrá tu código original
-    InventoryReportView(),
-    EmployeeReportView(),
-    ClientReportView(),
-    SupplierReportView(),
+  static final List<Widget> _mainViews = [
+    const ResumeView(),
+    const FinancesView(), // Esta vista contendrá tu código original
+    const InventoryReportView(),
+    const EmployeeReportView(),
+    const ClientReportView(),
+    const SupplierReportView(),
   ];
 
   @override
