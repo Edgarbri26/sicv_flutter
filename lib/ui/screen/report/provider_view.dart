@@ -154,16 +154,14 @@ class SupplierReportView extends ConsumerWidget {
             child: _ChartContainer(
               title: "Distribución del Gasto",
               subtitle: "¿A quién le compro más? (% del dinero)",
+              fillAvailableSpace: true,
               child: data.spendingDistribution.isEmpty
                   ? const Center(child: Text("Sin datos"))
                   : Row(
                       children: [
                         Expanded(
                           flex: 3,
-                          child: SizedBox(
-                            height: 250,
-                            child: AppPieChart(data: data.spendingDistribution),
-                          ),
+                          child: AppPieChart(data: data.spendingDistribution),
                         ),
                         const SizedBox(width: 20),
                         Expanded(
@@ -180,6 +178,7 @@ class SupplierReportView extends ConsumerWidget {
             child: _ChartContainer(
               title: "Detalle por Proveedor",
               subtitle: "Historial de compras acumulado",
+              fillAvailableSpace: true,
               child: data.suppliersList.isEmpty
                   ? const Center(child: Text("Sin datos"))
                   : _SupplierList(
@@ -229,11 +228,13 @@ class _ChartContainer extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget child;
+  final bool fillAvailableSpace;
 
   const _ChartContainer({
     required this.title,
     required this.child,
     this.subtitle,
+    this.fillAvailableSpace = false,
   });
 
   @override
@@ -263,7 +264,7 @@ class _ChartContainer extends StatelessWidget {
             Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
           ],
           const SizedBox(height: 24),
-          child,
+          fillAvailableSpace ? Expanded(child: child) : child,
         ],
       ),
     );

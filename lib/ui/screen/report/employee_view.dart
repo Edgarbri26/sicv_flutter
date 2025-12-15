@@ -173,17 +173,18 @@ class EmployeeReportView extends ConsumerWidget {
   Widget _buildDesktopLayout(BuildContext context, EmployeeReportState data) {
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Gráfico de Barras
-            Expanded(
-              flex: 1,
-              child: ChartContainer(
-                title: "Ventas por Empleado",
-                subtitle: "Cantidad de ventas realizadas",
-                child: AspectRatio(
-                  aspectRatio: 1.6,
+        SizedBox(
+          height: 550,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Gráfico de Barras
+              Expanded(
+                flex: 1,
+                child: ChartContainer(
+                  title: "Ventas por Empleado",
+                  subtitle: "Cantidad de ventas realizadas",
+                  fillAvailableSpace: true,
                   child: data.chartData.isEmpty
                       ? const Center(
                           child: Text(
@@ -194,62 +195,62 @@ class EmployeeReportView extends ConsumerWidget {
                       : _EmployeeBarChart(data: data.chartData),
                 ),
               ),
-            ),
-            const SizedBox(width: 24),
-            // Gráfico de Correlación
-            Expanded(
-              flex: 1,
-              child: ChartContainer(
-                title: "Análisis de Desempeño: Cantidad vs Ganancia",
-                subtitle:
-                    "Relación entre el esfuerzo de venta y el retorno financiero",
-                child: Column(
-                  children: [
-                    // --- GUÍA DE INTERPRETACIÓN ---
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildGuideItem(
-                            Icons.attach_money,
-                            AppColors.success,
-                            "Eje Vertical",
-                            "Rentabilidad",
-                          ),
-                          _buildGuideItem(
-                            Icons.shopping_cart,
-                            AppColors.info,
-                            "Eje Horizontal",
-                            "Volumen",
-                          ),
-                          _buildGuideItem(
-                            Icons.trending_up,
-                            AppColors.edit,
-                            "Objetivo",
-                            "Sup. Derecha",
-                          ),
-                        ],
+              const SizedBox(width: 24),
+              // Gráfico de Correlación
+              Expanded(
+                flex: 1,
+                child: ChartContainer(
+                  title: "Análisis de Desempeño: Cantidad vs Ganancia",
+                  subtitle:
+                      "Relación entre el esfuerzo de venta y el retorno financiero",
+                  fillAvailableSpace: true,
+                  child: Column(
+                    children: [
+                      // --- GUÍA DE INTERPRETACIÓN ---
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildGuideItem(
+                              Icons.attach_money,
+                              AppColors.success,
+                              "Eje Vertical",
+                              "Rentabilidad",
+                            ),
+                            _buildGuideItem(
+                              Icons.shopping_cart,
+                              AppColors.info,
+                              "Eje Horizontal",
+                              "Volumen",
+                            ),
+                            _buildGuideItem(
+                              Icons.trending_up,
+                              AppColors.edit,
+                              "Objetivo",
+                              "Sup. Derecha",
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    AspectRatio(
-                      aspectRatio: 1.6,
-                      child: data.correlationData.isEmpty
-                          ? const Center(
-                              child: Text(
-                                "Sin datos de correlación",
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
+                      Expanded(
+                        child: data.correlationData.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  "Sin datos de correlación",
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
-                              ),
-                            )
-                          : _CorrelationChart(data: data.correlationData),
-                    ),
-                  ],
+                              )
+                            : _CorrelationChart(data: data.correlationData),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 24),
         // Lista de Empleados
