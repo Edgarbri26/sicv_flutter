@@ -307,8 +307,7 @@ class _AdminUserManagementPageState
                 itemToString: (r) => r.name,
                 onChanged: (r) => setStateModal(() => selectedRole = r),
               ),
-              const SizedBox(height: 16),
-              Row(
+              /*Row(
                 children: [
                   Checkbox(
                     value: isActive,
@@ -318,7 +317,7 @@ class _AdminUserManagementPageState
                   const SizedBox(width: 8),
                   const Text("Usuario Activo"),
                 ],
-              ),
+              ),*/
               const SizedBox(height: 32),
               ButtonApp(
                 text: "GUARDAR USUARIO",
