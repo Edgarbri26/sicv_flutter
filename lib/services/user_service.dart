@@ -85,14 +85,21 @@ class UserService {
 
   // --- ELIMINAR (DESACTIVAR) USUARIO ---
   Future<void> delete(String userCi) async {
-    final uri = Uri.parse('$_baseUrl/user/$userCi');
+    final url = Uri.parse('$_baseUrl/user/$userCi/deactivate');
+
     try {
-      final response = await _client.delete(uri);
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Error al eliminar usuario');
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Error al desactivar la categoría (Código: ${response.statusCode})',
+        );
       }
     } catch (e) {
-      rethrow;
+      throw Exception('Error de conexión: $e');
     }
   }
 }
