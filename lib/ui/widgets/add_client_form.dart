@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sicv_flutter/core/theme/app_colors.dart' show AppColors;
+
 import 'package:sicv_flutter/services/client_service.dart';
-import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart' show ButtonApp;
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart'
+    show ButtonApp, ButtonType;
 import 'package:sicv_flutter/ui/widgets/atomic/text_field_app.dart'
     show TextFieldApp;
 
@@ -63,7 +64,7 @@ class AddClientFormState extends State<AddClientForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al crear: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     } finally {
@@ -76,8 +77,8 @@ class AddClientFormState extends State<AddClientForm> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -101,15 +102,19 @@ class AddClientFormState extends State<AddClientForm> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.person_add, color: AppColors.primary, size: 24),
+                  Icon(
+                    Icons.person_add,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 24,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Registrar Nuevo Cliente',
@@ -118,9 +123,12 @@ class AddClientFormState extends State<AddClientForm> {
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Completa los datos del nuevo cliente',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
               TextFieldApp(
@@ -185,24 +193,13 @@ class AddClientFormState extends State<AddClientForm> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
+                    child: ButtonApp(
+                      text: 'Cancelar',
                       onPressed: _isLoading
-                          ? null
+                          ? () {}
                           : () => Navigator.of(context).pop(false),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        side: const BorderSide(color: AppColors.primary),
-                      ),
-                      child: const Text(
-                        'Cancelar',
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      type: ButtonType.secondary,
+                      fullWidth: true,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -212,6 +209,7 @@ class AddClientFormState extends State<AddClientForm> {
                       icon: Icons.save,
                       isLoading: _isLoading,
                       onPressed: _submitForm,
+                      fullWidth: true,
                     ),
                   ),
                 ],

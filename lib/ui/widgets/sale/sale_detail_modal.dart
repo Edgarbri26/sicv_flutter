@@ -431,53 +431,59 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ButtonApp(
-                    text: "CANCELAR VENTA",
-                    type: ButtonType.secondary,
-                    icon: Icons.restart_alt_rounded,
-                    onPressed: _restartSale,
+                  Expanded(
+                    child: ButtonApp(
+                      text: "CANCELAR VENTA",
+                      type: ButtonType.secondary,
+                      icon: Icons.restart_alt_rounded,
+                      onPressed: _restartSale,
+                      fullWidth: true,
+                    ),
                   ),
                   const SizedBox(width: 16),
-                  ButtonApp(
-                    text: "CONFIRMAR VENTA",
-                    type: ButtonType.primary,
-                    onPressed: () {
-                      if (!_formKey.currentState!.validate()) {
-                        return;
-                      }
-                      if (widget.items.isEmpty) {
-                        _modalMessengerKey.currentState?.showSnackBar(
-                          const SnackBar(
-                            content: Text('⚠️ El carrito está vacío.'),
-                            backgroundColor: Colors.orange,
+                  Expanded(
+                    child: ButtonApp(
+                      text: "CONFIRMAR VENTA",
+                      type: ButtonType.primary,
+                      fullWidth: true,
+                      onPressed: () {
+                        if (!_formKey.currentState!.validate()) {
+                          return;
+                        }
+                        if (widget.items.isEmpty) {
+                          _modalMessengerKey.currentState?.showSnackBar(
+                            const SnackBar(
+                              content: Text('⚠️ El carrito está vacío.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+
+                        showDialog(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text("Confirmar Venta"),
+                            content: const Text(
+                              "¿Estás seguro de que deseas procesar esta venta?",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(dialogContext),
+                                child: const Text("NO"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(dialogContext);
+                                  widget.onConfirm(context, _modalMessengerKey);
+                                },
+                                child: const Text("SI"),
+                              ),
+                            ],
                           ),
                         );
-                        return;
-                      }
-
-                      showDialog(
-                        context: context,
-                        builder: (dialogContext) => AlertDialog(
-                          title: const Text("Confirmar Venta"),
-                          content: const Text(
-                            "¿Estás seguro de que deseas procesar esta venta?",
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(dialogContext),
-                              child: const Text("NO"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(dialogContext);
-                                widget.onConfirm(context, _modalMessengerKey);
-                              },
-                              child: const Text("SI"),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ],
               ),
