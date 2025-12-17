@@ -92,7 +92,8 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
     return Column(
       children: [
         // --- FILTROS ---
-        _buildFilters(ref),
+        // --- FILTROS ---
+        _buildFilters(ref, isWide),
 
         // --- CONTENIDO ---
         Expanded(
@@ -108,18 +109,90 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
     );
   }
 
-  Widget _buildFilters(WidgetRef ref) {
+  Widget _buildFilters(WidgetRef ref, bool isWide) {
+    if (!isWide) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextFieldApp(
+              controller: _searchController,
+              labelText: 'Buscar producto...',
+              prefixIcon: Icons.search,
+              onChanged: (val) =>
+                  ref.read(movementSearchProvider.notifier).state = val,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<MovementType>(
+                    decoration: InputDecoration(
+                      labelText: 'Tipo',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 0,
+                      ),
+                    ),
+                    value: ref.watch(movementTypeFilterProvider),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text("Todos")),
+                      ...MovementType.values.map(
+                        (t) => DropdownMenuItem(
+                          value: t,
+                          child: Text(t.displayName),
+                        ),
+                      ),
+                    ],
+                    onChanged: (v) =>
+                        ref.read(movementTypeFilterProvider.notifier).state = v,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Fecha',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 0,
+                      ),
+                    ),
+                    value: ref.watch(movementDateRangeProvider),
+                    items:
+                        ['Hoy', 'Ayer', 'Últimos 7 días', 'Este mes', 'Todos']
+                            .map(
+                              (d) => DropdownMenuItem(value: d, child: Text(d)),
+                            )
+                            .toList(),
+                    onChanged: (v) =>
+                        ref.read(movementDateRangeProvider.notifier).state = v!,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Wrap(
         spacing: 12,
         runSpacing: 12,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           // Buscador
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 300),
+          SizedBox(
+            width: 300,
             child: TextFieldApp(
-              // CAMBIO 3: Pasamos el controlador requerido
               controller: _searchController,
               labelText: 'Buscar producto...',
               prefixIcon: Icons.search,
@@ -128,30 +201,64 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
             ),
           ),
           // Filtro Tipo
-          DropdownButton<MovementType>(
-            hint: const Text("Tipo"),
-            value: ref.watch(movementTypeFilterProvider),
-            items: [
-              const DropdownMenuItem(value: null, child: Text("Todos")),
-              ...MovementType.values.map(
-                (t) => DropdownMenuItem(value: t, child: Text(t.displayName)),
+          SizedBox(
+            width: 150,
+            child: DropdownButtonFormField<MovementType>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'Tipo',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 0,
+                ),
               ),
-            ],
-            onChanged: (v) =>
-                ref.read(movementTypeFilterProvider.notifier).state = v,
+              value: ref.watch(movementTypeFilterProvider),
+              items: [
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text("Todos", overflow: TextOverflow.ellipsis),
+                ),
+                ...MovementType.values.map(
+                  (t) => DropdownMenuItem(
+                    value: t,
+                    child: Text(t.displayName, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ],
+              onChanged: (v) =>
+                  ref.read(movementTypeFilterProvider.notifier).state = v,
+            ),
           ),
           // Filtro Fecha
-          DropdownButton<String>(
-            value: ref.watch(movementDateRangeProvider),
-            items: [
-              'Hoy',
-              'Ayer',
-              'Últimos 7 días',
-              'Este mes',
-              'Todos',
-            ].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-            onChanged: (v) =>
-                ref.read(movementDateRangeProvider.notifier).state = v!,
+          SizedBox(
+            width: 150,
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'Fecha',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 0,
+                ),
+              ),
+              value: ref.watch(movementDateRangeProvider),
+              items: ['Hoy', 'Ayer', 'Últimos 7 días', 'Este mes', 'Todos']
+                  .map(
+                    (d) => DropdownMenuItem(
+                      value: d,
+                      child: Text(d, overflow: TextOverflow.ellipsis),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) =>
+                  ref.read(movementDateRangeProvider.notifier).state = v!,
+            ),
           ),
         ],
       ),

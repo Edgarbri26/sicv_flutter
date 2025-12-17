@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/providers/cliente_provider.dart';
@@ -46,6 +47,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
   late ClientModel? _selectedClient;
   late TypePaymentModel? _selectedTypePayment;
   final FocusNode _paymentFocusNode = FocusNode();
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -57,6 +59,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
   @override
   void dispose() {
     _paymentFocusNode.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -412,7 +415,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: Theme.of(context).hintColor,
                           ),
                         ),
                       ],
@@ -475,6 +478,10 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(dialogContext);
+                                  // Reproducir sonido
+                                  _audioPlayer.play(
+                                    AssetSource('sounds/cash_register.mp3'),
+                                  );
                                   widget.onConfirm(context, _modalMessengerKey);
                                 },
                                 child: const Text("SI"),

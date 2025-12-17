@@ -55,6 +55,7 @@ dependencies:
   calendar_date_picker2: ^2.0.1
   local_auth: ^2.3.0
   dio: ^5.9.0
+  audioplayers: ^6.5.1
   # Core de Firebase y Mensajería Cloud
   
   # firebase_messaging: ^14.7.13 # Asegúrate de usar la versión más reciente
@@ -108,6 +109,7 @@ flutter:
   assets:
     - .env
     - assets/logo.png
+    - assets/sounds/
 
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

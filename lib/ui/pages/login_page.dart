@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
 import 'package:sicv_flutter/config/app_routes.dart';
@@ -42,17 +43,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _checkBiometrics() async {
+    if (kIsWeb) return;
     final canCheck = await _biometricService.checkBiometrics();
     if (mounted) setState(() => _canCheckBiometrics = canCheck);
   }
 
   Future<void> _checkStoredCredentials() async {
+    if (kIsWeb) return;
     final creds = await ref.read(authServiceProvider).getCredentials();
     if (mounted && creds != null) {
       setState(() {
         _hasStoredCredentials = true;
-        // Opcional: Pre-llenar usuario si se desea
-        // _userCtrl.text = creds['user_ci']!;
+        _userCtrl.text = creds['user_ci']!;
+        _passCtrl.text = creds['password']!;
+        _rememberMe = true;
       });
     }
   }
@@ -102,11 +106,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (success) {
         // Guardar o Borrar credenciales según "Recuérdame"
-        final authService = ref.read(authServiceProvider);
-        if (_rememberMe) {
-          await authService.saveCredentials(user, pass);
-        } else {
-          await authService.clearCredentials();
+        // Solo si NO es web (secure storage puede fallar o no ser deseado en web simple)
+        if (!kIsWeb) {
+          final authService = ref.read(authServiceProvider);
+          if (_rememberMe) {
+            await authService.saveCredentials(user, pass);
+          } else {
+            await authService.clearCredentials();
+          }
         }
 
         // ÉXITO: Navegar al Home y reemplazar la ruta de login para que no puedan volver atrás
@@ -222,7 +229,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -234,7 +241,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             child: Icon(
               Icons.lock_person_rounded,
-              color: primaryColor,
+              color: Theme.of(context).colorScheme.onPrimary,
               size: 40,
             ),
           ),
@@ -246,7 +253,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: primaryColor,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           const SizedBox(height: 8),
@@ -300,24 +307,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
 
           // 3.5 Remember Me & Biometrics toggle
-          Row(
-            children: [
-              Checkbox(
-                value: _rememberMe,
-                activeColor: primaryColor,
-                onChanged: (v) => setState(() => _rememberMe = v ?? false),
-              ),
-              const Text('Recuérdame'),
-              const Spacer(),
-              // Mostrar botón biométrico si es posible usarlo y hay algo guardado
-              if (_canCheckBiometrics && _hasStoredCredentials)
-                IconButton(
-                  icon: Icon(Icons.fingerprint, size: 36, color: primaryColor),
-                  tooltip: 'Ingresar con Biometría',
-                  onPressed: _isLoading ? null : _loginWithBiometrics,
+          // 3.5 Remember Me & Biometrics toggle (Solo App móvil/desktop)
+          if (!kIsWeb)
+            Row(
+              children: [
+                Checkbox(
+                  value: _rememberMe,
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  onChanged: (v) => setState(() => _rememberMe = v ?? false),
                 ),
-            ],
-          ),
+                const Text('Recuérdame'),
+                const Spacer(),
+                // Mostrar botón biométrico si es posible usarlo y hay algo guardado
+                if (_canCheckBiometrics && _hasStoredCredentials)
+                  IconButton(
+                    icon: Icon(
+                      Icons.fingerprint,
+                      size: 36,
+                      color: primaryColor,
+                    ),
+                    tooltip: 'Ingresar con Biometría',
+                    onPressed: _isLoading ? null : _loginWithBiometrics,
+                  ),
+              ],
+            ),
 
           const SizedBox(height: 24),
 

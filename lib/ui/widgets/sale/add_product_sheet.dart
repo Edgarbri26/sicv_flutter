@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:sicv_flutter/models/index.dart';
 import 'package:sicv_flutter/models/product/stock_option_model.dart';
 import 'package:sicv_flutter/providers/product_provider.dart';
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
 
 class AddProductSheet extends ConsumerStatefulWidget {
   final ProductModel product;
@@ -211,8 +212,9 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                         children: availableLots.map((lot) {
                           final isSelected = _selectedLotId == lot.lotId;
                           final expirationDate = lot.expiration != null
-                              ? DateFormat('dd/MM/yyyy')
-                                  .format(DateTime.parse(lot.expiration!))
+                              ? DateFormat(
+                                  'dd/MM/yyyy',
+                                ).format(DateTime.parse(lot.expiration!))
                               : 'N/A';
 
                           return ChoiceChip(
@@ -344,102 +346,87 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
                     const SizedBox(height: 20),
 
                     // --- 4. BOTÓN DE ACCIÓN ---
-                    SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(
-                            context,
-                          ).primaryColor, // Tu color primario
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () {
-                          // ... (validation logic unchanged)
-                          if (_selectedDepotId == null) {
-                            setState(
-                              () => _errorMessage = "Selecciona un depósito",
-                            );
-                            return;
-                          }
-                          // Validación del Formulario
-                          if (!_formKey.currentState!.validate()) {
-                            setState(
-                              () => _errorMessage =
-                                  "Verifica la cantidad y el lote",
-                            );
-                            return;
-                          }
-
-                          final amount = int.tryParse(_qtyController.text) ?? 0;
-
-                          if (amount > _maxStock) {
-                            setState(
-                              () => _errorMessage =
-                                  "La cantidad excede el stock ($_maxStock)",
-                            );
-                            return;
-                          }
-
-                          // --- NUEVA LÓGICA PARA OBTENER LOS NOMBRES ---
-                          String tempDepotName = "Depósito Desconocido";
-                          String? tempExpirationInfo;
-
-                          // 1. Buscamos el objeto del depósito seleccionado
-                          if (_selectedDepotId != null) {
-                            // stockList está disponible porque estamos dentro del .when(data: stockList)
-                            final depotItem = stockList.firstWhere(
-                              (e) => e.depotId == _selectedDepotId,
-                              orElse: () => StockOptionModel(
-                                depotId: 0,
-                                depotName: '?',
-                                amount: 0,
-                                isLot: false,
-                              ),
-                            );
-                            tempDepotName = depotItem.depotName;
-                          }
-
-                          // 2. Buscamos la info del lote/vencimiento seleccionado
-                          if (_selectedLotId != null) {
-                            final lotItem = stockList.firstWhere(
-                              (e) => e.lotId == _selectedLotId,
-                              orElse: () => StockOptionModel(
-                                depotId: 0,
-                                depotName: '',
-                                amount: 0,
-                                isLot: false,
-                              ),
-                            );
-                            // Aquí usamos tu getter displayLabel o formateamos la fecha
-                            tempExpirationInfo = lotItem.displayLabel;
-                            // O si prefieres solo la fecha: item.expiration
-                          }
-                          final newItem = SaleItemModel(
-                            productId: widget.product.id,
-                            depotId: _selectedDepotId!,
-                            stockLotId: _selectedLotId,
-                            unitPriceUsd: widget.product.price,
-                            unitPriceBs: widget.product.priceBs,
-                            amount: amount,
-                            productName: widget.product.name,
-
-                            // GUARDAMOS LA INFO VISUAL:
-                            depotName: tempDepotName,
-                            expirationInfo: tempExpirationInfo,
+                    ButtonApp(
+                      text: "AGREGAR AL CARRITO",
+                      fullWidth: true,
+                      icon: Icons.add_shopping_cart,
+                      onPressed: () {
+                        // ... (validation logic unchanged)
+                        if (_selectedDepotId == null) {
+                          setState(
+                            () => _errorMessage = "Selecciona un depósito",
                           );
+                          return;
+                        }
+                        // Validación del Formulario
+                        if (!_formKey.currentState!.validate()) {
+                          setState(
+                            () => _errorMessage =
+                                "Verifica la cantidad y el lote",
+                          );
+                          return;
+                        }
 
-                          Navigator.pop(context, newItem);
-                        },
-                        child: Text(
-                          "AGREGAR AL CARRITO",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                        final amount = int.tryParse(_qtyController.text) ?? 0;
+
+                        if (amount > _maxStock) {
+                          setState(
+                            () => _errorMessage =
+                                "La cantidad excede el stock ($_maxStock)",
+                          );
+                          return;
+                        }
+
+                        // --- NUEVA LÓGICA PARA OBTENER LOS NOMBRES ---
+                        String tempDepotName = "Depósito Desconocido";
+                        String? tempExpirationInfo;
+
+                        // 1. Buscamos el objeto del depósito seleccionado
+                        if (_selectedDepotId != null) {
+                          // stockList está disponible porque estamos dentro del .when(data: stockList)
+                          final depotItem = stockList.firstWhere(
+                            (e) => e.depotId == _selectedDepotId,
+                            orElse: () => StockOptionModel(
+                              depotId: 0,
+                              depotName: '?',
+                              amount: 0,
+                              isLot: false,
+                            ),
+                          );
+                          tempDepotName = depotItem.depotName;
+                        }
+
+                        // 2. Buscamos la info del lote/vencimiento seleccionado
+                        if (_selectedLotId != null) {
+                          final lotItem = stockList.firstWhere(
+                            (e) => e.lotId == _selectedLotId,
+                            orElse: () => StockOptionModel(
+                              depotId: 0,
+                              depotName: '',
+                              amount: 0,
+                              isLot: false,
+                            ),
+                          );
+                          // Aquí usamos tu getter displayLabel o formateamos la fecha
+                          tempExpirationInfo = lotItem.displayLabel;
+                          // O si prefieres solo la fecha: item.expiration
+                        }
+                        final newItem = SaleItemModel(
+                          productId: widget.product.id,
+                          depotId: _selectedDepotId!,
+                          stockLotId: _selectedLotId,
+                          unitPriceUsd: widget.product.price,
+                          unitPriceBs: widget.product.priceBs,
+                          amount: amount,
+                          productName: widget.product.name,
+
+                          // GUARDAMOS LA INFO VISUAL:
+                          depotName: tempDepotName,
+                          expirationInfo: tempExpirationInfo,
+                        );
+
+                        Navigator.pop(context, newItem);
+                      },
                     ),
                   ],
                 );

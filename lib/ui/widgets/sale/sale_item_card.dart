@@ -96,7 +96,7 @@ class SaleItemCard extends StatelessWidget {
                       Text(
                         "\$${item.unitPriceUsd}",
                         style: TextStyle(
-                          color: Theme.of(context).primaryColor,
+                          color: Theme.of(context).colorScheme.primary,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -177,7 +177,7 @@ class SaleItemCard extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
-                        color: Theme.of(context).primaryColor,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     Text(
