@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sicv_flutter/models/index.dart';
@@ -134,7 +135,7 @@ class _AddProductSheetState extends ConsumerState<AddProductSheet> {
 
             // --- CARGA DE DATOS ---
             stockAsync.when(
-              loading: () => const Center(child: LinearProgressIndicator()),
+              loading: () => const CategoryLoadingSkeleton(),
               error: (e, _) => Text(
                 "Error: $e",
                 style: TextStyle(color: Theme.of(context).colorScheme.error),

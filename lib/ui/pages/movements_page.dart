@@ -14,6 +14,8 @@ import 'package:sicv_flutter/ui/widgets/modals/add_movement_modal.dart';
 import 'package:sicv_flutter/ui/widgets/wide_layuout.dart';
 import 'package:sidebarx/sidebarx.dart';
 
+import 'package:sicv_flutter/ui/widgets/atomic/button_app.dart';
+
 // CAMBIO 1: Convertimos a ConsumerStatefulWidget para manejar el Controller
 class MovementsPage extends ConsumerStatefulWidget {
   final SidebarXController controller;
@@ -53,20 +55,14 @@ class _MovementsPageState extends ConsumerState<MovementsPage> {
           drawer: isWide ? null : MySideBar(controller: widget.controller),
 
           floatingActionButton: hasAccessCreateMovements
-              ? FloatingActionButton.extended(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  icon: Icon(
-                    Symbols.add,
-                    color: Theme.of(context).colorScheme.onPrimary,
+              ? SizedBox(
+                  width: 220,
+                  height: 60,
+                  child: ButtonApp(
+                    text: "Agregar Movimiento",
+                    icon: Symbols.add,
+                    onPressed: () => AddMovementModal.show(context),
                   ),
-                  label: Text(
-                    "Agregar Movimiento",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onPressed: () => AddMovementModal.show(context),
                 )
               : null,
 

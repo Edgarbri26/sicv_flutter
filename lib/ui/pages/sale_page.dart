@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sicv_flutter/core/theme/app_sizes.dart';
@@ -231,7 +232,17 @@ class _SalePageState extends ConsumerState<SalePage> {
         const CategoryFilterBar(),
         Expanded(
           child: productsState.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => GridView.builder(
+              padding: const EdgeInsets.all(16.0),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200,
+                mainAxisSpacing: 16.0,
+                crossAxisSpacing: 16.0,
+                childAspectRatio: 0.7,
+              ),
+              itemCount: 6,
+              itemBuilder: (_, __) => const ProductCardSkeleton(),
+            ),
             error: (error, stack) => Center(child: Text('Error: $error')),
             data: (products) {
               final filteredProducts = ref.watch(filteredProductsProvider);

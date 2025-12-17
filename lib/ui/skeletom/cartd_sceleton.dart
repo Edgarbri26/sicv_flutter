@@ -213,8 +213,8 @@ class ShimmerExampleApp extends StatelessWidget {
 // import 'package:flutter/material.dart';
 
 // // 1. Widget de Ayuda para simular la animación del esqueleto (Shimmer Effect)
-// // En un proyecto real de Google, usaríamos un paquete como 'shimmer' o 
-// // una implementación interna optimizada, pero para ser funcional y 
+// // En un proyecto real de Google, usaríamos un paquete como 'shimmer' o
+// // una implementación interna optimizada, pero para ser funcional y
 // // autocontenido, crearemos un contenedor con un color de fondo base.
 // class SkeletonBox extends StatelessWidget {
 //   final double width;
@@ -231,7 +231,7 @@ class ShimmerExampleApp extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
 //     // Usamos un color de fondo sutil que represente el estado "cargando".
-//     // En una implementación avanzada, esto estaría dentro de un Widget 
+//     // En una implementación avanzada, esto estaría dentro de un Widget
 //     // animado para un efecto de "barrido" o Shimmer.
 //     return Container(
 //       width: width,
@@ -265,7 +265,7 @@ class ShimmerExampleApp extends StatelessWidget {
 //               borderRadius: BorderRadius.all(Radius.circular(4.0)), // Forma cuadrada/rectangular
 //             ),
 //           ),
-          
+
 //           const SizedBox(width: 12.0),
 
 //           // Contenido principal (Título y Descripción)
@@ -281,13 +281,13 @@ class ShimmerExampleApp extends StatelessWidget {
 //                     const SizedBox(width: 8.0),
 //                     // Etiqueta de Estado ("Activo")
 //                     const SkeletonBox(
-//                       width: 40.0, 
+//                       width: 40.0,
 //                       height: 16.0,
 //                       borderRadius: BorderRadius.all(Radius.circular(8.0)), // Forma de píldora
 //                     ),
 //                   ],
 //                 ),
-                
+
 //                 const SizedBox(height: 8.0),
 
 //                 // Subtítulo/Descripción (Dos líneas simuladas)
@@ -297,7 +297,7 @@ class ShimmerExampleApp extends StatelessWidget {
 //               ],
 //             ),
 //           ),
-          
+
 //           const SizedBox(width: 16.0),
 
 //           // Iconos de Acción del lado derecho
@@ -335,6 +335,100 @@ class ShimmerExampleApp extends StatelessWidget {
 //   }
 // }
 
-// // NOTA IMPORTANTE: Para ver la animación "Shimmer" (el efecto de barrido de luz),
-// // se necesita añadir un envoltorio animado a 'SkeletonBox'. 
-// // Si estuviera en producción, recomendaría el paquete 'shimmer' para esto.
+// --- 3. WIDGET DE ESQUELETO PARA GRID (PRODUCT CARD) ---
+class ProductCardSkeleton extends StatelessWidget {
+  const ProductCardSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerEffect(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Imagen
+            Expanded(
+              flex: 3,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+              ),
+            ),
+            // Detalles
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: const [
+                    SkeletonBox(width: double.infinity, height: 14),
+                    SkeletonBox(width: 80, height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SkeletonBox(width: 60, height: 16),
+                        SkeletonBox(
+                          width: 24,
+                          height: 24,
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- 4. WIDGET DE ESQUELETO PARA TABLA ---
+class TableRowSkeleton extends StatelessWidget {
+  const TableRowSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerEffect(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        child: Row(
+          children: [
+            const SkeletonBox(
+              width: 40,
+              height: 40,
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              flex: 2,
+              child: SkeletonBox(width: double.infinity, height: 16),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              flex: 1,
+              child: SkeletonBox(width: double.infinity, height: 16),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              flex: 1,
+              child: SkeletonBox(width: double.infinity, height: 16),
+            ),
+            const SizedBox(width: 16),
+            const SkeletonBox(width: 80, height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}

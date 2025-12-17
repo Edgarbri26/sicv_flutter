@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sicv_flutter/config/app_permissions.dart';
+import 'package:sicv_flutter/ui/skeletom/cartd_sceleton.dart';
 import 'package:sicv_flutter/providers/current_user_permissions_provider.dart';
 import 'package:sicv_flutter/ui/widgets/atomic/app_bar_app.dart';
 import 'package:sidebarx/sidebarx.dart';
@@ -90,7 +91,11 @@ class _InventarioPageState extends ConsumerState<InventarioPage> {
 
           // Cuerpo de la aplicación
           body: productsState.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 10,
+              itemBuilder: (_, __) => const TableRowSkeleton(),
+            ),
             error: (err, stack) =>
                 Center(child: Text('Error cargando inventario: $err')),
             data: (allProducts) {

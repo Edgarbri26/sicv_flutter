@@ -47,19 +47,27 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
   late ClientModel? _selectedClient;
   late TypePaymentModel? _selectedTypePayment;
   final FocusNode _paymentFocusNode = FocusNode();
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  AudioPlayer? _audioPlayer;
 
   @override
   void initState() {
     super.initState();
     _selectedClient = widget.initialClient;
     _selectedTypePayment = widget.initialTypePayment;
+
+    // Inicializar AudioPlayer de forma segura
+    // COMENTADO POR SEGURIDAD: Esto causa MissingPluginException si la app no se recompila totalmente.
+    // try {
+    //   _audioPlayer = AudioPlayer();
+    // } catch (e) {
+    //   debugPrint("Error inicializando AudioPlayer: $e");
+    // }
   }
 
   @override
   void dispose() {
     _paymentFocusNode.dispose();
-    _audioPlayer.dispose();
+    _audioPlayer?.dispose();
     super.dispose();
   }
 
@@ -248,87 +256,99 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
   }
 
   Widget _buildClientSelector() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Autocomplete<ClientModel>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text.isEmpty) {
-                return const Iterable<ClientModel>.empty();
-              }
-              final currentClients = ref.read(clientProvider).value ?? [];
-              final term = textEditingValue.text.toLowerCase();
-              return currentClients.where((ClientModel option) {
-                return option.name.toLowerCase().contains(term) ||
-                    option.clientCi.toLowerCase().contains(term);
-              });
-            },
-            displayStringForOption: (ClientModel option) =>
-                "CI:${option.clientCi} ${option.name} ",
-            onSelected: (ClientModel selection) {
-              setState(() {
-                _selectedClient = selection;
-              });
-              widget.onClientChanged(selection);
-              _paymentFocusNode.requestFocus();
-            },
-            fieldViewBuilder:
-                (context, textEditingController, focusNode, onFieldSubmitted) {
-                  return SearchTextFieldApp(
-                    autofocus: true,
-                    controller: textEditingController,
-                    focusNode: focusNode,
-                    labelText: 'Buscar Cliente',
-                    prefixIcon: Icons.search,
-                    onSubmitted: (String val) {
-                      onFieldSubmitted();
-                    },
-                    validator: (value) {
-                      if (_selectedClient == null) {
-                        return 'Seleccione un cliente';
-                      }
-                      return null;
-                    },
-                  );
+    final clientState = ref.watch(clientProvider);
+
+    return clientState.when(
+      loading: () => const CategoryLoadingSkeleton(),
+      error: (e, s) => Text("Error al cargar clientes: $e"),
+      data: (clients) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Autocomplete<ClientModel>(
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return const Iterable<ClientModel>.empty();
+                  }
+                  final term = textEditingValue.text.toLowerCase();
+                  return clients.where((ClientModel option) {
+                    return option.name.toLowerCase().contains(term) ||
+                        option.clientCi.toLowerCase().contains(term);
+                  });
                 },
-          ),
-        ),
-        const SizedBox(width: 10),
-        ButtonApp(
-          text: "Nuevo",
-          onPressed: () async {
-            final bool? clientWasAdded = await showModalBottomSheet<bool>(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Theme.of(context).primaryColor,
-              builder: (ctx) => AddClientForm(),
-            );
+                displayStringForOption: (ClientModel option) =>
+                    "CI:${option.clientCi} ${option.name} ",
+                onSelected: (ClientModel selection) {
+                  setState(() {
+                    _selectedClient = selection;
+                  });
+                  widget.onClientChanged(selection);
+                  _paymentFocusNode.requestFocus();
+                },
+                fieldViewBuilder:
+                    (
+                      context,
+                      textEditingController,
+                      focusNode,
+                      onFieldSubmitted,
+                    ) {
+                      return SearchTextFieldApp(
+                        autofocus: true,
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        labelText: 'Buscar Cliente',
+                        prefixIcon: Icons.search,
+                        onSubmitted: (String val) {
+                          onFieldSubmitted();
+                        },
+                        validator: (value) {
+                          if (_selectedClient == null) {
+                            return 'Seleccione un cliente';
+                          }
+                          return null;
+                        },
+                      );
+                    },
+              ),
+            ),
+            const SizedBox(width: 10),
+            ButtonApp(
+              text: "Nuevo",
+              onPressed: () async {
+                final bool? clientWasAdded = await showModalBottomSheet<bool>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  builder: (ctx) => AddClientForm(),
+                );
 
-            if (clientWasAdded == true) {
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cliente agregado correctamente'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+                if (clientWasAdded == true) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Cliente agregado correctamente'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
 
-              await ref.read(clientProvider.notifier).refresh();
+                  await ref.read(clientProvider.notifier).refresh();
 
-              if (!mounted) return;
+                  if (!mounted) return;
 
-              setState(() {
-                final newClients = ref.read(clientProvider).value ?? [];
-                if (newClients.isNotEmpty) {
-                  _selectedClient = newClients.last;
-                  widget.onClientChanged(_selectedClient);
+                  setState(() {
+                    final newClients = ref.read(clientProvider).value ?? [];
+                    if (newClients.isNotEmpty) {
+                      _selectedClient = newClients.last;
+                      widget.onClientChanged(_selectedClient);
+                    }
+                  });
                 }
-              });
-            }
-          },
-        ),
-      ],
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -479,7 +499,7 @@ class _SaleDetailModalState extends ConsumerState<SaleDetailModal> {
                                 onPressed: () {
                                   Navigator.pop(dialogContext);
                                   // Reproducir sonido
-                                  _audioPlayer.play(
+                                  _audioPlayer?.play(
                                     AssetSource('sounds/cash_register.mp3'),
                                   );
                                   widget.onConfirm(context, _modalMessengerKey);
